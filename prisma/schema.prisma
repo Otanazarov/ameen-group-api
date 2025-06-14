@@ -16,29 +16,56 @@ model Admin {
   updatedAt    DateTime @updatedAt
 }
 
-model Category {
-  id        Int      @id @default(autoincrement())
-  name      String
-  rooms     Room[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model User {
+  id           Int            @id @default(autoincrement())
+  telegramId   BigInt         @unique
+  name         String
+  email        String?        @unique
+  phoneNumber  String         @unique
+  status       UserStatus     @default(REGISTERED)
+  role         UserRole       @default(USER)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  Subscription Subscription[]
 }
 
-model Room {
-  id          Int      @id @default(autoincrement())
-  title       String
-  description String
-  price       Float
-  categoryId  Int
-  category    Category @relation(fields: [categoryId], references: [id])
-  images      Image[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+model Subscription {
+  id                 Int         @id @default(autoincrement())
+  userId             Int
+  expiredDate        DateTime
+  startDate          DateTime
+  alertCount         Int         @default(0)
+  price              BigInt
+  paymentType        PaymentType
+  subscriptionTypeId Int
+
+  user             User             @relation(fields: [userId], references: [id])
+  subscriptionType SubscriptionType @relation(fields: [subscriptionTypeId], references: [id])
 }
 
-model Image {
-  id     Int    @id @default(autoincrement())
-  url    String
-  roomId Int
-  room   Room   @relation(fields: [roomId], references: [id])
+model SubscriptionType {
+  id               Int            @id @default(autoincrement())
+  price            BigInt
+  title            String
+  description      String
+  telegramTopicIds Json
+  subscriptions    Subscription[]
+}
+
+enum UserStatus {
+  REGISTERED
+  SUBSCRIBE
+  EXPIRED
+  INACTIVE
+  UNSUBSCRIBE
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum PaymentType {
+  ATMOS
+  STRIPE
 }

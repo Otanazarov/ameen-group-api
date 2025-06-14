@@ -242,15 +242,15 @@ export class AdminService {
     return updatedAdmin;
   }
 
-  // async remove(id: number) {
-  //   const admin = await this.prisma.admin.findUnique({
-  //     where: { id: id },
-  //   });
-  //   if (!admin) {
-  //     throw HttpError({ code: 'Admin not found' });
-  //   }
-  //   return await this.prisma.admin.delete({
-  //     where: { id: id },
-  //   });
-  // }
+  async remove(id: number) {
+    const admin = await this.prisma.admin.findUnique({
+      where: { id: id },
+    });
+    if (!admin) {
+      throw HttpError({ code: 'Admin not found' });
+    }
+    return await this.prisma.admin.delete({
+      where: { id: id },
+    });
+  }
 }
