@@ -31,22 +31,13 @@ export class StripeService {
       const subscription = await this.subscriptionService.create({
         startDate: new Date(),
         expiredDate: new Date(Date.now() + 1000 ** 60 * 60 * 24 * 30),
-        status: SubscriptionStatus.Created,
+        status: SubscriptionStatus.Paid,
         paymentType: PaymentType.STRIPE,
         subscriptionTypeId: +object.metadata.subscriptionTypeId,
         userId: +object.metadata.userId,
         price: subscriptionType.price,
       });
       return true;
-    }
-
-    if (eventType === 'invoice.paid') {
-      const subscription = await this.subscriptionService.update(
-        +object.metadata.subscriptionId,
-        {
-          status: SubscriptionStatus.Paid,
-        },
-      );
     }
 
     if (eventType === 'invoice.payment_failed') {

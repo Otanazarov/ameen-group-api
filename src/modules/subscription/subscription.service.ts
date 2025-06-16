@@ -37,6 +37,11 @@ export class SubscriptionService {
         subscriptionType: true,
       },
     });
+
+    if (subscription.status === SubscriptionStatus.Paid) {
+      await this.subscriptionPaid(subscription);
+    }
+
     return subscription;
   }
 
