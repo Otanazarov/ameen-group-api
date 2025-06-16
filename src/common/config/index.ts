@@ -11,4 +11,8 @@ export const env = cleanEnv(process.env, {
   PASSPHRASE: str(),
 
   TELEGRAM_BOT_TOKEN: str(),
+  TELEGRAM_GROUP_ID: str(),
+
+  STRIPE_SECRET_KEY: str(),
+  STRIPE_WEBHOOK_SECRET: str(),
 });
