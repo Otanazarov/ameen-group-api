@@ -37,7 +37,7 @@ model Subscription {
   alertCount         Int         @default(0)
   price              Int
   paymentType        PaymentType
-  status             SubscriptionStatus
+  status             SubscriptionStatus  @default(Created)
   subscriptionTypeId Int
   createdAt          DateTime    @default(now())
   updatedAt          DateTime    @updatedAt

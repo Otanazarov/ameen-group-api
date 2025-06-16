@@ -3,6 +3,7 @@ import Stripe from 'stripe';
 import { SubscriptionService } from '../subscription/subscription.service';
 import { PaymentType, SubscriptionStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { CreateSessionDto } from './dto/create-session.dto';
 
 @Injectable()
 export class StripeService {
@@ -19,6 +20,76 @@ export class StripeService {
     return this.stripe;
   }
 
+  async createCheckoutSession(dto: CreateSessionDto) {
+    const { userId, subscriptionTypeId } = dto;
+
+    const subscriptionType = await this.prisma.subscriptionType.findFirst({
+      where: {
+        id: subscriptionTypeId,
+      },
+    });
+
+    const user = await this.prisma.user.findFirst({
+      where: {
+        id: userId,
+      },
+    });
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    if (!subscriptionType) {
+      throw new Error('Subscription type not found');
+    }
+    let product = (
+      await this.stripe.products.search({
+        query: `name:'${subscriptionType.title}'`,
+      })
+    ).data[0];
+    if (!product) {
+      product = await this.stripe.products.create({
+        name: subscriptionType.title,
+        description: subscriptionType.description,
+      });
+    }
+
+    let price = (
+      await this.stripe.prices.search({
+        query: `product:'${product.id}' AND type: 'recurring'`,
+      })
+    ).data[0];
+    if (!price) {
+      price = await this.stripe.prices.create({
+        unit_amount: subscriptionType.price, // Convert to cents
+        currency: 'uzs',
+        product: product.id,
+        recurring: {
+          interval: 'month',
+          interval_count: 1,
+        },
+      });
+    }
+
+    const session = await this.stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      mode: 'subscription',
+      line_items: [
+        {
+          price: price.id,
+          quantity: 1,
+        },
+      ],
+      metadata: {
+        userId: userId.toString(),
+        subscriptionTypeId: subscriptionTypeId.toString(),
+      },
+      success_url: `https://t.me/${process.env.BOT_USERNAME}?start=success`,
+      cancel_url: `https://t.me/${process.env.BOT_USERNAME}?start=cancel`,
+    });
+
+    return session;
+  }
+
   async webhook(eventType: Stripe.Event.Type, data: Stripe.Event.Data) {
     const object = data.object as Stripe.Checkout.Session;
     if (eventType === 'checkout.session.completed') {
@@ -30,7 +101,7 @@ export class StripeService {
 
       const subscription = await this.subscriptionService.create({
         startDate: new Date(),
-        expiredDate: new Date(Date.now() + 1000 ** 60 * 60 * 24 * 30),
+        expiredDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
         status: SubscriptionStatus.Paid,
         paymentType: PaymentType.STRIPE,
         subscriptionTypeId: +object.metadata.subscriptionTypeId,

@@ -7,7 +7,7 @@ import { ApiSwaggerOptions } from './common/swagger/config.swagger';
 import { HttpExceptionFilter } from './common/filter/httpException.filter';
 import * as bodyParser from 'body-parser';
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { cors: { origin: '*' } });
+  const app = await NestFactory.create(AppModule, { cors: { origin: '*' },rawBody: true });
 
   app.setGlobalPrefix('/api');
   app.use('/webhook', bodyParser.raw({ type: 'application/json' }));
