@@ -5,8 +5,7 @@ import { UserModule } from '../user/user.module';
 
 @Module({
   imports: [UserModule],
-  controllers: [TelegramUpdate],
-  providers: [TelegramService],
+  providers: [TelegramService, TelegramUpdate],
   exports: [TelegramService],
 })
-export class AdminModule {}
+export class TelegramModule {}

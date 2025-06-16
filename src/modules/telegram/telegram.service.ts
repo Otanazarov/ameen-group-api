@@ -5,7 +5,7 @@ import { env } from 'src/common/config';
 
 @Injectable()
 export class TelegramService {
-  constructor(@InjectBot() private readonly bot: Bot<Context>) {}
+  constructor(@InjectBot() readonly bot: Bot<Context>) {}
 
   sendPhoneRequest(ctx: Context) {
     ctx.reply(

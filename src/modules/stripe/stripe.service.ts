@@ -4,6 +4,7 @@ import { SubscriptionService } from '../subscription/subscription.service';
 import { PaymentType, SubscriptionStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateSessionDto } from './dto/create-session.dto';
+import { TelegramService } from '../telegram/telegram.service';
 
 @Injectable()
 export class StripeService {
@@ -12,6 +13,7 @@ export class StripeService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly subscriptionService: SubscriptionService,
+    private readonly telegramService: TelegramService,
   ) {
     this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {});
   }
@@ -70,6 +72,7 @@ export class StripeService {
       });
     }
 
+    const botUsername = this.telegramService.bot.botInfo.username;
     const session = await this.stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'subscription',
@@ -83,8 +86,8 @@ export class StripeService {
         userId: userId.toString(),
         subscriptionTypeId: subscriptionTypeId.toString(),
       },
-      success_url: `https://t.me/${process.env.BOT_USERNAME}?start=success`,
-      cancel_url: `https://t.me/${process.env.BOT_USERNAME}?start=cancel`,
+      success_url: `https://t.me/${botUsername}?start=success`,
+      cancel_url: `https://t.me/${botUsername}?start=cancel`,
     });
 
     return session;
