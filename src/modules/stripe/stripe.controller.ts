@@ -1,14 +1,7 @@
-import {
-  Controller,
-  Post,
-  Req,
-  Res,
-  Headers,
-  HttpCode,
-} from '@nestjs/common';
+import { Controller, Post, Req, Res, Headers, HttpCode } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { StripeService } from './stripe.service';
-import Stripe from 'stripe';
+import { env } from 'src/common/config';
 
 @Controller('webhook')
 export class StripeController {
@@ -21,28 +14,33 @@ export class StripeController {
     @Res() res: Response,
     @Headers('stripe-signature') signature: string,
   ) {
-    const stripe = this.stripeService.getInstance();
+    let data;
+    let eventType;
+    // Check if webhook signing is configured.
+    const webhookSecret = env.STRIPE_WEBHOOK_SECRET;
+    if (webhookSecret) {
+      // Retrieve the event by verifying the signature using the raw body and secret.
+      let event;
+      let signature = req.headers['stripe-signature'];
 
-    const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
-    let event;
-
-    try {
-      event = stripe.webhooks.constructEvent(req.body, signature, endpointSecret);
-    } catch (err) {
-      console.error('Webhook Error:', err.message);
-      return res.status(400).send(`Webhook Error: ${err.message}`);
+      try {
+        event = this.stripeService
+          .getInstance()
+          .webhooks.constructEvent(req.body, signature, webhookSecret);
+      } catch (err) {
+        console.log(`⚠️  Webhook signature verification failed.`);
+        return res.sendStatus(400);
+      }
+      // Extract the object from the event.
+      data = event.data;
+      eventType = event.type;
+    } else {
+      // Webhook signing is recommended, but if the secret is not configured in `config.js`,
+      // retrieve the event data directly from the request body.
+      data = req.body.data;
+      eventType = req.body.type;
     }
 
-    if (
-      event.type === 'checkout.session.completed' ||
-      event.type === 'checkout.session.async_payment_succeeded'
-    ) {
-      const session = event.data.object as Stripe.Checkout.Session;
-      console.log('✅ Fulfill payment for session:', session.id);
-
-      // Bu yerda order yaratish yoki userga service berishni yozamiz
-    }
-
-    return res.send({ received: true });
+    return this.stripeService.webhook(eventType, data);
   }
 }

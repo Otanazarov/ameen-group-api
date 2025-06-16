@@ -37,6 +37,7 @@ model Subscription {
   alertCount         Int         @default(0)
   price              Int
   paymentType        PaymentType
+  status             SubscriptionStatus
   subscriptionTypeId Int
   createdAt          DateTime    @default(now())
   updatedAt          DateTime    @updatedAt
@@ -72,4 +73,10 @@ enum UserRole {
 enum PaymentType {
   ATMOS
   STRIPE
+}
+
+enum SubscriptionStatus {
+  Created
+  Paid
+  Canceled
 }

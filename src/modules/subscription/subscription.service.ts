@@ -3,6 +3,7 @@ import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 import { UpdateSubscriptionDto } from './dto/update-subscription.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { FindAllSubscriptionDto } from './dto/findAll-subscription.dto';
+import { Subscription, SubscriptionStatus } from '@prisma/client';
 
 @Injectable()
 export class SubscriptionService {
@@ -29,6 +30,7 @@ export class SubscriptionService {
         paymentType: createSubscriptionDto.paymentType,
         subscriptionTypeId: createSubscriptionDto.subscriptionTypeId,
         alertCount: 0,
+        status: createSubscriptionDto.status || SubscriptionStatus.Created,
       },
       include: {
         user: true,
@@ -69,13 +71,14 @@ export class SubscriptionService {
   }
 
   async update(id: number, updateSubscriptionDto: UpdateSubscriptionDto) {
-    const subscription = await this.prisma.subscription.findUnique({
+    let subscription = await this.prisma.subscription.findUnique({
       where: { id },
     });
     if (!subscription) {
       throw new Error('Subscription not found');
     }
-    return await this.prisma.subscription.update({
+
+    subscription = await this.prisma.subscription.update({
       where: { id },
       data: updateSubscriptionDto,
       include: {
@@ -83,6 +86,16 @@ export class SubscriptionService {
         subscriptionType: true,
       },
     });
+
+    if (updateSubscriptionDto.status === SubscriptionStatus.Paid) {
+      await this.subscriptionPaid(subscription);
+    }
+
+    return subscription;
+  }
+
+  async subscriptionPaid(subscription: Subscription) {
+    //TODO subscription
   }
 
   async remove(id: number) {
