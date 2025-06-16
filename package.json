@@ -16,6 +16,7 @@
     "typos": "typos"
   },
   "dependencies": {
+    "@grammyjs/nestjs": "^0.3.4",
     "@nestjs/common": "^10.0.0",
     "@nestjs/core": "^10.0.0",
     "@nestjs/mapped-types": "*",
@@ -33,6 +34,7 @@
     "date-fns": "^2.30.0",
     "dotenv": "^16.4.7",
     "envalid": "^8.0.0",
+    "grammy": "^1.36.3",
     "helmet": "^6.0.0",
     "jsonwebtoken": "^8.5.1",
     "mysql2": "^3.11.5",
