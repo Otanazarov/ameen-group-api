@@ -35,7 +35,7 @@ model Subscription {
   expiredDate        DateTime
   startDate          DateTime
   alertCount         Int         @default(0)
-  price              BigInt
+  price              Int
   paymentType        PaymentType
   subscriptionTypeId Int
   createdAt          DateTime    @default(now())
@@ -47,7 +47,7 @@ model Subscription {
 
 model SubscriptionType {
   id               Int            @id @default(autoincrement())
-  price            BigInt
+  price            Int
   title            String
   description      String
   telegramTopicIds Json

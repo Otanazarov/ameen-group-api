@@ -7,6 +7,7 @@ import { StripeModule } from './modules/stripe/stripe.module';
 import { env } from './common/config';
 import { NestjsGrammyModule } from '@grammyjs/nestjs';
 import { session } from 'grammy';
+import { SubscriptionModule } from './modules/subscription/subscription.module';
 
 @Module({
   controllers: [],
@@ -21,6 +22,7 @@ import { session } from 'grammy';
       token: env.TELEGRAM_BOT_TOKEN,
       middlewares: [session({ initial: () => ({}) })],
     }),
+    SubscriptionModule,
   ],
 })
 export class AppModule {}
