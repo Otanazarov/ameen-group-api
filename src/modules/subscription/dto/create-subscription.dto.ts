@@ -9,13 +9,10 @@ import {
 import { Type } from 'class-transformer';
 import { PaymentType } from '@prisma/client';
 import { ApiProperty } from '@nestjs/swagger';
+import { IsId } from 'src/common/dtos/id.dto';
 
 export class CreateSubscriptionDto {
-  @ApiProperty()
-  @Type(() => Number)
-  @IsNumber()
-  @IsPositive()
-  @IsInt()
+  @IsId()
   userId: number;
 
   @ApiProperty({ example: '2023-10-01T00:00:00.000Z' })
@@ -34,10 +31,6 @@ export class CreateSubscriptionDto {
   @IsEnum(PaymentType)
   paymentType: PaymentType;
 
-  @ApiProperty()
-  @Type(() => Number)
-  @IsNumber()
-  @IsPositive()
-  @IsInt()
+  @IsId()
   subscriptionTypeId: number;
 }

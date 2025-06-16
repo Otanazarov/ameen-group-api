@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 import { UpdateSubscriptionDto } from './dto/update-subscription.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { FindAllSubscriptionDto } from './dto/findAll-subscription.dto';
 
 @Injectable()
 export class SubscriptionService {
@@ -37,19 +38,66 @@ export class SubscriptionService {
     return subscription;
   }
 
-  findAll() {
-    return `This action returns all subscription`;
+  async findAll(dto: FindAllSubscriptionDto) {
+    return await this.prisma.subscription.findMany({
+      where: {
+        userId: dto.userId,
+        subscriptionTypeId: dto.subscriptionTypeId,
+        startDate: dto.startDate,
+        expiredDate: dto.expireDate,
+        paymentType: dto.paymentType,
+      },
+      include: {
+        user: true,
+        subscriptionType: true,
+      },
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} subscription`;
+  async findOne(id: number) {
+    const subscription = await this.prisma.subscription.findUnique({
+      where: { id },
+      include: {
+        user: true,
+        subscriptionType: true,
+      },
+    });
+    if (!subscription) {
+      throw new Error('Subscription not found');
+    }
+    return subscription;
   }
 
-  update(id: number, updateSubscriptionDto: UpdateSubscriptionDto) {
-    return `This action updates a #${id} subscription`;
+  async update(id: number, updateSubscriptionDto: UpdateSubscriptionDto) {
+    const subscription = await this.prisma.subscription.findUnique({
+      where: { id },
+    });
+    if (!subscription) {
+      throw new Error('Subscription not found');
+    }
+    return await this.prisma.subscription.update({
+      where: { id },
+      data: updateSubscriptionDto,
+      include: {
+        user: true,
+        subscriptionType: true,
+      },
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} subscription`;
+  async remove(id: number) {
+    const subscription = await this.prisma.subscription.findUnique({
+      where: { id },
+    });
+    if (!subscription) {
+      throw new Error('Subscription not found');
+    }
+    return await this.prisma.subscription.delete({
+      where: { id },
+      include: {
+        user: true,
+        subscriptionType: true,
+      },
+    });
   }
 }

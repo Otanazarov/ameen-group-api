@@ -12,6 +12,7 @@ import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 import { UpdateSubscriptionDto } from './dto/update-subscription.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { DecoratorWrapper } from 'src/common/auth/decorator.auth';
+import { FindAllSubscriptionDto } from './dto/findAll-subscription.dto';
 
 @Controller('subscription')
 @ApiTags('Subscription')
@@ -25,8 +26,8 @@ export class SubscriptionController {
   }
 
   @Get()
-  findAll() {
-    return this.subscriptionService.findAll();
+  findAll(dto: FindAllSubscriptionDto) {
+    return this.subscriptionService.findAll(dto);
   }
 
   @Get(':id')
