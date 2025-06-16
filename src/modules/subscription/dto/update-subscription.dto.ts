@@ -1,4 +1,45 @@
-import { PartialType } from '@nestjs/swagger';
-import { CreateSubscriptionDto } from './create-subscription.dto';
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { PaymentType, SubscriptionStatus } from '@prisma/client';
+import { Type } from 'class-transformer';
+import {
+  IsDateString,
+  IsEnum,
+  IsInt,
+  IsNumber,
+  IsOptional,
+  IsPositive,
+} from 'class-validator';
+import { IsId } from 'src/common/dtos/id.dto';
 
-export class UpdateSubscriptionDto extends PartialType(CreateSubscriptionDto) {}
+export class UpdateSubscriptionDto {
+  @IsId(false)
+  userId?: number;
+
+  @ApiPropertyOptional({ example: '2023-10-01T00:00:00.000Z' })
+  @IsOptional()
+  @IsDateString()
+  startDate?: string;
+
+  @ApiPropertyOptional({ example: '2023-10-01T00:00:00.000Z' })
+  @IsOptional()
+  @IsDateString()
+  expiredDate?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsEnum(SubscriptionStatus)
+  status?: SubscriptionStatus;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber()
+  price?: number;
+
+  @ApiPropertyOptional({ enum: PaymentType })
+  @IsOptional()
+  @IsEnum(PaymentType)
+  paymentType?: PaymentType;
+
+  @IsId(false)
+  subscriptionTypeId?: number;
+}

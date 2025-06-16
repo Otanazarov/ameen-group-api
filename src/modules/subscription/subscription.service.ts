@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 import { UpdateSubscriptionDto } from './dto/update-subscription.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { FindAllSubscriptionDto } from './dto/findAll-subscription.dto';
+import { Subscription, SubscriptionStatus } from '@prisma/client';
 
 @Injectable()
 export class SubscriptionService {
@@ -28,6 +30,7 @@ export class SubscriptionService {
         paymentType: createSubscriptionDto.paymentType,
         subscriptionTypeId: createSubscriptionDto.subscriptionTypeId,
         alertCount: 0,
+        status: createSubscriptionDto.status || SubscriptionStatus.Created,
       },
       include: {
         user: true,
@@ -37,19 +40,77 @@ export class SubscriptionService {
     return subscription;
   }
 
-  findAll() {
-    return `This action returns all subscription`;
+  async findAll(dto: FindAllSubscriptionDto) {
+    return await this.prisma.subscription.findMany({
+      where: {
+        userId: dto.userId,
+        subscriptionTypeId: dto.subscriptionTypeId,
+        startDate: dto.startDate,
+        expiredDate: dto.expireDate,
+        paymentType: dto.paymentType,
+      },
+      include: {
+        user: true,
+        subscriptionType: true,
+      },
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} subscription`;
+  async findOne(id: number) {
+    const subscription = await this.prisma.subscription.findUnique({
+      where: { id },
+      include: {
+        user: true,
+        subscriptionType: true,
+      },
+    });
+    if (!subscription) {
+      throw new Error('Subscription not found');
+    }
+    return subscription;
   }
 
-  update(id: number, updateSubscriptionDto: UpdateSubscriptionDto) {
-    return `This action updates a #${id} subscription`;
+  async update(id: number, updateSubscriptionDto: UpdateSubscriptionDto) {
+    let subscription = await this.prisma.subscription.findUnique({
+      where: { id },
+    });
+    if (!subscription) {
+      throw new Error('Subscription not found');
+    }
+
+    subscription = await this.prisma.subscription.update({
+      where: { id },
+      data: updateSubscriptionDto,
+      include: {
+        user: true,
+        subscriptionType: true,
+      },
+    });
+
+    if (updateSubscriptionDto.status === SubscriptionStatus.Paid) {
+      await this.subscriptionPaid(subscription);
+    }
+
+    return subscription;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} subscription`;
+  async subscriptionPaid(subscription: Subscription) {
+    //TODO subscription
+  }
+
+  async remove(id: number) {
+    const subscription = await this.prisma.subscription.findUnique({
+      where: { id },
+    });
+    if (!subscription) {
+      throw new Error('Subscription not found');
+    }
+    return await this.prisma.subscription.delete({
+      where: { id },
+      include: {
+        user: true,
+        subscriptionType: true,
+      },
+    });
   }
 }

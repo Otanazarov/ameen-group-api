@@ -5,26 +5,25 @@ import {
   IsString,
   IsNumber,
   IsPositive,
+  IsDate,
+  IsOptional,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { PaymentType } from '@prisma/client';
-import { ApiProperty } from '@nestjs/swagger';
+import { PaymentType, SubscriptionStatus } from '@prisma/client';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsId } from 'src/common/dtos/id.dto';
 
 export class CreateSubscriptionDto {
-  @ApiProperty()
-  @Type(() => Number)
-  @IsNumber()
-  @IsPositive()
-  @IsInt()
+  @IsId()
   userId: number;
 
   @ApiProperty({ example: '2023-10-01T00:00:00.000Z' })
-  @IsDateString()
-  startDate: string;
+  @IsDate()
+  startDate: Date;
 
   @ApiProperty({ example: '2023-10-01T00:00:00.000Z' })
-  @IsDateString()
-  expiredDate: string;
+  @IsDate()
+  expiredDate: Date;
 
   @ApiProperty()
   @IsNumber()
@@ -34,10 +33,17 @@ export class CreateSubscriptionDto {
   @IsEnum(PaymentType)
   paymentType: PaymentType;
 
-  @ApiProperty()
-  @Type(() => Number)
-  @IsNumber()
-  @IsPositive()
-  @IsInt()
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsEnum(SubscriptionStatus)
+  status: SubscriptionStatus;
+
+  @IsId()
   subscriptionTypeId: number;
+}
+function ApiOperationOptional(): (
+  target: CreateSubscriptionDto,
+  propertyKey: 'subscriptionTypeId',
+) => void {
+  throw new Error('Function not implemented.');
 }
