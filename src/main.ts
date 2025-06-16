@@ -5,11 +5,12 @@ import { env } from './common/config';
 import { SwaggerModule } from '@nestjs/swagger';
 import { ApiSwaggerOptions } from './common/swagger/config.swagger';
 import { HttpExceptionFilter } from './common/filter/httpException.filter';
-
+import * as bodyParser from 'body-parser';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { cors: { origin: '*' } });
 
   app.setGlobalPrefix('/api');
+  app.use('/webhook', bodyParser.raw({ type: 'application/json' }));
 
   app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalPipes(
