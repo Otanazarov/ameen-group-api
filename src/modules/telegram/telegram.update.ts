@@ -15,6 +15,8 @@ import { UserService } from '../user/user.service';
 import { SubscriptionTypeService } from '../subscription-type/subscription-type.service';
 import { StripeService } from '../stripe/stripe.service';
 import { env } from 'src/common/config';
+import { Cron } from '@nestjs/schedule';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Update()
 export class TelegramUpdate {
@@ -25,11 +27,88 @@ export class TelegramUpdate {
     private readonly userService: UserService,
     private readonly subscriptionTypeService: SubscriptionTypeService,
     private readonly stripeService: StripeService,
+    private readonly prismaService: PrismaService,
   ) {
     console.log(
       'telegram Bot starting',
       this.bot ? this.bot.botInfo.id : '(booting)',
     );
+  }
+
+  @Cron('0 0 * * *')
+  async onCron() {
+    await this.kickExpired();
+    await this.sendAlertMessage();
+  }
+
+  async sendAlertMessage() {
+    const users = await this.prismaService.user.findMany({
+      where: {
+        inGroup: true,
+        status: 'SUBSCRIBE',
+        subscription: {
+          some: {
+            expiredDate: {
+              gt: new Date(),
+              lte: new Date(Date.now() + 1000 * 60 * 60 * 24 * 3),
+            },
+          },
+        },
+      },
+      include: {
+        subscription: true,
+      },
+    });
+
+    for (const user of users) {
+      const sub = await this.userService.getSubscription(user.id);
+      if (!sub) continue;
+
+      const daysLeft = Math.ceil(
+        (sub.expiredDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+      );
+
+      if (daysLeft > 0 && daysLeft <= 3 && sub.alertCount === 3 - daysLeft) {
+        await this.bot.api.sendMessage(
+          +user.telegramId,
+          `Sizning obunangiz ${sub.expiredDate.toDateString()} da tugaydi. ${daysLeft} kun qoldi.`,
+        );
+
+        await this.prismaService.subscription.update({
+          where: { id: sub.id },
+          data: {
+            alertCount: sub.alertCount + 1,
+          },
+        });
+      }
+    }
+  }
+
+  async kickExpired() {
+    const users = await this.prismaService.user.findMany({
+      where: {
+        inGroup: true,
+        status: 'SUBSCRIBE',
+        subscription: {
+          some: {
+            expiredDate: {
+              lte: new Date(),
+            },
+          },
+        },
+      },
+    });
+
+    for (const user of users) {
+      const sub = await this.userService.getSubscription(user.id);
+      if (!sub) continue;
+      await this.userService.update(sub.user.id, {
+        inGroup: false,
+        status: 'EXPIRED',
+      });
+      this.bot.api.banChatMember(env.TELEGRAM_GROUP_ID, +user.telegramId);
+      this.bot.api.unbanChatMember(env.TELEGRAM_GROUP_ID, +user.telegramId);
+    }
   }
 
   @Command('topicid')
@@ -84,9 +163,8 @@ export class TelegramUpdate {
     if (sub === null) {
       await ctx.api.banChatMember(chatMember.chat.id, member.id);
       await ctx.api.unbanChatMember(chatMember.chat.id, member.id);
-      await ctx.api.restrictChatMember(chatMember.chat.id, member.id, {
-        
-      });
+    } else {
+      await this.userService.update(sub.user.id, { inGroup: true });
     }
   }
 
@@ -144,19 +222,18 @@ export class TelegramUpdate {
     }
 
     if (ctx.message.text.startsWith('/start')) {
-      const split = ctx.message.text.split(' ');
-      if (split.length == 1) {
-        this.telegramService.sendStartMessage(ctx);
-      } else {
-        const status = split[1];
-        if (status == 'success') {
-          const link = await ctx.api.createChatInviteLink(
-            env.TELEGRAM_GROUP_ID,
-            { member_limit: 1, name: ctx.from.first_name },
-          );
-          ctx.reply(link.invite_link);
-        }
+      const user = await this.userService.findOneByTelegramID(
+        ctx.from.id.toString(),
+      );
+
+      if (!user.inGroup) {
+        const link = await ctx.api.createChatInviteLink(env.TELEGRAM_GROUP_ID, {
+          member_limit: 1,
+          name: ctx.from.first_name,
+        });
+        ctx.reply(link.invite_link);
       }
+      this.telegramService.sendStartMessage(ctx);
       return;
     }
 

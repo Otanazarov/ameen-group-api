@@ -100,7 +100,12 @@ export class SubscriptionService {
   }
 
   async subscriptionPaid(subscription: Subscription) {
-    //TODO subscription
+    await this.prisma.user.update({
+      where: { id: subscription.userId },
+      data: { status: 'SUBSCRIBE' },
+    });
+
+    return subscription;
   }
 
   async remove(id: number) {

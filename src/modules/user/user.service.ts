@@ -79,10 +79,19 @@ export class UserService {
           gt: new Date(),
         },
       },
-      include: { subscriptionType: true },
+      include: { subscriptionType: true, user: true },
     });
-    if (!subscription) return null;
-    return subscription.subscriptionType;
+    return subscription;
+  }
+
+  async findOneByTelegramID(id: string) {
+    const user = await this.prisma.user.findFirst({
+      where: { telegramId: id },
+    });
+    if (!user) {
+      return null;
+    }
+    return user;
   }
 
   async findOne(id: number) {
@@ -128,6 +137,7 @@ export class UserService {
       phoneNumber: updateUserDto.phoneNumber ?? user.phoneNumber,
       status: updateUserDto.status ?? user.status,
       role: updateUserDto.role ?? user.role,
+      inGroup: updateUserDto.inGroup ?? user.inGroup,
     };
 
     return this.prisma.user.update({
