@@ -9,6 +9,8 @@ import { NestjsGrammyModule } from '@grammyjs/nestjs';
 import { session } from 'grammy';
 import { SubscriptionModule } from './modules/subscription/subscription.module';
 import { AtmosModule } from './modules/atmos/atmos.module';
+import { SessionData } from './modules/telegram/Context.type';
+import { freeStorage } from '@grammyjs/storage-free';
 
 @Module({
   controllers: [],
@@ -21,7 +23,15 @@ import { AtmosModule } from './modules/atmos/atmos.module';
     StripeModule,
     NestjsGrammyModule.forRoot({
       token: env.TELEGRAM_BOT_TOKEN,
-      middlewares: [session({ initial: () => ({}) })],
+      pollingOptions: {
+        allowed_updates: ['chat_member', 'message', 'callback_query'],
+      },
+      middlewares: [
+        session({
+          initial: () => ({}),
+          storage: freeStorage<SessionData>(env.TELEGRAM_BOT_TOKEN) as any,
+        }),
+      ],
     }),
     SubscriptionModule,
     AtmosModule,

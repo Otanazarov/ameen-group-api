@@ -1,4 +1,12 @@
-import { Controller, Post, Req, Res, Headers, HttpCode, RawBodyRequest } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Req,
+  Res,
+  Headers,
+  HttpCode,
+  RawBodyRequest,
+} from '@nestjs/common';
 import { Request, Response } from 'express';
 import { StripeService } from './stripe.service';
 import { env } from 'src/common/config';
@@ -37,15 +45,11 @@ export class StripeController {
     if (webhookSecret) {
       // Retrieve the event by verifying the signature using the raw body and secret.
       let event;
-      let signature = req.headers['stripe-signature']
+      let signature = req.headers['stripe-signature'];
       try {
         event = this.stripeService
           .getInstance()
-          .webhooks.constructEvent(
-            req.rawBody,
-            signature,
-            webhookSecret,
-          );
+          .webhooks.constructEvent(req.rawBody, signature, webhookSecret);
       } catch (err) {
         console.log(err);
         console.log(`⚠️  Webhook signature verification failed.`);

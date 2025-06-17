@@ -112,6 +112,13 @@
     source-map-support "^0.5.21"
     tslib "^2.0.0"
 
+"@grammyjs/storage-free@^2.5.1":
+  version "2.5.1"
+  resolved "https://registry.yarnpkg.com/@grammyjs/storage-free/-/storage-free-2.5.1.tgz#a93bee51a1a2628f4639e9f96805a50be7d8c2d4"
+  integrity sha512-wW9R8zxP8qHe6aZh3HqU11ZPWGko2ou32v0GMo8Ck6dLaVVvzI+oBZO6rM9Ntb54jmCdq+CxgLKPY71pyCG7eg==
+  dependencies:
+    node-fetch "^2.6.6"
+
 "@grammyjs/types@3.20.0":
   version "3.20.0"
   resolved "https://registry.yarnpkg.com/@grammyjs/types/-/types-3.20.0.tgz#b7138e51a47975e2865b3e49c129c2d1762a7cc6"
@@ -2700,7 +2707,7 @@ node-emoji@1.11.0:
   dependencies:
     lodash "^4.17.21"
 
-node-fetch@^2.6.1, node-fetch@^2.7.0:
+node-fetch@^2.6.1, node-fetch@^2.6.6, node-fetch@^2.7.0:
   version "2.7.0"
   resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.7.0.tgz#d0f0fa6e3e2dc1d27efcd8ad99d550bda94d187d"
   integrity sha512-c4FRfUm/dbcWZ7U+1Wq0AwCyFL+3nt2bEw05wfxSz+DWpWsitgmSgYmy2dQdWyKC1694ELPqMs/YzUSNozLt8A==
