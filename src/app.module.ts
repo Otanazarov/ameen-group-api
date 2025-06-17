@@ -8,6 +8,7 @@ import { env } from './common/config';
 import { NestjsGrammyModule } from '@grammyjs/nestjs';
 import { session } from 'grammy';
 import { SubscriptionModule } from './modules/subscription/subscription.module';
+import { AtmosModule } from './modules/atmos/atmos.module';
 import { SessionData } from './modules/telegram/Context.type';
 import { freeStorage } from '@grammyjs/storage-free';
 
@@ -33,6 +34,7 @@ import { freeStorage } from '@grammyjs/storage-free';
       ],
     }),
     SubscriptionModule,
+    AtmosModule,
   ],
 })
 export class AppModule {}

@@ -13,6 +13,8 @@ export const env = cleanEnv(process.env, {
   TELEGRAM_BOT_TOKEN: str(),
   TELEGRAM_GROUP_ID: str(),
 
+  ATMOS_STORE_ID: str(),
+
   STRIPE_SECRET_KEY: str(),
   STRIPE_WEBHOOK_SECRET: str(),
 });
