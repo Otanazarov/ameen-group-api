@@ -4,7 +4,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { HttpError } from 'src/common/exception/http.error';
 import { FindAllUserDto } from './dto/findAll-user.dto';
-import { UserRole } from '@prisma/client';
+import { SubscriptionStatus, UserRole } from '@prisma/client';
 import { isPhoneNumber } from 'class-validator';
 
 @Injectable()
@@ -32,7 +32,7 @@ export class UserService {
   }
 
   async findAll(dto: FindAllUserDto) {
-    const { limit = 10, page = 1, name, phoneNumber } = dto;
+    const { limit = 10, page = 1, name, phoneNumber, telegramId } = dto;
 
     const [data, total] = await this.prisma.$transaction([
       this.prisma.user.findMany({
@@ -43,6 +43,9 @@ export class UserService {
           },
           phoneNumber: phoneNumber
             ? { contains: phoneNumber.trim(), mode: 'insensitive' }
+            : undefined,
+          telegramId: telegramId
+            ? { contains: telegramId.trim(), mode: 'insensitive' }
             : undefined,
         },
         skip: (page - 1) * limit,
@@ -67,6 +70,21 @@ export class UserService {
     };
   }
 
+  async getSubscription(telegramId: number) {
+    const subscription = await this.prisma.subscription.findFirst({
+      where: {
+        user: { telegramId: telegramId.toString() },
+        status: SubscriptionStatus.Paid,
+        expiredDate: {
+          gt: new Date(),
+        },
+      },
+      include: { subscriptionType: true },
+    });
+    if (!subscription) return null;
+    return subscription.subscriptionType;
+  }
+
   async findOne(id: number) {
     const user = await this.prisma.user.findUnique({
       where: { id: id },
@@ -84,7 +102,6 @@ export class UserService {
       throw HttpError({ code: 'User not found' });
     }
 
-    // phoneNumber ni tekshirish (o'zidan boshqa userdan bo'lmasligi kerak)
     if (updateUserDto.phoneNumber) {
       const phoneExists = await this.prisma.user.findUnique({
         where: { phoneNumber: updateUserDto.phoneNumber },

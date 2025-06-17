@@ -113,9 +113,5 @@ export class StripeService {
       });
       return true;
     }
-
-    if (eventType === 'invoice.payment_failed') {
-      await this.subscriptionService.remove(+object.metadata.subscriptionId);
-    }
   }
 }

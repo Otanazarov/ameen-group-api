@@ -1,11 +1,23 @@
 import { Injectable } from '@nestjs/common';
-import { Bot, Context, Keyboard } from 'grammy';
+import { Bot, Keyboard } from 'grammy';
 import { InjectBot } from '@grammyjs/nestjs';
-import { env } from 'src/common/config';
+import { Context } from './Context.type';
 
 @Injectable()
 export class TelegramService {
   constructor(@InjectBot() readonly bot: Bot<Context>) {}
+
+  sendStartMessage(ctx: Context) {
+    ctx.reply(`Salom Botga hush kelibsiz!`, {
+      reply_markup: {
+        keyboard: new Keyboard()
+          .text("Obuna Bo'lish")
+          .resized()
+          .oneTime()
+          .build(),
+      },
+    });
+  }
 
   sendPhoneRequest(ctx: Context) {
     ctx.reply(
@@ -15,6 +27,7 @@ export class TelegramService {
           keyboard: new Keyboard()
             .requestContact('Raqamni yuborish')
             .resized()
+            .oneTime()
             .build(),
         },
       },
@@ -28,5 +41,4 @@ export class TelegramService {
       },
     });
   }
-
 }
