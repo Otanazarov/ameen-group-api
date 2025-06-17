@@ -8,6 +8,7 @@ import { env } from './common/config';
 import { NestjsGrammyModule } from '@grammyjs/nestjs';
 import { session } from 'grammy';
 import { SubscriptionModule } from './modules/subscription/subscription.module';
+import { AtmosModule } from './modules/atmos/atmos.module';
 
 @Module({
   controllers: [],
@@ -23,6 +24,7 @@ import { SubscriptionModule } from './modules/subscription/subscription.module';
       middlewares: [session({ initial: () => ({}) })],
     }),
     SubscriptionModule,
+    AtmosModule,
   ],
 })
 export class AppModule {}

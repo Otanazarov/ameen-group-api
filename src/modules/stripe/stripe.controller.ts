@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 import { StripeService } from './stripe.service';
 import { env } from 'src/common/config';
 
-@Controller('webhook')
+@Controller('stripe')
 export class StripeController {
   constructor(private readonly stripeService: StripeService) {}
 
