@@ -29,6 +29,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
     if (code >= 500) {
       console.error(exception);
     }
+    if (!response.status) {
+      console.log(exception);
+      return;
+    }
     response.status(code).json(
       CoreApiResponse.error({
         message: exception?.message || exception?.response || exception,
