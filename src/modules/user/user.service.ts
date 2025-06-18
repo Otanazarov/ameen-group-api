@@ -27,7 +27,6 @@ export class UserService {
     const user = await this.prisma.user.create({
       data: createUserDto,
     });
-    user.telegramId.toString();
     return user;
   }
 

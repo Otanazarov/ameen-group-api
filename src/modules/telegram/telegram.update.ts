@@ -225,6 +225,7 @@ export class TelegramUpdate {
       const user = await this.userService.findOneByTelegramID(
         ctx.from.id.toString(),
       );
+      console.log(user,ctx.from.id);
 
       if (!user.inGroup) {
         const link = await ctx.api.createChatInviteLink(env.TELEGRAM_GROUP_ID, {

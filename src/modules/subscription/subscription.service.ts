@@ -4,10 +4,14 @@ import { UpdateSubscriptionDto } from './dto/update-subscription.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { FindAllSubscriptionDto } from './dto/findAll-subscription.dto';
 import { Subscription, SubscriptionStatus } from '@prisma/client';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class SubscriptionService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly userService: UserService,
+  ) {}
   async create(createSubscriptionDto: CreateSubscriptionDto) {
     const user = await this.prisma.user.findUnique({
       where: { id: createSubscriptionDto.userId },
@@ -21,11 +25,33 @@ export class SubscriptionService {
     if (!subscriptionType) {
       throw new Error('Subscription type not found');
     }
+
+    const existingSubscription = await this.userService.getSubscription(
+      +user.telegramId,
+    );
+   
+    let startDate = new Date();
+    
+    if(existingSubscription){
+      if (existingSubscription.expiredDate) {
+        const currentDate = new Date();
+        const timeDifference = existingSubscription.expiredDate.getTime() - currentDate.getTime();
+        const daysDifference = timeDifference / (1000 * 60 * 60 * 30);
+
+        if (daysDifference < 3) {
+         throw new Error()
+        }
+      }
+
+      startDate=existingSubscription.expiredDate 
+    }
+
+    let expiredDate = new Date(startDate.getTime() + 30 * 24 * 60 * 60 * 1000);
     const subscription = await this.prisma.subscription.create({
       data: {
         userId: createSubscriptionDto.userId,
-        startDate: createSubscriptionDto.startDate,
-        expiredDate: createSubscriptionDto.expiredDate,
+        startDate,
+        expiredDate,
         price: createSubscriptionDto.price,
         paymentType: createSubscriptionDto.paymentType,
         subscriptionTypeId: createSubscriptionDto.subscriptionTypeId,

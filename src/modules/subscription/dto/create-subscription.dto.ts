@@ -17,13 +17,6 @@ export class CreateSubscriptionDto {
   @IsId()
   userId: number;
 
-  @ApiProperty({ example: '2023-10-01T00:00:00.000Z' })
-  @IsDate()
-  startDate: Date;
-
-  @ApiProperty({ example: '2023-10-01T00:00:00.000Z' })
-  @IsDate()
-  expiredDate: Date;
 
   @ApiProperty()
   @IsNumber()
