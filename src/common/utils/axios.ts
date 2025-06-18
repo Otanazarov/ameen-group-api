@@ -9,7 +9,6 @@ export const atmosApi = axiosI.default.create({
 atmosApi.interceptors.response.use(
   (response) => response,
   async (error) => {
-    console.log(error.response?.status, error.response?.data);
     if (error.response?.status === 401) {
       const originalRequest = error.config;
       try {
@@ -27,7 +26,6 @@ atmosApi.interceptors.response.use(
             },
           )
         ).data.token;
-        console.log(refreshedToken);
         atmosApi.defaults.headers.common['Authorization'] =
           `Bearer ${refreshedToken}`;
         originalRequest.headers['Authorization'] = `Bearer ${refreshedToken}`;

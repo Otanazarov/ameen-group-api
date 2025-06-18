@@ -15,8 +15,6 @@ import { UserService } from '../user/user.service';
 import { SubscriptionTypeService } from '../subscription-type/subscription-type.service';
 import { StripeService } from '../stripe/stripe.service';
 import { env } from 'src/common/config';
-import { Cron } from '@nestjs/schedule';
-import { PrismaService } from '../prisma/prisma.service';
 
 @Update()
 export class TelegramUpdate {
@@ -27,7 +25,6 @@ export class TelegramUpdate {
     private readonly userService: UserService,
     private readonly subscriptionTypeService: SubscriptionTypeService,
     private readonly stripeService: StripeService,
-    private readonly prismaService: PrismaService,
   ) {
     console.log(
       'telegram Bot starting',
@@ -39,81 +36,7 @@ export class TelegramUpdate {
     });
   }
 
-  @Cron('0 0 * * *')
-  async onCron() {
-    await this.kickExpired();
-    await this.sendAlertMessage();
-  }
-
-  async sendAlertMessage() {
-    const users = await this.prismaService.user.findMany({
-      where: {
-        inGroup: true,
-        status: 'SUBSCRIBE',
-        subscription: {
-          some: {
-            expiredDate: {
-              gt: new Date(),
-              lte: new Date(Date.now() + 1000 * 60 * 60 * 24 * 3),
-            },
-          },
-        },
-      },
-      include: {
-        subscription: true,
-      },
-    });
-
-    for (const user of users) {
-      const sub = await this.userService.getSubscription(user.id);
-      if (!sub) continue;
-
-      const daysLeft = Math.ceil(
-        (sub.expiredDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
-      );
-
-      if (daysLeft > 0 && daysLeft <= 3 && sub.alertCount === 3 - daysLeft) {
-        await this.bot.api.sendMessage(
-          +user.telegramId,
-          `Sizning obunangiz ${sub.expiredDate.toDateString()} da tugaydi. ${daysLeft} kun qoldi.`,
-        );
-
-        await this.prismaService.subscription.update({
-          where: { id: sub.id },
-          data: {
-            alertCount: sub.alertCount + 1,
-          },
-        });
-      }
-    }
-  }
-
-  async kickExpired() {
-    const users = await this.prismaService.user.findMany({
-      where: {
-        inGroup: true,
-        status: 'SUBSCRIBE',
-        subscription: {
-          some: {
-            expiredDate: {
-              lte: new Date(),
-            },
-          },
-        },
-      },
-    });
-
-    for (const user of users) {
-      const sub = await this.userService.getSubscription(user.id);
-      if (!sub) continue;
-      await this.userService.update(sub.user.id, {
-        inGroup: false,
-        status: 'EXPIRED',
-      });
-      this.bot.api.banChatMember(env.TELEGRAM_GROUP_ID, +user.telegramId);
-      this.bot.api.unbanChatMember(env.TELEGRAM_GROUP_ID, +user.telegramId);
-    }
-  }
+  
 
   @Command('topicid')
   async onTopicId(@Ctx() ctx: Context): Promise<void> {
@@ -153,11 +76,6 @@ export class TelegramUpdate {
         (subscription.expiredDate.getTime() - Date.now()) /
           (1000 * 60 * 60 * 24),
       );
-      console.log(
-        daysLeft,
-        subscription.subscriptionTypeId,
-        subscriptionTypeId,
-      );
 
       if (
         subscription.subscriptionTypeId == subscriptionTypeId &&
@@ -167,10 +85,13 @@ export class TelegramUpdate {
         return;
       }
     }
+    const user = await this.userService.findOneByTelegramID(
+      ctx.from.id.toString(),
+    );
 
     const stripe = await this.stripeService.createCheckoutSession({
       subscriptionTypeId,
-      userId: ctx.session.id,
+      userId: user.id,
     });
 
     ctx.reply(
@@ -252,8 +173,8 @@ export class TelegramUpdate {
         return;
       }
 
-      const subscription = await this.userService.getSubscription(user.id);
-      if (subscription.status == 'Paid' && !user.inGroup) {
+      const subscription = await this.userService.getSubscription(+user.telegramId);
+      if (subscription?.status == 'Paid' && !user.inGroup) {
         const link = await ctx.api.createChatInviteLink(env.TELEGRAM_GROUP_ID, {
           member_limit: 1,
           name: ctx.from.first_name,

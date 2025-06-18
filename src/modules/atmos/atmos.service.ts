@@ -47,8 +47,6 @@ export class AtmosService {
         },
       ],
     });
-    console.log(res);
-
     const transactionId = res.data.transaction_id;
 
     // Subscription yaratish

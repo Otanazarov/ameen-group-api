@@ -29,21 +29,22 @@ export class SubscriptionService {
     const existingSubscription = await this.userService.getSubscription(
       +user.telegramId,
     );
-   
+
     let startDate = new Date();
-    
-    if(existingSubscription){
+
+    if (existingSubscription) {
       if (existingSubscription.expiredDate) {
         const currentDate = new Date();
-        const timeDifference = existingSubscription.expiredDate.getTime() - currentDate.getTime();
+        const timeDifference =
+          existingSubscription.expiredDate.getTime() - currentDate.getTime();
         const daysDifference = timeDifference / (1000 * 60 * 60 * 30);
 
         if (daysDifference < 3) {
-         throw new Error()
+          throw new Error();
         }
       }
 
-      startDate=existingSubscription.expiredDate 
+      startDate = existingSubscription.expiredDate;
     }
 
     let expiredDate = new Date(startDate.getTime() + 30 * 24 * 60 * 60 * 1000);
@@ -125,9 +126,9 @@ export class SubscriptionService {
     return subscription;
   }
 
-  async subscriptionPaid(subscription: Subscription) {
+  async subscriptionPaid(subscription: any) {
     await this.prisma.user.update({
-      where: { id: subscription.userId },
+      where: { id: subscription.user.id },
       data: { status: 'SUBSCRIBE' },
     });
 
