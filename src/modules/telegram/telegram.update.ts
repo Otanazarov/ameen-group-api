@@ -33,6 +33,10 @@ export class TelegramUpdate {
       'telegram Bot starting',
       this.bot ? this.bot.botInfo.id : '(booting)',
     );
+    bot.catch((err) => {
+      console.log('Error in telegram bot', err);
+      return true;
+    });
   }
 
   @Cron('0 0 * * *')
@@ -142,6 +146,28 @@ export class TelegramUpdate {
       return;
     }
 
+    const subscription = await this.userService.getSubscription(ctx.from.id);
+
+    if (subscription) {
+      const daysLeft = Math.ceil(
+        (subscription.expiredDate.getTime() - Date.now()) /
+          (1000 * 60 * 60 * 24),
+      );
+      console.log(
+        daysLeft,
+        subscription.subscriptionTypeId,
+        subscriptionTypeId,
+      );
+
+      if (
+        subscription.subscriptionTypeId == subscriptionTypeId &&
+        daysLeft > 3
+      ) {
+        ctx.reply("siz allaqachon ushbu obunaga a'zo bo'lgansiz");
+        return;
+      }
+    }
+
     const stripe = await this.stripeService.createCheckoutSession({
       subscriptionTypeId,
       userId: ctx.session.id,
@@ -171,12 +197,7 @@ export class TelegramUpdate {
   @On('message')
   async onMessage(@Ctx() ctx: Context): Promise<void> {
     if (ctx.chat.type != 'private') return;
-    if (!ctx.session.name) {
-      const message = ctx.message.text;
-      ctx.session.name = ctx.from.first_name;
-      this.telegramService.sendPhoneRequest(ctx);
-      return;
-    }
+
     if (!ctx.session.phone) {
       if (!ctx.message.contact) {
         this.telegramService.sendPhoneRequest(ctx);
@@ -208,7 +229,7 @@ export class TelegramUpdate {
           this.telegramService.sendEmailRequest(ctx);
         }
         const user = await this.userService.create({
-          name: ctx.session.name,
+          name: ctx.from.first_name + ' ' + (ctx.from.last_name || ''),
           phoneNumber: ctx.session.phone,
           email: ctx.session.email === 'skipped' ? null : ctx.session.email,
           telegramId: ctx.from.id.toString(),
@@ -225,8 +246,14 @@ export class TelegramUpdate {
       const user = await this.userService.findOneByTelegramID(
         ctx.from.id.toString(),
       );
+      if (!user) {
+        ctx.session = {};
+        this.telegramService.sendPhoneRequest(ctx);
+        return;
+      }
 
-      if (!user.inGroup) {
+      const subscription = await this.userService.getSubscription(user.id);
+      if (subscription.status == 'Paid' && !user.inGroup) {
         const link = await ctx.api.createChatInviteLink(env.TELEGRAM_GROUP_ID, {
           member_limit: 1,
           name: ctx.from.first_name,
