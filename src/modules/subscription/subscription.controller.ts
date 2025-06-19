@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { SubscriptionService } from './subscription.service';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
@@ -26,7 +27,7 @@ export class SubscriptionController {
   }
 
   @Get()
-  findAll(dto: FindAllSubscriptionDto) {
+  findAll(@Query() dto: FindAllSubscriptionDto) {
     return this.subscriptionService.findAll(dto);
   }
 

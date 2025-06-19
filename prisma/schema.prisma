@@ -19,7 +19,7 @@ model Admin {
 model User {
   id            Int            @id @default(autoincrement())
   telegramId    String         @unique
-  name          String
+  firstName          String
   lastName      String
   email         String?        @unique
   phoneNumber   String         @unique

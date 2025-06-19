@@ -36,7 +36,7 @@ export class UserService {
     const [data, total] = await this.prisma.$transaction([
       this.prisma.user.findMany({
         where: {
-          name: {
+          firstName: {
             contains: name?.trim() || '',
             mode: 'insensitive',
           },
@@ -53,7 +53,7 @@ export class UserService {
       }),
       this.prisma.user.count({
         where: {
-          name: {
+          firstName: {
             contains: name?.trim() || '',
             mode: 'insensitive',
           },
@@ -131,7 +131,7 @@ export class UserService {
     }
 
     const updateData = {
-      name: updateUserDto.name ?? user.name,
+      name: updateUserDto.firsName ?? user.firstName,
       email: updateUserDto.email ?? user.email,
       lastName: updateUserDto.lastName ?? user.lastName,
       phoneNumber: updateUserDto.phoneNumber ?? user.phoneNumber,

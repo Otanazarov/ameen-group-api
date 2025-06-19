@@ -73,20 +73,56 @@ export class SubscriptionService {
   }
 
   async findAll(dto: FindAllSubscriptionDto) {
-    return await this.prisma.subscription.findMany({
-      where: {
-        userId: dto.userId,
-        subscriptionTypeId: dto.subscriptionTypeId,
-        startDate: dto.startDate,
-        expiredDate: dto.expireDate,
-        paymentType: dto.paymentType,
-      },
-      include: {
-        user: true,
-        subscriptionType: true,
-      },
-    });
+    const { limit = 10, page = 1, userId, subscriptionTypeId, paymentType, startDate, expireDate } = dto;
+  
+    const where: any = {};
+  
+    if (userId) {
+      where.userId = userId;
+    }
+  
+    if (subscriptionTypeId) {
+      where.subscriptionTypeId = subscriptionTypeId;
+    }
+  
+    if (paymentType) {
+      where.paymentType = paymentType;
+    }
+  
+    if (startDate) {
+      where.startDate = startDate;
+    }
+  
+    if (expireDate) {
+      where.expiredDate = expireDate;
+    }
+  
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.subscription.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: {
+          createdAt: 'desc',
+        },
+        include: {
+          user: true,
+          subscriptionType: true,
+        },
+      }),
+      this.prisma.subscription.count({
+        where,
+      }),
+    ]);
+  
+    return {
+      total,
+      page,
+      limit,
+      data,
+    };
   }
+  
 
   async findOne(id: number) {
     const subscription = await this.prisma.subscription.findUnique({
