@@ -6,7 +6,7 @@ import { SubscriptionTypeModule } from '../subscription-type/subscription-type.m
 import { StripeModule } from '../stripe/stripe.module';
 
 @Module({
-  imports: [UserModule, SubscriptionTypeModule, forwardRef(() => StripeModule)],
+  imports: [UserModule, SubscriptionTypeModule, forwardRef(()=>StripeModule)],
   providers: [TelegramService, TelegramUpdate],
   exports: [TelegramService],
 })
