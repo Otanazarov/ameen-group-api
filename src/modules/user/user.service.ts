@@ -133,6 +133,7 @@ export class UserService {
     const updateData = {
       name: updateUserDto.name ?? user.name,
       email: updateUserDto.email ?? user.email,
+      lastName: updateUserDto.lastName ?? user.lastName,
       phoneNumber: updateUserDto.phoneNumber ?? user.phoneNumber,
       status: updateUserDto.status ?? user.status,
       role: updateUserDto.role ?? user.role,

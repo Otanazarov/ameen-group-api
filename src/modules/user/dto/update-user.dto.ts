@@ -16,6 +16,11 @@ export class UpdateUserDto {
   @IsString()
   name?: string;
 
+  @ApiPropertyOptional({ example: 'Otanazarov' })
+  @IsOptional()
+  @IsString()
+  lastName?: string;
+
   @ApiPropertyOptional({ example: '998901234567' })
   @IsOptional()
   @IsString()

@@ -17,31 +17,33 @@ model Admin {
 }
 
 model User {
-  id           Int            @id @default(autoincrement())
-  telegramId   String         @unique
-  name         String
-  email        String?        @unique
-  phoneNumber  String         @unique
-  inGroup      Boolean        @default(false)
-  status       UserStatus     @default(REGISTERED)
-  role         UserRole       @default(USER)
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  subscription Subscription[]
+  id            Int            @id @default(autoincrement())
+  telegramId    String         @unique
+  name          String
+  lastName      String
+  email         String?        @unique
+  phoneNumber   String         @unique
+  lastMessageAt DateTime?      // foydalanuvchi oxirgi marta botga yozgan vaqt
+  inGroup       Boolean        @default(false)
+  status        UserStatus     @default(REGISTERED)
+  role          UserRole       @default(USER)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  subscription  Subscription[]
 }
 
 model Subscription {
-  id                 Int         @id @default(autoincrement())
+  id                 Int                @id @default(autoincrement())
   userId             Int
   expiredDate        DateTime
   startDate          DateTime
-  alertCount         Int         @default(0)
+  alertCount         Int                @default(0)
   price              Int
   paymentType        PaymentType
-  status             SubscriptionStatus  @default(Created)
+  status             SubscriptionStatus @default(Created)
   subscriptionTypeId Int
-  createdAt          DateTime    @default(now())
-  updatedAt          DateTime    @updatedAt
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
   transactionId      String?            @unique
 
   user             User             @relation(fields: [userId], references: [id])
@@ -57,6 +59,12 @@ model SubscriptionType {
   subscriptions    Subscription[]
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
+}
+
+model Settings {
+  id                   Int    @id @default(autoincrement())
+  aboutAminGroup       String
+  aboutKozimxonTorayev String
 }
 
 enum UserStatus {
