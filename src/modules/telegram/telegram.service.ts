@@ -12,6 +12,16 @@ import { StripeService } from '../stripe/stripe.service';
 
 @Injectable()
 export class TelegramService {
+  private readonly MS_PER_DAY = 1000 * 60 * 60 * 24;
+  private readonly DEFAULT_KEYBOARD = new Keyboard()
+    .text("Obuna Bo'lish")
+    .text('Sozlamalar')
+    .text('Obunalarim')
+    .text('Biz haqimizda')
+    .text("Kozimxon To'ayev haqida")
+    .resized()
+    .oneTime();
+
   constructor(
     @InjectBot() readonly bot: Bot<Context>,
     private readonly userService: UserService,
@@ -21,6 +31,54 @@ export class TelegramService {
     private readonly stripeService: StripeService,
   ) {}
 
+  private calculateDaysLeft(expiredDate: Date): number {
+    return Math.ceil((expiredDate.getTime() - Date.now()) / this.MS_PER_DAY);
+  }
+
+  private async updateUserSession(ctx: Context, user: any) {
+    ctx.session.id = user.id;
+    ctx.session.phone = user.phoneNumber;
+    ctx.session.first_name = user.name;
+    ctx.session.last_name = user.lastName;
+    ctx.session.email = user.email;
+  }
+
+  private async handleSubscriptionPayment(
+    ctx: Context,
+    subscriptionTypeId: number,
+  ) {
+    const subscriptionType =
+      await this.subscriptionTypeService.findOne(subscriptionTypeId);
+    if (!subscriptionType) {
+      ctx.reply('Subscription type not found');
+      return;
+    }
+
+    const subscription = await this.userService.getSubscription(ctx.from.id);
+    const daysLeft = subscription
+      ? this.calculateDaysLeft(subscription.expiredDate)
+      : 0;
+
+    if (
+      subscription &&
+      subscription.subscriptionTypeId == subscriptionTypeId &&
+      daysLeft > 3
+    ) {
+      ctx.reply("siz allaqachon ushbu obunaga a'zo bo'lgansiz");
+      return;
+    }
+
+    const user = await this.userService.findOneByTelegramID(
+      ctx.from.id.toString(),
+    );
+    const stripe = await this.stripeService.createCheckoutSession({
+      subscriptionTypeId,
+      userId: user.id,
+    });
+
+    return { subscriptionType, stripe };
+  }
+
   @Interval(1000)
   async onCron() {
     await this.kickExpired();
@@ -29,6 +87,52 @@ export class TelegramService {
 
   async onMessage(ctx: Context) {
     if (ctx.chat.type != 'private') return;
+
+    if (!ctx.session.id) {
+      const user = await this.userService.findOneByTelegramID(
+        ctx.from.id.toString(),
+      );
+      if (user) {
+        await this.updateUserSession(ctx, user);
+        this.sendStartMessage(ctx);
+        return;
+      }
+    }
+
+    if (ctx.message.text.startsWith('/start')) {
+      const user = await this.userService.findOneByTelegramID(
+        ctx.from.id.toString(),
+      );
+      if (!user) {
+        ctx.session = {};
+        this.sendNameRequest(ctx, 1);
+        return;
+      }
+
+      const subscription = await this.userService.getSubscription(
+        +user.telegramId,
+      );
+      if (subscription?.status == 'Paid' && !user.inGroup) {
+        const link = await ctx.api.createChatInviteLink(env.TELEGRAM_GROUP_ID, {
+          member_limit: 1,
+          name: ctx.from.first_name,
+        });
+        ctx.reply(link.invite_link);
+      }
+      this.sendStartMessage(ctx);
+      return;
+    }
+
+    if (!ctx.session.first_name) {
+      ctx.session.first_name = ctx.message.text;
+      this.sendNameRequest(ctx, 2);
+      return;
+    }
+    if (!ctx.session.last_name) {
+      ctx.session.last_name = ctx.message.text;
+      this.sendPhoneRequest(ctx);
+      return;
+    }
 
     if (!ctx.session.phone) {
       if (!ctx.message.contact) {
@@ -44,8 +148,8 @@ export class TelegramService {
 
       if (user) {
         ctx.session.id = user.id;
-        ctx.session.first_name = user.last_name;
-        ctx.session.last_name = user.first_name;
+        // ctx.session.first_name = user.last_name;
+        // ctx.session.last_name = user.first_name;
         ctx.session.email = user.email || 'skipped';
         this.sendStartMessage(ctx);
         return;
@@ -54,11 +158,7 @@ export class TelegramService {
       this.sendEmailRequest(ctx);
       return;
     }
-    if(!ctx.session.first_name){
-      ctx.session.first_name = ctx.message.text;
-      this.sendEmailRequest(ctx);
-      return;
-    }
+
     if (!ctx.session.email) {
       if (!isEmail(ctx.message.text)) {
         if (ctx.message.text === "O'tkazish") {
@@ -77,30 +177,6 @@ export class TelegramService {
         return;
       }
       ctx.session.email = ctx.message.text;
-      return;
-    }
-
-    if (ctx.message.text.startsWith('/start')) {
-      const user = await this.userService.findOneByTelegramID(
-        ctx.from.id.toString(),
-      );
-      if (!user) {
-        ctx.session = {};
-        this.sendPhoneRequest(ctx);
-        return;
-      }
-
-      const subscription = await this.userService.getSubscription(
-        +user.telegramId,
-      );
-      if (subscription?.status == 'Paid' && !user.inGroup) {
-        const link = await ctx.api.createChatInviteLink(env.TELEGRAM_GROUP_ID, {
-          member_limit: 1,
-          name: ctx.from.first_name,
-        });
-        ctx.reply(link.invite_link);
-      }
-      this.sendStartMessage(ctx);
       return;
     }
 
@@ -126,38 +202,14 @@ export class TelegramService {
 
   async onCallBack(ctx: Context) {
     const subscriptionTypeId = +ctx.match[1];
-    const subscriptionType =
-      await this.subscriptionTypeService.findOne(subscriptionTypeId);
-    if (!subscriptionType) {
-      ctx.reply('Subscription type not found');
-      return;
-    }
-
-    const subscription = await this.userService.getSubscription(ctx.from.id);
-
-    if (subscription) {
-      const daysLeft = Math.ceil(
-        (subscription.expiredDate.getTime() - Date.now()) /
-          (1000 * 60 * 60 * 24),
-      );
-
-      if (
-        subscription.subscriptionTypeId == subscriptionTypeId &&
-        daysLeft > 3
-      ) {
-        ctx.reply("siz allaqachon ushbu obunaga a'zo bo'lgansiz");
-        return;
-      }
-    }
-    const user = await this.userService.findOneByTelegramID(
-      ctx.from.id.toString(),
+    const result = await this.handleSubscriptionPayment(
+      ctx,
+      subscriptionTypeId,
     );
 
-    const stripe = await this.stripeService.createCheckoutSession({
-      subscriptionTypeId,
-      userId: user.id,
-    });
+    if (!result) return;
 
+    const { subscriptionType, stripe } = result;
     ctx.reply(
       `${subscriptionType.title} - ${subscriptionType.price}:\n${subscriptionType.description}\nTo'lov qilish: \n[Visa/Mastercard](${stripe.url})`,
       { parse_mode: 'Markdown' },
@@ -172,7 +224,7 @@ export class TelegramService {
         subscription: {
           some: {
             expiredDate: {
-              gt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
+              gt: new Date(Date.now() - this.MS_PER_DAY * 3),
             },
           },
         },
@@ -186,9 +238,7 @@ export class TelegramService {
       const sub = await this.userService.getSubscription(+user.telegramId);
       if (!sub) continue;
 
-      const daysLeft = Math.ceil(
-        (sub.expiredDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
-      );
+      const daysLeft = this.calculateDaysLeft(sub.expiredDate);
 
       if (daysLeft > 0 && daysLeft <= 3 && sub.alertCount <= 3 - daysLeft) {
         await this.bot.api.sendMessage(
@@ -198,9 +248,7 @@ export class TelegramService {
 
         await this.prismaService.subscription.update({
           where: { id: sub.id },
-          data: {
-            alertCount: sub.alertCount + 1,
-          },
+          data: { alertCount: sub.alertCount + 1 },
         });
       }
     }
@@ -231,21 +279,39 @@ export class TelegramService {
     }
   }
 
-  sendStartMessage(ctx: Context) {
-    ctx.reply(`Salom Botga hush kelibsiz!`, {
-      reply_markup: {
-        keyboard: new Keyboard()
-          .text("Obuna Bo'lish")
-          .resized()
-          .oneTime()
-          .build(),
-      },
-    });
+  sendStartMessage(ctx: Context, type: number = 1) {
+    if (type == 1) {
+      ctx.reply(`Salom Botga hush kelibsiz!`, {
+        reply_markup: {
+          keyboard: this.DEFAULT_KEYBOARD.build(),
+        },
+      });
+    }
+
+    if (type == 2) {
+      ctx.reply(
+        `${ctx.session.last_name} ${ctx.session.first_name} sizni yana ko’rganimdan xursandman!`,
+        {
+          reply_markup: {
+            keyboard: this.DEFAULT_KEYBOARD.build(),
+          },
+        },
+      );
+    }
+  }
+
+  sendNameRequest(ctx: Context, step: number) {
+    if (step == 1) {
+      ctx.reply(`Ismingizni yuboring.`);
+    }
+    if (step == 2) {
+      ctx.reply(`Familiyangizni yuboring.`);
+    }
   }
 
   sendPhoneRequest(ctx: Context) {
     ctx.reply(
-      `Telefon raqamingizni yuboring. (Raqamni yuborish tugmasi orqali)`,
+      `${ctx.from.last_name} ${ctx.from.first_name} to’rayevning rasmiy kanaliga xush kelibsiz! BOTning qo’shimcha imkoniyatlaridan foydalanish uchun telefon raqamingizni yuboring!`,
       {
         reply_markup: {
           keyboard: new Keyboard()
@@ -259,10 +325,13 @@ export class TelegramService {
   }
 
   sendEmailRequest(ctx: Context) {
-    ctx.reply(`Emailingizni yuboring. (Yoki o'tkazish tugmasini bosing)`, {
-      reply_markup: {
-        keyboard: new Keyboard().text("O'tkazish").resized().build(),
+    ctx.reply(
+      `${ctx.from.last_name} ${ctx.from.first_name} sizga qo’shimcha imkoniyatlar ochildi. \nSiz uchun mahsus takliflarni elektron pochtangizga yuborishimiz uchun iltimos email manzilingizni kiriting!`,
+      {
+        reply_markup: {
+          keyboard: new Keyboard().text("O'tkazish").resized().build(),
+        },
       },
-    });
+    );
   }
 }
