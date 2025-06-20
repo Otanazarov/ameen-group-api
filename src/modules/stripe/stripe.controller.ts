@@ -6,6 +6,7 @@ import {
   Headers,
   HttpCode,
   RawBodyRequest,
+  Param,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { StripeService } from './stripe.service';
@@ -29,6 +30,11 @@ export class StripeController {
     });
     res.status(200).json(session);
     return res;
+  }
+
+  @Post('/:id')
+  async aaa(@Param('id') id: string) {
+    return await this.stripeService.stripe.subscriptions.list();
   }
 
   @Post()
@@ -65,6 +71,6 @@ export class StripeController {
       eventType = req.body.type;
     }
 
-    return this.stripeService.webhook(eventType, data);
+    res.status(200).json(await this.stripeService.webhook(eventType, data));
   }
 }

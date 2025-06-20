@@ -1,28 +1,45 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { PaymentType } from '@prisma/client';
-import { IsDate, IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsDate, IsEnum, IsOptional } from 'class-validator';
+import { Type } from 'class-transformer';
 import { IsId } from 'src/common/dtos/id.dto';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 
 export class FindAllSubscriptionDto extends PaginationDto {
   @IsId(false)
-  userId: number;
+  @IsOptional()
+  userId?: number;
 
   @IsId(false)
-  subscriptionTypeId: number;
+  @IsOptional()
+  subscriptionTypeId?: number;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsEnum(PaymentType)
-  paymentType: PaymentType;
+  paymentType?: PaymentType;
 
   @ApiPropertyOptional()
   @IsOptional()
+  @Type(() => Date)
   @IsDate()
-  startDate: Date;
+  startDateFrom?: Date;
 
   @ApiPropertyOptional()
   @IsOptional()
+  @Type(() => Date)
   @IsDate()
-  expireDate: Date;
+  startDateTo?: Date;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Type(() => Date)
+  @IsDate()
+  expireDateFrom?: Date;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Type(() => Date)
+  @IsDate()
+  expireDateTo?: Date;
 }

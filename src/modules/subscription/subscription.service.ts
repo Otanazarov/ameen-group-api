@@ -3,7 +3,7 @@ import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 import { UpdateSubscriptionDto } from './dto/update-subscription.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { FindAllSubscriptionDto } from './dto/findAll-subscription.dto';
-import { Subscription, SubscriptionStatus } from '@prisma/client';
+import { Prisma, Subscription, SubscriptionStatus } from '@prisma/client';
 import { UserService } from '../user/user.service';
 
 @Injectable()
@@ -26,9 +26,10 @@ export class SubscriptionService {
       throw new Error('Subscription type not found');
     }
 
-    const existingSubscription = await this.userService.getSubscription(
-      +user.telegramId,
-    );
+    const existingSubscription = await this.prisma.subscription.findFirst({
+      where: { expiredDate: { gt: new Date() } },
+      orderBy: { expiredDate: 'desc' },
+    });
 
     let startDate = new Date();
 
@@ -73,30 +74,44 @@ export class SubscriptionService {
   }
 
   async findAll(dto: FindAllSubscriptionDto) {
-    const { limit = 10, page = 1, userId, subscriptionTypeId, paymentType, startDate, expireDate } = dto;
-  
-    const where: any = {};
-  
+    const {
+      limit = 10,
+      page = 1,
+      userId,
+      subscriptionTypeId,
+      paymentType,
+      startDateFrom,
+      startDateTo,
+      expireDateFrom,
+      expireDateTo,
+    } = dto;
+
+    const where: Prisma.SubscriptionWhereInput = {};
+
     if (userId) {
       where.userId = userId;
     }
-  
+
     if (subscriptionTypeId) {
       where.subscriptionTypeId = subscriptionTypeId;
     }
-  
+
     if (paymentType) {
       where.paymentType = paymentType;
     }
-  
-    if (startDate) {
-      where.startDate = startDate;
+
+    if (startDateFrom || startDateTo) {
+      where.startDate = {};
+      if (startDateFrom) where.startDate.gte = startDateFrom;
+      if (startDateTo) where.startDate.lte = startDateTo;
     }
-  
-    if (expireDate) {
-      where.expiredDate = expireDate;
+
+    if (expireDateFrom || expireDateTo) {
+      where.expiredDate = {};
+      if (expireDateFrom) where.expiredDate.gte = expireDateFrom;
+      if (expireDateTo) where.expiredDate.lte = expireDateTo;
     }
-  
+
     const [data, total] = await this.prisma.$transaction([
       this.prisma.subscription.findMany({
         where,
@@ -114,7 +129,7 @@ export class SubscriptionService {
         where,
       }),
     ]);
-  
+
     return {
       total,
       page,
@@ -122,7 +137,6 @@ export class SubscriptionService {
       data,
     };
   }
-  
 
   async findOne(id: number) {
     const subscription = await this.prisma.subscription.findUnique({

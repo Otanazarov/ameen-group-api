@@ -167,7 +167,8 @@ export class TelegramService {
           this.sendEmailRequest(ctx);
         }
         const user = await this.userService.create({
-          name: ctx.from.first_name + ' ' + (ctx.from.last_name || ''),
+          firstName: ctx.session.first_name,
+          lastName: ctx.session.last_name,
           phoneNumber: ctx.session.phone,
           email: ctx.session.email === 'skipped' ? null : ctx.session.email,
           telegramId: ctx.from.id.toString(),
