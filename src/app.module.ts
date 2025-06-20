@@ -41,4 +41,4 @@ import { SettingsModule } from './modules/settings/settings.module';
     SettingsModule,
   ],
 })
-export class AppModule {}
+export class AppModule { }
