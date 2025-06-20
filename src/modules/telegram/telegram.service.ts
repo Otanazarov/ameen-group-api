@@ -5,7 +5,7 @@ import { Context } from './Context.type';
 import { UserService } from '../user/user.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { env } from 'src/common/config';
-import { Cron, Interval } from '@nestjs/schedule';
+import { Interval } from '@nestjs/schedule';
 import { isEmail } from 'class-validator';
 import { SubscriptionTypeService } from '../subscription-type/subscription-type.service';
 import { StripeService } from '../stripe/stripe.service';
@@ -14,11 +14,11 @@ import { StripeService } from '../stripe/stripe.service';
 export class TelegramService {
   private readonly MS_PER_DAY = 1000 * 60 * 60 * 24;
   private readonly DEFAULT_KEYBOARD = new Keyboard()
-    .text("Obuna Bo'lish")
-    .text('Sozlamalar')
-    .text('Obunalarim')
-    .text('Biz haqimizda')
-    .text("Kozimxon To'ayev haqida")
+    .text("📝 Obuna Bo'lish")
+    .text('⚙️ Sozlamalar')
+    .text('📋 Obunalarim')
+    .text('ℹ️ Biz haqimizda')
+    .text("👨‍🏫 Kozimxon To'ayev haqida")
     .resized()
     .oneTime()
     .build();
@@ -30,7 +30,7 @@ export class TelegramService {
     private readonly subscriptionTypeService: SubscriptionTypeService,
     @Inject(forwardRef(() => StripeService))
     private readonly stripeService: StripeService,
-  ) {}
+  ) { }
 
   private calculateDaysLeft(expiredDate: Date): number {
     return Math.ceil((expiredDate.getTime() - Date.now()) / this.MS_PER_DAY);
@@ -51,7 +51,7 @@ export class TelegramService {
     const subscriptionType =
       await this.subscriptionTypeService.findOne(subscriptionTypeId);
     if (!subscriptionType) {
-      ctx.reply('Subscription type not found');
+      ctx.reply('❌ Subscription type not found');
       return;
     }
 
@@ -65,7 +65,7 @@ export class TelegramService {
       subscription.subscriptionTypeId == subscriptionTypeId &&
       daysLeft > 3
     ) {
-      ctx.reply("siz allaqachon ushbu obunaga a'zo bo'lgansiz");
+      ctx.reply("⚠️ Siz allaqachon ushbu obunaga a'zo bo'lgansiz");
       return;
     }
 
@@ -87,13 +87,13 @@ export class TelegramService {
   }
 
   private async handleExistingUser(ctx: Context) {
+    if (ctx.session.id) return false;
     const user = await this.userService.findOneByTelegramID(
       ctx.from.id.toString(),
     );
     if (user) {
       await this.updateUserSession(ctx, user);
-      this.sendStartMessage(ctx);
-      return true;
+      return false;
     }
     return false;
   }
@@ -116,7 +116,7 @@ export class TelegramService {
         member_limit: 1,
         name: ctx.from.first_name,
       });
-      ctx.reply(link.invite_link);
+      await ctx.reply("🎉 Guruhga qo'shilish uchun havola: " + link.invite_link);
     }
     this.sendStartMessage(ctx);
     return true;
@@ -188,7 +188,7 @@ export class TelegramService {
   }
 
   private async handleSubscription(ctx: Context) {
-    if (ctx.message.text == "Obuna Bo'lish") {
+    if (ctx.message.text == "📝 Obuna Bo'lish") {
       const subscriptionTypes = await this.subscriptionTypeService.findAll({
         limit: 100,
       });
@@ -197,26 +197,26 @@ export class TelegramService {
       subscriptionTypes.data.forEach((subscriptionType) => {
         keyboard
           .text(
-            `${subscriptionType.title} - ${subscriptionType.price} so'm`,
+            `💫 ${subscriptionType.title} - ${subscriptionType.price} so'm`,
             `subscribe-${subscriptionType.id}`,
           )
           .row();
       });
 
-      ctx.reply("Obuna Bo'lish", { reply_markup: keyboard });
+      ctx.reply("🔥 Obuna Bo'lish", { reply_markup: keyboard });
       return true;
     }
     return false;
   }
 
   private async handleSettings(ctx: Context) {
-    if (ctx.message.text == 'Sozlamalar') {
+    if (ctx.message.text == '⚙️ Sozlamalar') {
       const keyboard = new InlineKeyboard();
-      keyboard.text("Ismni o'zgartitirish", 'edit_firstname').row();
-      keyboard.text("Familyani o'zgartitirish", 'edit_lastname').row();
-      keyboard.text("Emailni o'zgartitirish", 'edit_email').row();
+      keyboard.text("👤 Ismni o'zgartitirish", 'edit_firstname').row();
+      keyboard.text("👥 Familyani o'zgartitirish", 'edit_lastname').row();
+      keyboard.text("📧 Emailni o'zgartitirish", 'edit_email').row();
 
-      ctx.reply('Sozlamalar', { reply_markup: keyboard });
+      ctx.reply('⚙️ Sozlamalar', { reply_markup: keyboard });
       return true;
     }
     return false;
@@ -224,7 +224,6 @@ export class TelegramService {
 
   async onMessage(ctx: Context) {
     if (ctx.chat.type != 'private') return;
-    console.log(ctx.session, 'session');
     if (!ctx.session.id && (await this.handleExistingUser(ctx))) return;
     if (
       ctx.message.text?.startsWith('/start') &&
@@ -237,6 +236,31 @@ export class TelegramService {
     if (await this.handleEmail(ctx)) return;
     if (await this.handleSubscription(ctx)) return;
     if (await this.handleSettings(ctx)) return;
+    if (await this.handleMySubscriptions(ctx)) return;
+  }
+
+  async handleMySubscriptions(ctx: Context) {
+    if (ctx.message.text == '📋 Obunalarim') {
+      const subscription = await this.userService.getSubscription(ctx.from.id);
+      if (!subscription) {
+        await ctx.reply('❌ Sizda hozircha faol obuna mavjud emas');
+        return true;
+      }
+
+      const daysLeft = this.calculateDaysLeft(subscription.expiredDate);
+      const subscriptionType = await this.subscriptionTypeService.findOne(
+        subscription.subscriptionTypeId,
+      );
+
+      await ctx.reply(
+        `📌 Obuna turi: ${subscriptionType.title}\n` +
+        `💰 Narxi: ${subscriptionType.price} so'm\n` +
+        `📅 Tugash sanasi: ${subscription.expiredDate.toLocaleDateString()}\n` +
+        `⏳ Qolgan kunlar: ${daysLeft} kun`,
+      );
+      return true;
+    }
+    return false;
   }
 
   async handleEdit(ctx: Context) {
@@ -245,7 +269,7 @@ export class TelegramService {
         firsName: ctx.message.text,
       });
       delete ctx.session.edit;
-      await ctx.reply("Ism o'zgartirildi", {
+      await ctx.reply("✅ Ism o'zgartirildi", {
         reply_markup: { keyboard: this.DEFAULT_KEYBOARD },
       });
       return true;
@@ -255,7 +279,7 @@ export class TelegramService {
         lastName: ctx.message.text,
       });
       delete ctx.session.edit;
-      await ctx.reply("Familya o'zgartirildi", {
+      await ctx.reply("✅ Familya o'zgartirildi", {
         reply_markup: { keyboard: this.DEFAULT_KEYBOARD },
       });
       return true;
@@ -265,7 +289,7 @@ export class TelegramService {
         email: ctx.message.text,
       });
       delete ctx.session.edit;
-      await ctx.reply("Email o'zgartirildi", {
+      await ctx.reply("✅ Email o'zgartirildi", {
         reply_markup: { keyboard: this.DEFAULT_KEYBOARD },
       });
       return true;
@@ -289,14 +313,12 @@ export class TelegramService {
   async onEditCallBack(ctx: Context) {
     const editName = ctx.match[1];
     ctx.session.edit = editName;
-    console.log(ctx.session, 'edit callback');
     if (editName == 'firstname') {
-      console.log(editName);
-      await ctx.reply('Ismni kiriting');
+      await ctx.reply('👤 Yangi ismni kiriting');
     } else if (editName == 'lastname') {
-      await ctx.reply('Familyani kiriting');
+      await ctx.reply('👥 Yangi familyani kiriting');
     } else if (editName == 'email') {
-      await ctx.reply('Emailni kiriting');
+      await ctx.reply('📧 Yangi emailni kiriting');
     }
   }
 
@@ -306,7 +328,7 @@ export class TelegramService {
     stripe: any,
   ) {
     ctx.reply(
-      `${subscriptionType.title} - ${subscriptionType.price}:\n${subscriptionType.description}\nTo'lov qilish: \n[Visa/Mastercard](${stripe.url})`,
+      `💫 ${subscriptionType.title} - ${subscriptionType.price}:\n${subscriptionType.description}\n\n💳 To'lov qilish: \n[Visa/Mastercard](${stripe.url})`,
       { parse_mode: 'Markdown' },
     );
   }
@@ -338,7 +360,7 @@ export class TelegramService {
       if (daysLeft > 0 && daysLeft <= 3 && sub.alertCount <= 3 - daysLeft) {
         await this.bot.api.sendMessage(
           +user.telegramId,
-          `Sizning obunangiz ${sub.expiredDate.toDateString()} da tugaydi. ${daysLeft} kun qoldi.`,
+          `⚠️ Ogohlantirish!\nSizning obunangiz ${sub.expiredDate.toDateString()} da tugaydi.\n⏳ ${daysLeft} kun qoldi.`,
         );
 
         await this.prismaService.subscription.update({
@@ -376,7 +398,7 @@ export class TelegramService {
 
   sendStartMessage(ctx: Context, type: number = 1) {
     if (type == 1) {
-      ctx.reply(`Salom Botga hush kelibsiz!`, {
+      ctx.reply(`👋 Salom! Botga xush kelibsiz!`, {
         reply_markup: {
           keyboard: this.DEFAULT_KEYBOARD,
         },
@@ -385,7 +407,7 @@ export class TelegramService {
 
     if (type == 2) {
       ctx.reply(
-        `${ctx.session.last_name} ${ctx.session.first_name} sizni yana ko'rganimdan xursandman!`,
+        `👋 ${ctx.session.last_name} ${ctx.session.first_name} sizni yana ko'rganimdan xursandman!`,
         {
           reply_markup: {
             keyboard: this.DEFAULT_KEYBOARD,
@@ -397,20 +419,20 @@ export class TelegramService {
 
   sendNameRequest(ctx: Context, step: number) {
     if (step == 1) {
-      ctx.reply(`Ismingizni yuboring.`);
+      ctx.reply(`👤 Iltimos, ismingizni yuboring.`);
     }
     if (step == 2) {
-      ctx.reply(`Familiyangizni yuboring.`);
+      ctx.reply(`👥 Iltimos, familiyangizni yuboring.`);
     }
   }
 
   sendPhoneRequest(ctx: Context) {
     ctx.reply(
-      `${ctx.from.last_name} ${ctx.from.first_name} to'rayevning rasmiy kanaliga xush kelibsiz! BOTning qo'shimcha imkoniyatlaridan foydalanish uchun telefon raqamingizni yuboring!`,
+      `👋 ${ctx.from.last_name} ${ctx.from.first_name} to'rayevning rasmiy kanaliga xush kelibsiz!\n📱 BOTning qo'shimcha imkoniyatlaridan foydalanish uchun telefon raqamingizni yuboring!`,
       {
         reply_markup: {
           keyboard: new Keyboard()
-            .requestContact('Raqamni yuborish')
+            .requestContact('📱 Raqamni yuborish')
             .resized()
             .oneTime()
             .build(),
@@ -421,10 +443,10 @@ export class TelegramService {
 
   sendEmailRequest(ctx: Context) {
     ctx.reply(
-      `${ctx.from.last_name} ${ctx.from.first_name} sizga qo'shimcha imkoniyatlar ochildi. \nSiz uchun mahsus takliflarni elektron pochtangizga yuborishimiz uchun iltimos email manzilingizni kiriting!`,
+      `🎉 ${ctx.from.last_name} ${ctx.from.first_name} sizga qo'shimcha imkoniyatlar ochildi.\n📧 Siz uchun maxsus takliflarni elektron pochtangizga yuborishimiz uchun iltimos email manzilingizni kiriting!`,
       {
         reply_markup: {
-          keyboard: new Keyboard().text("O'tkazish").resized().build(),
+          keyboard: new Keyboard().text("⏭ O'tkazish").resized().build(),
         },
       },
     );

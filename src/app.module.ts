@@ -39,4 +39,4 @@ import { ScheduleModule } from '@nestjs/schedule';
     ScheduleModule.forRoot(),
   ],
 })
-export class AppModule {}
+export class AppModule { }
