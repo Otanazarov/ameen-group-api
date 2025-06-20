@@ -9,6 +9,7 @@ import { Interval } from '@nestjs/schedule';
 import { isEmail } from 'class-validator';
 import { SubscriptionTypeService } from '../subscription-type/subscription-type.service';
 import { StripeService } from '../stripe/stripe.service';
+import { SettingsService } from '../settings/settings.service';
 
 @Injectable()
 export class TelegramService {
@@ -30,6 +31,7 @@ export class TelegramService {
     private readonly subscriptionTypeService: SubscriptionTypeService,
     @Inject(forwardRef(() => StripeService))
     private readonly stripeService: StripeService,
+    private readonly settingsService: SettingsService,
   ) { }
 
   private calculateDaysLeft(expiredDate: Date): number {
@@ -230,6 +232,7 @@ export class TelegramService {
       (await this.handleStartCommand(ctx))
     )
       return;
+
     if (await this.handleEdit(ctx)) return;
     if (await this.handleUserRegistration(ctx)) return;
     if (await this.handlePhoneNumber(ctx)) return;
@@ -237,6 +240,20 @@ export class TelegramService {
     if (await this.handleSubscription(ctx)) return;
     if (await this.handleSettings(ctx)) return;
     if (await this.handleMySubscriptions(ctx)) return;
+    if (await this.handleInfo(ctx)) return;
+  }
+
+  async handleInfo(ctx: Context) {
+    const settings = await this.settingsService.findOne()
+    if (ctx.message.text == "ℹ️ Biz haqimizda") {
+      await ctx.reply(settings.aboutAminGroup)
+      return true
+    }
+    if (ctx.message.text == "👨‍🏫 Kozimxon To'ayev haqida") {
+      await ctx.reply(settings.aboutKozimxonTorayev)
+      return true
+    }
+    return false
   }
 
   async handleMySubscriptions(ctx: Context) {

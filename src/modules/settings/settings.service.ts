@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { CreateSettingDto } from './dto/create-setting.dto';
 import { UpdateSettingDto } from './dto/update-setting.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -6,14 +6,20 @@ import { FindAllSettingsDto } from './dto/findAll-settings.dto';
 import { HttpError } from 'src/common/exception/http.error';
 
 @Injectable()
-export class SettingsService {
-  constructor(private readonly prisma: PrismaService) {}
-  // async create(createSettingDto: CreateSettingDto) {
-  //   const settings = await this.prisma.settings.create({
-  //     data: createSettingDto,
-  //   });
-  //   return settings;
-  // }
+export class SettingsService implements OnModuleInit {
+  constructor(private readonly prisma: PrismaService) { }
+
+  async onModuleInit() {
+    const settings = await this.findOne()
+    if (!settings) this.create({ aboutAminGroup: "info1", aboutKozimxonTorayev: "info2" })
+  }
+
+  async create(createSettingDto: CreateSettingDto) {
+    const settings = await this.prisma.settings.create({
+      data: createSettingDto,
+    });
+    return settings;
+  }
 
   // async findAll(dto: FindAllSettingsDto) {
   //   const { limit = 10, page = 1 } = dto;
@@ -41,9 +47,6 @@ export class SettingsService {
     const settings = await this.prisma.settings.findUnique({
       where: { id: 1 },
     });
-    if (!settings) {
-      throw HttpError({ code: 'Settings not found' });
-    }
     return settings;
   }
 
