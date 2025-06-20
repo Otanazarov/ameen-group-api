@@ -18,7 +18,6 @@ export class TelegramUpdate {
     private readonly bot: Bot<Context>,
     private readonly telegramService: TelegramService,
     private readonly userService: UserService,
-    
   ) {
     console.log(
       'telegram Bot starting',
@@ -29,8 +28,6 @@ export class TelegramUpdate {
       return true;
     });
   }
-
-  
 
   @Command('topicid')
   async onTopicId(@Ctx() ctx: Context): Promise<void> {
@@ -54,8 +51,13 @@ export class TelegramUpdate {
   }
 
   @CallbackQuery(/subscribe-(.+)/)
-  async onCallbackQuery(@Ctx() ctx: Context): Promise<void> {
-   this.telegramService.onCallBack(ctx)
+  async onSubscribeCallbackQuery(@Ctx() ctx: Context): Promise<void> {
+    this.telegramService.onSubscribeCallBack(ctx);
+  }
+
+  @CallbackQuery(/edit_(.+)/)
+  async onEditCallbackQuery(@Ctx() ctx: Context): Promise<void> {
+    this.telegramService.onEditCallBack(ctx);
   }
 
   @On('chat_member')
@@ -75,6 +77,6 @@ export class TelegramUpdate {
 
   @On('message')
   async onMessage(@Ctx() ctx: Context): Promise<void> {
-    this.telegramService.onMessage(ctx)
+    this.telegramService.onMessage(ctx);
   }
 }

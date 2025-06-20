@@ -6,6 +6,7 @@ export type SessionData = {
   phone?: string;
   email?: string;
   id?: number;
+  edit?: string;
 };
 
 export type Context = GrammyContext & SessionFlavor<SessionData>;
