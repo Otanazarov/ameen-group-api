@@ -30,13 +30,13 @@ import { ScheduleModule } from '@nestjs/schedule';
       middlewares: [
         session({
           initial: () => ({}),
-          storage: freeStorage<SessionData>(env.TELEGRAM_BOT_TOKEN) as any,
+          // storage: freeStorage<SessionData>(env.TELEGRAM_BOT_TOKEN) as any,
         }),
       ],
     }),
     SubscriptionModule,
     AtmosModule,
-    ScheduleModule.forRoot()
+    ScheduleModule.forRoot(),
   ],
 })
 export class AppModule {}
