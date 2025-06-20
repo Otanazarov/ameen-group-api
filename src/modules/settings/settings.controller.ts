@@ -21,33 +21,33 @@ import { Role } from 'src/common/auth/roles/role.enum';
 export class SettingsController {
   constructor(private readonly settingsService: SettingsService) {}
 
-  @Post()
-  @DecoratorWrapper('Create Settings', true, [Role.Admin])
-  create(@Body() createSettingDto: CreateSettingDto) {
-    return this.settingsService.create(createSettingDto);
-  }
+  // @Post()
+  // @DecoratorWrapper('Create Settings', true, [Role.Admin])
+  // create(@Body() createSettingDto: CreateSettingDto) {
+  //   return this.settingsService.create(createSettingDto);
+  // }
+
+  // @Get()
+  // @DecoratorWrapper('FindAll Settings')
+  // findAll(@Query() dto: FindAllSettingsDto) {
+  //   return this.settingsService.findAll(dto);
+  // }
 
   @Get()
-  @DecoratorWrapper('FindAll Settings')
-  findAll(@Query() dto: FindAllSettingsDto) {
-    return this.settingsService.findAll(dto);
-  }
-
-  @Get(':id')
   @DecoratorWrapper('FindOne Settings')
-  findOne(@Param('id') id: string) {
-    return this.settingsService.findOne(+id);
+  findOne() {
+    return this.settingsService.findOne();
   }
 
-  @Patch(':id')
+  @Patch()
   @DecoratorWrapper('Update Settings', true, [Role.Admin])
-  update(@Param('id') id: string, @Body() updateSettingDto: UpdateSettingDto) {
-    return this.settingsService.update(+id, updateSettingDto);
+  update(@Body() updateSettingDto: UpdateSettingDto) {
+    return this.settingsService.update(updateSettingDto);
   }
 
-  @Delete(':id')
-  @DecoratorWrapper('Remove Settings', true, [Role.Admin])
-  remove(@Param('id') id: string) {
-    return this.settingsService.remove(+id);
-  }
+  // @Delete(':id')
+  // @DecoratorWrapper('Remove Settings', true, [Role.Admin])
+  // remove(@Param('id') id: string) {
+  //   return this.settingsService.remove(+id);
+  // }
 }
