@@ -12,6 +12,7 @@ import { AtmosModule } from './modules/atmos/atmos.module';
 import { SessionData } from './modules/telegram/Context.type';
 import { freeStorage } from '@grammyjs/storage-free';
 import { ScheduleModule } from '@nestjs/schedule';
+import { SettingsModule } from './modules/settings/settings.module';
 
 @Module({
   controllers: [],
@@ -37,6 +38,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     SubscriptionModule,
     AtmosModule,
     ScheduleModule.forRoot(),
+    SettingsModule,
   ],
 })
 export class AppModule {}
