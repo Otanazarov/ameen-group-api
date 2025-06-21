@@ -2,16 +2,15 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { CreateSettingDto } from './dto/create-setting.dto';
 import { UpdateSettingDto } from './dto/update-setting.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { FindAllSettingsDto } from './dto/findAll-settings.dto';
-import { HttpError } from 'src/common/exception/http.error';
 
 @Injectable()
 export class SettingsService implements OnModuleInit {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   async onModuleInit() {
-    const settings = await this.findOne()
-    if (!settings) this.create({ aboutAminGroup: "info1", aboutKozimxonTorayev: "info2" })
+    const settings = await this.findOne();
+    if (!settings)
+      this.create({ aboutAminGroup: 'info1', aboutKozimxonTorayev: 'info2' });
   }
 
   async create(createSettingDto: CreateSettingDto) {
