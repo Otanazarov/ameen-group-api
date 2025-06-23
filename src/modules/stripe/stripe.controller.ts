@@ -3,10 +3,8 @@ import {
   Post,
   Req,
   Res,
-  Headers,
   HttpCode,
   RawBodyRequest,
-  Param,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { StripeService } from './stripe.service';
@@ -16,42 +14,20 @@ import { env } from 'src/common/config';
 export class StripeController {
   constructor(private readonly stripeService: StripeService) {}
 
-  @Post('session')
-  async createCheckoutSession(@Req() req: Request, @Res() res: Response) {
-    const { userId, subscriptionTypeId } = req.body;
-    if (!userId || !subscriptionTypeId) {
-      return res
-        .status(400)
-        .json({ error: 'Missing userId or subscriptionTypeId' });
-    }
-    const session = await this.stripeService.createCheckoutSession({
-      userId,
-      subscriptionTypeId,
-    });
-    res.status(200).json(session);
-    return res;
-  }
-
-  @Post('/:id')
-  async aaa(@Param('id') id: string) {
-    return await this.stripeService.stripe.subscriptions.list();
-  }
-
   @Post()
   @HttpCode(200)
   async handleWebhook(
     @Req() req: RawBodyRequest<Request>,
     @Res() res: Response,
-    @Headers('stripe-signature') signature: string,
   ) {
-    let data;
-    let eventType;
+    let data: any;
+    let eventType: any;
     // Check if webhook signing is configured.
     const webhookSecret = env.STRIPE_WEBHOOK_SECRET;
     if (webhookSecret) {
       // Retrieve the event by verifying the signature using the raw body and secret.
-      let event;
-      let signature = req.headers['stripe-signature'];
+      let event: any;
+      const signature = req.headers['stripe-signature'];
       try {
         event = this.stripeService
           .getInstance()

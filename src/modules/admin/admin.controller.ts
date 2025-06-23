@@ -5,7 +5,6 @@ import {
   Body,
   Patch,
   Param,
-  Delete,
   Query,
   Req,
   ParseIntPipe,
@@ -24,7 +23,7 @@ export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
   @Post('register')
-  @DecoratorWrapper('Register Admin')
+  @DecoratorWrapper('Register Admin', true, [Role.Admin])
   create(@Body() createAdminDto: CreateAdminDto) {
     return this.adminService.create(createAdminDto);
   }
@@ -55,18 +54,17 @@ export class AdminController {
 
   @Get(':id')
   @DecoratorWrapper('Get Admin by ID', true, [Role.Admin])
-  findOne(@Param('id',ParseIntPipe) id: string) {
+  findOne(@Param('id', ParseIntPipe) id: string) {
     return this.adminService.findOne(+id);
   }
 
   @Patch(':id')
   @DecoratorWrapper('Update Admin', true, [Role.Admin])
   update(
-    @Param('id',ParseIntPipe) id: string,
+    @Param('id', ParseIntPipe) id: string,
     @Body() updateAdminDto: UpdateAdminDto,
-    @Req() req: any,
   ) {
-    return this.adminService.update(+id, updateAdminDto, req.user.id);
+    return this.adminService.update(+id, updateAdminDto);
   }
 
   // @Delete(':id')
