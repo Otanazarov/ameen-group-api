@@ -32,7 +32,7 @@ export class TelegramService {
     @Inject(forwardRef(() => StripeService))
     private readonly stripeService: StripeService,
     private readonly settingsService: SettingsService,
-  ) { }
+  ) {}
 
   private calculateDaysLeft(expiredDate: Date): number {
     return Math.ceil((expiredDate.getTime() - Date.now()) / this.MS_PER_DAY);
@@ -118,7 +118,9 @@ export class TelegramService {
         member_limit: 1,
         name: ctx.from.first_name,
       });
-      await ctx.reply("🎉 Guruhga qo'shilish uchun havola: " + link.invite_link);
+      await ctx.reply(
+        "🎉 Guruhga qo'shilish uchun havola: " + link.invite_link,
+      );
     }
     this.sendStartMessage(ctx);
     return true;
@@ -167,7 +169,7 @@ export class TelegramService {
   private async handleEmail(ctx: Context) {
     if (!ctx.session.email) {
       if (!isEmail(ctx.message.text)) {
-        if (ctx.message.text === "O'tkazish") {
+        if (ctx.message.text === "⏭ O'tkazish") {
           ctx.session.email = 'skipped';
         } else {
           this.sendEmailRequest(ctx);
@@ -244,16 +246,16 @@ export class TelegramService {
   }
 
   async handleInfo(ctx: Context) {
-    const settings = await this.settingsService.findOne()
-    if (ctx.message.text == "ℹ️ Biz haqimizda") {
-      await ctx.reply(settings.aboutAminGroup)
-      return true
+    const settings = await this.settingsService.findOne();
+    if (ctx.message.text == 'ℹ️ Biz haqimizda') {
+      await ctx.reply(settings.aboutAminGroup);
+      return true;
     }
     if (ctx.message.text == "👨‍🏫 Kozimxon To'ayev haqida") {
-      await ctx.reply(settings.aboutKozimxonTorayev)
-      return true
+      await ctx.reply(settings.aboutKozimxonTorayev);
+      return true;
     }
-    return false
+    return false;
   }
 
   async handleMySubscriptions(ctx: Context) {
@@ -271,9 +273,9 @@ export class TelegramService {
 
       await ctx.reply(
         `📌 Obuna turi: ${subscriptionType.title}\n` +
-        `💰 Narxi: ${subscriptionType.price} so'm\n` +
-        `📅 Tugash sanasi: ${subscription.expiredDate.toLocaleDateString()}\n` +
-        `⏳ Qolgan kunlar: ${daysLeft} kun`,
+          `💰 Narxi: ${subscriptionType.price} so'm\n` +
+          `📅 Tugash sanasi: ${subscription.expiredDate.toLocaleDateString()}\n` +
+          `⏳ Qolgan kunlar: ${daysLeft} kun`,
       );
       return true;
     }
@@ -445,7 +447,7 @@ export class TelegramService {
 
   sendPhoneRequest(ctx: Context) {
     ctx.reply(
-      `👋 ${ctx.from.last_name} ${ctx.from.first_name} to'rayevning rasmiy kanaliga xush kelibsiz!\n📱 BOTning qo'shimcha imkoniyatlaridan foydalanish uchun telefon raqamingizni yuboring!`,
+      `👋 ${ctx.session.last_name} ${ctx.session.first_name} to'rayevning rasmiy kanaliga xush kelibsiz!\n📱 BOTning qo'shimcha imkoniyatlaridan foydalanish uchun telefon raqamingizni yuboring!`,
       {
         reply_markup: {
           keyboard: new Keyboard()
@@ -460,7 +462,7 @@ export class TelegramService {
 
   sendEmailRequest(ctx: Context) {
     ctx.reply(
-      `🎉 ${ctx.from.last_name} ${ctx.from.first_name} sizga qo'shimcha imkoniyatlar ochildi.\n📧 Siz uchun maxsus takliflarni elektron pochtangizga yuborishimiz uchun iltimos email manzilingizni kiriting!`,
+      `🎉 ${ctx.session.last_name} ${ctx.session.first_name} sizga qo'shimcha imkoniyatlar ochildi.\n📧 Siz uchun maxsus takliflarni elektron pochtangizga yuborishimiz uchun iltimos email manzilingizni kiriting!`,
       {
         reply_markup: {
           keyboard: new Keyboard().text("⏭ O'tkazish").resized().build(),

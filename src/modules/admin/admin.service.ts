@@ -1,23 +1,23 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
-import { PrismaService } from '../prisma/prisma.service';
-import { HttpError } from 'src/common/exception/http.error';
-import { FindAllAdminQueryDto } from './dto/findAll-admin.dto';
 import { sign, verify } from 'jsonwebtoken';
-import {
-  getTokenVersion,
-  incrementTokenVersion,
-} from 'src/common/auth/token-version.store';
 import {
   getRefreshTokenVersion,
   incrementRefreshTokenVersion,
 } from 'src/common/auth/refresh-token-version.store';
+import { Role } from 'src/common/auth/roles/role.enum';
+import {
+  getTokenVersion,
+  incrementTokenVersion,
+} from 'src/common/auth/token-version.store';
 import { env } from 'src/common/config';
+import { HttpError } from 'src/common/exception/http.error';
+import { PrismaService } from '../prisma/prisma.service';
+import { CreateAdminDto } from './dto/create-admin.dto';
+import { FindAllAdminQueryDto } from './dto/findAll-admin.dto';
 import { LoginAdminDto } from './dto/login-admin.dto';
 import { RefreshAdminDto } from './dto/refresh-admin.dto';
-import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
-import { Role } from 'src/common/auth/roles/role.enum';
 
 @Injectable()
 export class AdminService implements OnModuleInit {
