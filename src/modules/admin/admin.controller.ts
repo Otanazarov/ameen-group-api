@@ -23,7 +23,7 @@ export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
   @Post('register')
-  @DecoratorWrapper('Register Admin', true, [Role.Admin])
+  @DecoratorWrapper('Register Admin')
   create(@Body() createAdminDto: CreateAdminDto) {
     return this.adminService.create(createAdminDto);
   }

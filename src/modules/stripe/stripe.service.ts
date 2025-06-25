@@ -141,7 +141,6 @@ export class StripeService {
         userId: +object.parent.subscription_details.metadata.userId,
         price: subscriptionType.price,
       });
-      console.log('ishladi', object.parent.subscription_details.metadata);
       return true;
     }
 

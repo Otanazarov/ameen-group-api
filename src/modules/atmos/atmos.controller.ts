@@ -19,4 +19,14 @@ export class AtmosController {
   createLink(@Body() dto: CreateAtmoDto) {
     return this.atmosService.createLink(dto);
   }
+
+  @Post('/preapply')
+  async preapply(@Body() dto) {
+    return this.atmosService.preApplyTransaction(dto);
+  }
+
+  @Post('/apply')
+  apply(@Body() dto) {
+    return this.atmosService.applyTransaction(dto);
+  }
 }

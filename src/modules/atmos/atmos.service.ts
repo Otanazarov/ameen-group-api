@@ -7,11 +7,13 @@ import { env } from 'src/common/config';
 import { AtmosDto } from './dto/atmos.dto';
 import { SubscriptionStatus } from '@prisma/client';
 import { atmosApi } from 'src/common/utils/axios';
+import { SubscriptionService } from '../subscription/subscription.service';
 @Injectable()
 export class AtmosService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly telegramService: TelegramService,
+    private readonly subscriptionService: SubscriptionService,
   ) {}
 
   async createLink(dto: CreateAtmoDto) {
@@ -31,21 +33,11 @@ export class AtmosService {
     if (!subscriptionType) {
       throw new Error('Subscription type not found');
     }
-    const res = await atmosApi.post('merchant/pay/confirm-with-ofd-list', {
-      request_id: subscriptionTypeId, // unique identifier for the request
+    const res = await atmosApi.post('merchant/pay/create', {
       store_id: env.ATMOS_STORE_ID, // your store ID
       account: userId, // your telegram ID or internal user ID
       amount: subscriptionType.price, // in tiyins (i.e., cents)
-      success_url: this.telegramService.bot.botInfo.username, // optional
-      items: [
-        {
-          items_id: subscriptionTypeId,
-          name: subscriptionType.title,
-          description: subscriptionType.description,
-          amount: subscriptionType.price,
-          quantity: 1,
-        },
-      ],
+      details: subscriptionType.id.toString(),
     });
     const transactionId = res.data.transaction_id;
 
@@ -65,6 +57,43 @@ export class AtmosService {
 
     return res.data;
   }
+  async preApplyTransaction(dto: {
+    transaction_id: number;
+    card_number: string;
+    expiry: string;
+  }): Promise<any> {
+    const preApplyData = {
+      transaction_id: dto.transaction_id,
+      card_number: dto.card_number,
+      expiry: dto.expiry, // Format: YYMM
+      store_id: env.ATMOS_STORE_ID,
+    };
+
+    const result = await atmosApi.post('/merchant/pay/pre-apply', preApplyData);
+
+    return result;
+  }
+  async applyTransaction(dto: {
+    transactionId: number;
+    otpCode: string;
+  }): Promise<any> {
+    const applyData = {
+      transaction_id: dto.transactionId,
+      otp: dto.otpCode,
+      store_id: env.ATMOS_STORE_ID,
+    };
+
+    const result = await atmosApi.post('/merchant/pay/confirm', applyData);
+    if (result.data.store_transaction.status_message == 'Success') {
+      const subscription = await this.subscriptionService.update(
+        result.data.store_transaction.details,
+        {
+          status: SubscriptionStatus.Paid,
+        },
+      );
+    }
+    return result;
+  }
 
   async getPendingInvoices() {
     return this.prisma.subscription.findMany({
@@ -79,13 +108,10 @@ export class AtmosService {
   }
 
   async checkTransactionStatus(transactionId: string) {
-    const { data } = await atmosApi.post(
-      '/merchant/pay/get',
-      {
-        store_id: +env.ATMOS_STORE_ID,
-        transaction_id: +transactionId,
-      },
-    );
+    const { data } = await atmosApi.post('/merchant/pay/get', {
+      store_id: +env.ATMOS_STORE_ID,
+      transaction_id: +transactionId,
+    });
 
     const isSuccess =
       data.store_transaction?.confirmed === true &&
