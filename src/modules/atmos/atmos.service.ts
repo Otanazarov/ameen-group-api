@@ -1,10 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { CreateAtmoDto } from './dto/create.dto';
+import { CreateAtmosDto } from './dto/create.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { TelegramService } from '../telegram/telegram.service';
-import axios from 'axios';
 import { env } from 'src/common/config';
-import { AtmosDto } from './dto/atmos.dto';
 import { SubscriptionStatus } from '@prisma/client';
 import { atmosApi } from 'src/common/utils/axios';
 import { SubscriptionService } from '../subscription/subscription.service';
@@ -16,7 +14,7 @@ export class AtmosService {
     private readonly subscriptionService: SubscriptionService,
   ) {}
 
-  async createLink(dto: CreateAtmoDto) {
+  async createLink(dto: CreateAtmosDto) {
     const { userId, subscriptionTypeId } = dto;
     if (!userId || !subscriptionTypeId) {
       throw new Error('Missing userId or subscriptionTypeId');
@@ -65,34 +63,38 @@ export class AtmosService {
     const preApplyData = {
       transaction_id: dto.transaction_id,
       card_number: dto.card_number,
-      expiry: dto.expiry, // Format: YYMM
+      expiry: dto.expiry,
       store_id: env.ATMOS_STORE_ID,
     };
 
     const result = await atmosApi.post('/merchant/pay/pre-apply', preApplyData);
 
-    return result;
+    return result.data;
   }
   async applyTransaction(dto: {
-    transactionId: number;
-    otpCode: string;
+    transaction_id: number;
+    otp: string;
   }): Promise<any> {
     const applyData = {
-      transaction_id: dto.transactionId,
-      otp: dto.otpCode,
+      transaction_id: dto.transaction_id,
+      otp: dto.otp,
       store_id: env.ATMOS_STORE_ID,
     };
 
     const result = await atmosApi.post('/merchant/pay/confirm', applyData);
+    if (!result.data.store_transaction) return result.data;
     if (result.data.store_transaction.status_message == 'Success') {
-      const subscription = await this.subscriptionService.update(
-        result.data.store_transaction.details,
-        {
-          status: SubscriptionStatus.Paid,
+      const subscription = await this.prisma.subscription.findUnique({
+        where: {
+          transactionId: result.data.store_transaction.trans_id.toString(),
         },
-      );
+      });
+      await this.subscriptionService.update(subscription.id, {
+        status: SubscriptionStatus.Paid,
+      });
     }
-    return result;
+
+    return result.data;
   }
 
   async getPendingInvoices() {

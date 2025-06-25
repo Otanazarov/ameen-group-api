@@ -1,4 +1,4 @@
-export class CreateAtmoDto {
+export class CreateAtmosDto {
   userId: number;
   subscriptionTypeId: number;
 }
