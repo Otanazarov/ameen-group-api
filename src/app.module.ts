@@ -26,7 +26,12 @@ import { SettingsModule } from './modules/settings/settings.module';
     NestjsGrammyModule.forRoot({
       token: env.TELEGRAM_BOT_TOKEN,
       pollingOptions: {
-        allowed_updates: ['chat_member', 'message', 'callback_query'],
+        allowed_updates: [
+          'chat_member',
+          'message',
+          'callback_query',
+          'chat_join_request',
+        ],
       },
       middlewares: [
         session({
@@ -41,4 +46,4 @@ import { SettingsModule } from './modules/settings/settings.module';
     SettingsModule,
   ],
 })
-export class AppModule { }
+export class AppModule {}

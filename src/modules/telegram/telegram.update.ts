@@ -10,6 +10,7 @@ import {
 import { TelegramService } from './telegram.service';
 import { Context } from './Context.type';
 import { UserService } from '../user/user.service';
+import { env } from 'src/common/config';
 
 @Update()
 export class TelegramUpdate {
@@ -60,17 +61,17 @@ export class TelegramUpdate {
     this.telegramService.onEditCallBack(ctx);
   }
 
-  @On('chat_member')
+  @On('chat_join_request')
   async onJoin(ctx: Context) {
-    const chatMember = ctx.update.chat_member;
-    if (chatMember.new_chat_member.status !== 'member') return;
-    const member = chatMember.new_chat_member.user;
+    const chatMember = ctx.update.chat_join_request;
+    if (chatMember.chat.id.toString() !== env.TELEGRAM_GROUP_ID) return;
+    const member = chatMember.from;
     const sub = await this.userService.getSubscription(member.id);
 
     if (sub === null) {
-      await ctx.api.banChatMember(chatMember.chat.id, member.id);
-      await ctx.api.unbanChatMember(chatMember.chat.id, member.id);
+      await ctx.api.declineChatJoinRequest(chatMember.chat.id, member.id);
     } else {
+      await ctx.api.approveChatJoinRequest(chatMember.chat.id, member.id);
       await this.userService.update(sub.user.id, { inGroup: true });
     }
   }

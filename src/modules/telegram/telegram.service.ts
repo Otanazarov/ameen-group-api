@@ -115,8 +115,8 @@ export class TelegramService {
     );
     if (subscription?.status == 'Paid' && !user.inGroup) {
       const link = await ctx.api.createChatInviteLink(env.TELEGRAM_GROUP_ID, {
-        member_limit: 1,
         name: ctx.from.first_name,
+        creates_join_request: true,
       });
       await ctx.reply(
         "🎉 Guruhga qo'shilish uchun havola: " + link.invite_link,
