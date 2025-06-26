@@ -19,17 +19,18 @@ model Admin {
 model User {
   id            Int            @id @default(autoincrement())
   telegramId    String         @unique
-  firstName          String
+  firstName     String
   lastName      String
   email         String?        @unique
   phoneNumber   String         @unique
-  lastMessageAt DateTime?      // foydalanuvchi oxirgi marta botga yozgan vaqt
+  lastMessageAt DateTime? // foydalanuvchi oxirgi marta botga yozgan vaqt
   inGroup       Boolean        @default(false)
   status        UserStatus     @default(REGISTERED)
   role          UserRole       @default(USER)
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   subscription  Subscription[]
+  messages      Message[]
 }
 
 model Subscription {
@@ -67,12 +68,28 @@ model Settings {
   aboutKozimxonTorayev String
 }
 
+model Message {
+  id        Int           @id @default(autoincrement())
+  text      String
+  user      User          @relation(fields: [userId], references: [id])
+  userId    Int
+  status    MessageStatus
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
 enum UserStatus {
   REGISTERED
   SUBSCRIBE
   EXPIRED
   INACTIVE
   UNSUBSCRIBE
+}
+
+enum MessageStatus {
+  NOTSENT
+  DELIVERED
+  READ
 }
 
 enum UserRole {
