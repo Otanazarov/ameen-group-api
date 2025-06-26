@@ -57,6 +57,7 @@ model SubscriptionType {
   title            String
   description      String
   telegramTopicIds Json
+  expireDays       Int
   subscriptions    Subscription[]
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt

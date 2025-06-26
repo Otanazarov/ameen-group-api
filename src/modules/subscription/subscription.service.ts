@@ -29,6 +29,7 @@ export class SubscriptionService {
     const existingSubscription = await this.prisma.subscription.findFirst({
       where: { expiredDate: { gt: new Date() } },
       orderBy: { expiredDate: 'desc' },
+      include: { subscriptionType: true },
     });
 
     let startDate = new Date();
@@ -38,7 +39,9 @@ export class SubscriptionService {
         const currentDate = new Date();
         const timeDifference =
           existingSubscription.expiredDate.getTime() - currentDate.getTime();
-        const daysDifference = timeDifference / (1000 * 60 * 60 * 30);
+        const daysDifference =
+          timeDifference /
+          (1000 * 60 * 60 * existingSubscription.subscriptionType.expireDays);
 
         if (daysDifference < 3) {
           throw new Error();
@@ -48,7 +51,10 @@ export class SubscriptionService {
       startDate = existingSubscription.expiredDate;
     }
 
-    let expiredDate = new Date(startDate.getTime() + 30 * 24 * 60 * 60 * 1000);
+    let expiredDate = new Date(
+      startDate.getTime() +
+        existingSubscription.subscriptionType.expireDays * 24 * 60 * 60 * 1000,
+    );
     const subscription = await this.prisma.subscription.create({
       data: {
         userId: createSubscriptionDto.userId,

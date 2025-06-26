@@ -38,6 +38,15 @@ export class TelegramService {
     return Math.ceil((expiredDate.getTime() - Date.now()) / this.MS_PER_DAY);
   }
 
+  public async sendMessage(telegramId: string, message: string) {
+    try {
+      await this.bot.api.sendMessage(telegramId, message);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   private async updateUserSession(ctx: Context, user: any) {
     ctx.session.id = user.id;
     ctx.session.phone = user.phoneNumber;
@@ -121,6 +130,7 @@ export class TelegramService {
       await ctx.reply(
         "🎉 Guruhga qo'shilish uchun havola: " + link.invite_link,
       );
+      return true;
     }
     this.sendStartMessage(ctx);
     return true;
@@ -201,7 +211,7 @@ export class TelegramService {
       subscriptionTypes.data.forEach((subscriptionType) => {
         keyboard
           .text(
-            `💫 ${subscriptionType.title} - ${subscriptionType.price} so'm`,
+            `💫 ${subscriptionType.title} - ${subscriptionType.price} so'm / ${subscriptionType.expireDays} kun`,
             `subscribe-${subscriptionType.id}`,
           )
           .row();
@@ -220,7 +230,17 @@ export class TelegramService {
       keyboard.text("👥 Familyani o'zgartitirish", 'edit_lastname').row();
       keyboard.text("📧 Emailni o'zgartitirish", 'edit_email').row();
 
-      ctx.reply('⚙️ Sozlamalar', { reply_markup: keyboard });
+      const user = await this.userService.findOneByTelegramID(
+        ctx.from.id.toString(),
+      );
+      await ctx.reply(
+        `⚙️ Sozlamalar\n\n` +
+          `👤 Ism: ${user.firstName}\n` +
+          `👥 Familya: ${user.lastName}\n` +
+          `📧 Email: ${user.email || 'Kiritilmagan'}\n` +
+          `📱 Telefon: ${user.phoneNumber}`,
+        { reply_markup: keyboard },
+      );
       return true;
     }
     return false;
@@ -347,8 +367,14 @@ export class TelegramService {
     stripe: any,
   ) {
     ctx.reply(
-      `💫 ${subscriptionType.title} - ${subscriptionType.price}:\n${subscriptionType.description}\n\n💳 To'lov qilish: \n[Visa/Mastercard](${stripe.url})`,
-      { parse_mode: 'Markdown' },
+      `💫 ${subscriptionType.title} - ${subscriptionType.price}:\n${subscriptionType.description}`,
+      {
+        parse_mode: 'Markdown',
+        reply_markup: new InlineKeyboard().url(
+          '💳 Visa/Mastercard',
+          stripe.url,
+        ),
+      },
     );
   }
 
