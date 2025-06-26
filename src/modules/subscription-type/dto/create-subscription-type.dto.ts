@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsNumber, IsArray, IsJSON } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsNumber,
+  IsArray,
+  IsJSON,
+} from 'class-validator';
 
 export class CreateSubscriptionTypeDto {
   @ApiProperty({ example: 20000 })
@@ -12,10 +18,17 @@ export class CreateSubscriptionTypeDto {
   @IsString()
   title: string;
 
-  @ApiProperty({ example: 'Bu obuna sizga 1 oy davomida kanalga kirish imkonini beradi.' })
+  @ApiProperty({
+    example: 'Bu obuna sizga 1 oy davomida kanalga kirish imkonini beradi.',
+  })
   @IsNotEmpty()
   @IsString()
   description: string;
+
+  @ApiProperty({ example: 30 })
+  @IsNotEmpty()
+  @IsNumber()
+  expireDays: number;
 
   @ApiProperty({
     example: [123456, 654321],

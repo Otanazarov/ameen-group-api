@@ -45,7 +45,7 @@ export class AtmosService {
         userId,
         subscriptionTypeId,
         startDate: new Date(),
-        expiredDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30), // 30 kun
+        expiredDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * subscriptionType.expireDays), 
         price: subscriptionType.price,
         paymentType: 'ATMOS',
         status: 'Created',
@@ -100,10 +100,10 @@ export class AtmosService {
   async getPendingInvoices() {
     return this.prisma.subscription.findMany({
       where: {
-        status: SubscriptionStatus.Created, // yoki UNPAID, custom status
+        status: SubscriptionStatus.Created,
         paymentType: 'ATMOS',
         createdAt: {
-          gt: new Date(Date.now() - 1000 * 60 * 30), // so‘nggi 30 daqiqaliklar
+          gt: new Date(Date.now() - 1000 * 60 * 30),
         },
       },
     });
