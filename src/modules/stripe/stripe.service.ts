@@ -57,7 +57,7 @@ export class StripeService {
 
     let price = (
       await this.stripe.prices.search({
-        query: `product:'${product.id}' AND type: 'recurring' AND metadata['amout']:'${subscriptionType.price * 100}'`,
+        query: `product:'${product.id}' AND type: 'recurring' AND metadata['amount']:'${subscriptionType.price * 100}'`,
       })
     ).data[0];
     if (!price) {
@@ -65,7 +65,7 @@ export class StripeService {
         unit_amount: subscriptionType.price * 100, // Convert to cents
         currency: 'uzs',
         product: product.id,
-        metadata: { amout: subscriptionType.price * 100 },
+        metadata: { amount: subscriptionType.price * 100 },
         recurring: {
           interval: 'day',
           interval_count: subscriptionType.expireDays,

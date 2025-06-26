@@ -6,7 +6,6 @@ import { HttpError } from 'src/common/exception/http.error';
 import { TelegramService } from '../telegram/telegram.service';
 import { MessageStatus } from '@prisma/client';
 import { FindAllMessageDto } from './dto/findAllMessage.dto';
-import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class MessageService {
@@ -16,28 +15,25 @@ export class MessageService {
   ) {}
   async create(createMessageDto: CreateMessageDto) {
     const { userIds, status, text, subscriptionTypeId } = createMessageDto;
-    const where: Prisma.UserWhereInput = {};
 
-    if (userIds?.length) {
-      where.id = { in: userIds };
-    }
-    if (status) {
-      where.status = status;
-    }
-
-    if (subscriptionTypeId) {
-      const subscriptions = await this.prisma.subscription.findMany({
-        where: {
-          subscriptionTypeId,
-          status: 'Paid', // faqat to‘langanlar
+    const users = await this.prisma.user.findMany({
+      where: {
+        status: status ? { equals: status } : undefined,
+        id: userIds ? { in: userIds } : undefined,
+        subscription: subscriptionTypeId
+          ? { some: { subscriptionType: { id: subscriptionTypeId } } }
+          : undefined,
+      },
+      include: {
+        subscription: {
+          where: {
+            subscriptionType: {
+              id: subscriptionTypeId,
+            },
+          },
         },
-        include: {
-          user: true,
-        },
-      });
-
-    }
-    const users = await this.prisma.user.findMany({ where });
+      },
+    });
 
     const result = [];
 
