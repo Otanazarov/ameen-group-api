@@ -1,17 +1,25 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsInt, IsString } from 'class-validator';
-import { MessageStatus } from '@prisma/client';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsArray, IsEnum, IsInt, IsOptional, IsString } from 'class-validator';
+import { UserStatus } from '@prisma/client';
 
 export class CreateMessageDto {
   @ApiProperty({ example: 'Salom, qanday yordam bera olaman?' })
   @IsString()
   text: string;
 
-  @ApiProperty({ example: 1 })
-  @IsInt()
-  userId: number;
+  @ApiPropertyOptional({ example: [1, 2, 3] })
+  @IsOptional()
+  @IsArray()
+  @IsInt({ each: true })
+  userIds?: number[];
 
-  @ApiProperty({ enum: MessageStatus, default: MessageStatus.NOTSENT })
-  @IsEnum(MessageStatus)
-  status: MessageStatus;
+  @ApiPropertyOptional({ example: 'REGISTERED' })
+  @IsOptional()
+  @IsEnum(UserStatus)
+  status?: UserStatus;
+
+  @ApiPropertyOptional({ example: 1 })
+  @IsOptional()
+  @IsInt()
+  subscriptionTypeId?: number;
 }

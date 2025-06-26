@@ -1,7 +1,16 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { MessageService } from './message.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { UpdateMessageDto } from './dto/update-message.dto';
+import { FindAllMessageDto } from './dto/findAllMessage.dto';
 
 @Controller('message')
 export class MessageController {
@@ -13,8 +22,8 @@ export class MessageController {
   }
 
   @Get()
-  findAll() {
-    return this.messageService.findAll();
+  findAll(dto: FindAllMessageDto) {
+    return this.messageService.findAll(dto);
   }
 
   @Get(':id')
@@ -25,10 +34,5 @@ export class MessageController {
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateMessageDto: UpdateMessageDto) {
     return this.messageService.update(+id, updateMessageDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.messageService.remove(+id);
   }
 }
