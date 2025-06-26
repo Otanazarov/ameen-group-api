@@ -38,6 +38,15 @@ export class TelegramService {
     return Math.ceil((expiredDate.getTime() - Date.now()) / this.MS_PER_DAY);
   }
 
+  public async sendMessage(telegramId: string, message: string) {
+    try {
+      await this.bot.api.sendMessage(telegramId, message);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   private async updateUserSession(ctx: Context, user: any) {
     ctx.session.id = user.id;
     ctx.session.phone = user.phoneNumber;
