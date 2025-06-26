@@ -7,8 +7,13 @@ import { StripeModule } from '../stripe/stripe.module';
 import { SettingsModule } from '../settings/settings.module';
 
 @Module({
-  imports: [UserModule, SubscriptionTypeModule, SettingsModule, forwardRef(() => StripeModule)],
+  imports: [
+    UserModule,
+    SubscriptionTypeModule,
+    SettingsModule,
+    forwardRef(() => StripeModule),
+  ],
   providers: [TelegramService, TelegramUpdate],
   exports: [TelegramService],
 })
-export class TelegramModule { }
+export class TelegramModule {}

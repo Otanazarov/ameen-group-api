@@ -67,8 +67,8 @@ export class StripeService {
         product: product.id,
         metadata: { amout: subscriptionType.price * 100 },
         recurring: {
-          interval: 'month',
-          interval_count: 1,
+          interval: 'day',
+          interval_count: subscriptionType.expireDays,
         },
       });
     }
@@ -92,25 +92,28 @@ export class StripeService {
       cancel_url: `https://t.me/${botUsername}?start=cancel`,
     });
 
+    await this.subscriptionService.create({
+      subscriptionTypeId,
+      userId,
+      status: SubscriptionStatus.Created,
+      paymentType: PaymentType.STRIPE,
+      price: subscriptionType.price,
+      transactionId: session.id,
+    });
+
     return session;
   }
 
   async webhook(eventType: Stripe.Event.Type, data: Stripe.Event.Data) {
-    const object = data.object as Stripe.Checkout.Session;
     if (eventType === 'checkout.session.completed') {
       const object = data.object as Stripe.Checkout.Session;
-      const subscriptionType = await this.prisma.subscriptionType.findFirst({
+      const subscription = await this.prisma.subscription.findFirst({
         where: {
-          id: +object.metadata.subscriptionTypeId,
+          transactionId: object.id,
         },
       });
-
-      const subscription = await this.subscriptionService.create({
+      await this.subscriptionService.update(subscription.id, {
         status: SubscriptionStatus.Paid,
-        paymentType: PaymentType.STRIPE,
-        subscriptionTypeId: +object.metadata.subscriptionTypeId,
-        userId: +object.metadata.userId,
-        price: subscriptionType.price,
       });
 
       await this.stripe.subscriptions.update(object.subscription.toString(), {
@@ -133,7 +136,7 @@ export class StripeService {
         },
       });
 
-      const subscription = await this.subscriptionService.create({
+      await this.subscriptionService.create({
         status: SubscriptionStatus.Paid,
         paymentType: PaymentType.STRIPE,
         subscriptionTypeId:
@@ -152,7 +155,7 @@ export class StripeService {
         },
       });
 
-      const subscription = await this.subscriptionService.create({
+      await this.subscriptionService.create({
         status: SubscriptionStatus.Canceled,
         paymentType: PaymentType.STRIPE,
         subscriptionTypeId: +object.metadata.subscriptionTypeId,

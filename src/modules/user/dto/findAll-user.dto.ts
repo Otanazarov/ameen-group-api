@@ -1,5 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString } from 'class-validator';
+import { UserStatus } from '@prisma/client';
+import { IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsId } from 'src/common/dtos/id.dto';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 
 export class FindAllUserDto extends PaginationDto {
@@ -17,4 +19,12 @@ export class FindAllUserDto extends PaginationDto {
   @IsOptional()
   @IsString()
   telegramId?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsEnum(UserStatus)
+  status?: UserStatus;
+
+  @IsId(false)
+  subscriptionTypeId?: number;
 }

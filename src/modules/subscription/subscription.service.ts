@@ -3,15 +3,12 @@ import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 import { UpdateSubscriptionDto } from './dto/update-subscription.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { FindAllSubscriptionDto } from './dto/findAll-subscription.dto';
-import { Prisma, Subscription, SubscriptionStatus } from '@prisma/client';
-import { UserService } from '../user/user.service';
+import { Prisma, SubscriptionStatus } from '@prisma/client';
 
 @Injectable()
 export class SubscriptionService {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly userService: UserService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
+
   async create(createSubscriptionDto: CreateSubscriptionDto) {
     const user = await this.prisma.user.findUnique({
       where: { id: createSubscriptionDto.userId },
@@ -51,7 +48,7 @@ export class SubscriptionService {
       startDate = existingSubscription.expiredDate;
     }
 
-    let expiredDate = new Date(
+    const expiredDate = new Date(
       startDate.getTime() +
         subscriptionType.expireDays * 24 * 60 * 60 * 1000,
     );

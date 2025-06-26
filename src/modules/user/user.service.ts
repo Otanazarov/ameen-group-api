@@ -4,8 +4,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { HttpError } from 'src/common/exception/http.error';
 import { FindAllUserDto } from './dto/findAll-user.dto';
-import { SubscriptionStatus, UserRole } from '@prisma/client';
-import { isPhoneNumber } from 'class-validator';
+import { SubscriptionStatus } from '@prisma/client';
 
 @Injectable()
 export class UserService {
@@ -31,7 +30,15 @@ export class UserService {
   }
 
   async findAll(dto: FindAllUserDto) {
-    const { limit = 10, page = 1, name, phoneNumber, telegramId } = dto;
+    const {
+      limit = 10,
+      page = 1,
+      name,
+      phoneNumber,
+      telegramId,
+      status,
+      subscriptionTypeId,
+    } = dto;
 
     const [data, total] = await this.prisma.$transaction([
       this.prisma.user.findMany({
@@ -45,6 +52,16 @@ export class UserService {
             : undefined,
           telegramId: telegramId
             ? { contains: telegramId.trim(), mode: 'insensitive' }
+            : undefined,
+          status: status ? { equals: status } : undefined,
+          subscription: subscriptionTypeId
+            ? {
+                some: {
+                  subscriptionType: {
+                    id: subscriptionTypeId,
+                  },
+                },
+              }
             : undefined,
         },
         skip: (page - 1) * limit,
