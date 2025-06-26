@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { Bot, InlineKeyboard, Keyboard } from 'grammy';
 import { InjectBot } from '@grammyjs/nestjs';
 import { Context } from './Context.type';
@@ -10,9 +10,10 @@ import { isEmail } from 'class-validator';
 import { SubscriptionTypeService } from '../subscription-type/subscription-type.service';
 import { StripeService } from '../stripe/stripe.service';
 import { SettingsService } from '../settings/settings.service';
+import { autoRetry } from '@grammyjs/auto-retry';
 
 @Injectable()
-export class TelegramService {
+export class TelegramService implements OnModuleInit {
   private readonly MS_PER_DAY = 1000 * 60 * 60 * 24;
   private readonly DEFAULT_KEYBOARD = new Keyboard()
     .text("📝 Obuna Bo'lish")
@@ -33,6 +34,10 @@ export class TelegramService {
     private readonly stripeService: StripeService,
     private readonly settingsService: SettingsService,
   ) {}
+
+  onModuleInit() {
+    this.bot.api.config.use(autoRetry());
+  }
 
   private calculateDaysLeft(expiredDate: Date): number {
     return Math.ceil((expiredDate.getTime() - Date.now()) / this.MS_PER_DAY);

@@ -16,6 +16,7 @@
     "typos": "typos"
   },
   "dependencies": {
+    "@grammyjs/auto-retry": "^2.0.2",
     "@grammyjs/nestjs": "^0.3.4",
     "@grammyjs/storage-free": "^2.5.1",
     "@nestjs/common": "^10.0.0",
