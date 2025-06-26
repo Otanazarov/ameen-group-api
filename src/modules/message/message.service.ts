@@ -10,7 +10,7 @@ import { MessageStatus } from '@prisma/client';
 export class MessageService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly telegramService: TelegramService, 
+    private readonly telegramService: TelegramService,
   ) {}
   async create(createMessageDto: CreateMessageDto) {
     const user = await this.prisma.user.findFirst({
