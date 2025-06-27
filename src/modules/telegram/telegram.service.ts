@@ -271,7 +271,8 @@ export class TelegramService implements OnModuleInit {
   async onMessage(ctx: Context) {
     if (ctx.chat.type != 'private') return;
     if (!ctx.session.id && (await this.handleExistingUser(ctx))) return;
-    this.userService.update(ctx.session.id, { lastActiveAt: new Date() });
+    if (ctx.session.id)
+      this.userService.update(ctx.session.id, { lastActiveAt: new Date() });
     if (
       ctx.message.text?.startsWith('/start') &&
       (await this.handleStartCommand(ctx))
