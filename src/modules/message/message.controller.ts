@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { MessageService } from './message.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { UpdateMessageDto } from './dto/update-message.dto';
@@ -24,17 +32,20 @@ export class MessageController {
   }
 
   @Get('/user/:id')
-  findOneUser(@Param('id') id: string) {
+  findOneUser(@Param('id', ParseIntPipe) id: string) {
     return this.messageService.findOneUser(+id);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseIntPipe) id: string) {
     return this.messageService.findOne(+id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateMessageDto: UpdateMessageDto) {
+  update(
+    @Param('id', ParseIntPipe) id: string,
+    @Body() updateMessageDto: UpdateMessageDto,
+  ) {
     return this.messageService.update(+id, updateMessageDto);
   }
 }
