@@ -16,8 +16,7 @@ export class MessageService {
     private readonly telegramService: TelegramService,
   ) {}
   async create(createMessageDto: CreateMessageDto) {
-    const { userIds, status, text, subscriptionTypeId, sendTime } =
-      createMessageDto;
+    const { userIds, status, text, subscriptionTypeId } = createMessageDto;
 
     const users = await this.prisma.user.findMany({
       where: {
@@ -41,7 +40,6 @@ export class MessageService {
     const message = await this.prisma.message.create({
       data: {
         text,
-        time: sendTime || new Date(),
       },
     });
 

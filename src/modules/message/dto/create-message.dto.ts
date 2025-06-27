@@ -1,23 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsArray,
-  IsDateString,
-  IsEnum,
-  IsInt,
-  IsOptional,
-  IsString,
-} from 'class-validator';
+import { IsArray, IsEnum, IsInt, IsOptional, IsString } from 'class-validator';
 import { UserStatus } from '@prisma/client';
 
 export class CreateMessageDto {
   @ApiProperty({ example: 'Salom, qanday yordam bera olaman?' })
   @IsString()
   text: string;
-
-  @ApiPropertyOptional({ example: new Date() })
-  @IsOptional()
-  @IsDateString()
-  sendTime?: Date;
 
   @ApiPropertyOptional({ example: [1, 2, 3] })
   @IsOptional()
