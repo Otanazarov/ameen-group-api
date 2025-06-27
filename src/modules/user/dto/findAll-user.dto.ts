@@ -5,17 +5,17 @@ import { IsId } from 'src/common/dtos/id.dto';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 
 export class FindAllUserDto extends PaginationDto {
-  @ApiPropertyOptional({ example: 'John' })
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   name?: string;
 
-  @ApiPropertyOptional({ example: '1234567890' })
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   phoneNumber?: string;
 
-  @ApiPropertyOptional({ example: '1234567890' })
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   telegramId?: string;
@@ -24,6 +24,8 @@ export class FindAllUserDto extends PaginationDto {
   @IsOptional()
   @IsEnum(UserStatus)
   status?: UserStatus;
+
+
 
   @IsId(false)
   subscriptionTypeId?: number;

@@ -21,7 +21,7 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get()
-  @DecoratorWrapper('User findAll', true, [Role.Admin])
+  @DecoratorWrapper('User findAll')
   findAll(@Query() dto: FindAllUserDto) {
     return this.userService.findAll(dto);
   }
