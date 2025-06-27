@@ -5,7 +5,7 @@ import { Context } from './Context.type';
 import { UserService } from '../user/user.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { env } from 'src/common/config';
-import { Cron, CronExpression, Interval } from '@nestjs/schedule';
+import { Interval } from '@nestjs/schedule';
 import { isEmail } from 'class-validator';
 import { SubscriptionTypeService } from '../subscription-type/subscription-type.service';
 import { StripeService } from '../stripe/stripe.service';
@@ -252,7 +252,6 @@ export class TelegramService implements OnModuleInit {
     return false;
   }
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
   async sendMessages() {
     const messages = await this.prismaService.messageUser.findMany({
       where: { status: 'PENDING' },
