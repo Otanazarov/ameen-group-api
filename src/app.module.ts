@@ -9,8 +9,6 @@ import { NestjsGrammyModule } from '@grammyjs/nestjs';
 import { session } from 'grammy';
 import { SubscriptionModule } from './modules/subscription/subscription.module';
 import { AtmosModule } from './modules/atmos/atmos.module';
-import { SessionData } from './modules/telegram/Context.type';
-import { freeStorage } from '@grammyjs/storage-free';
 import { ScheduleModule } from '@nestjs/schedule';
 import { SettingsModule } from './modules/settings/settings.module';
 import { MessageModule } from './modules/message/message.module';

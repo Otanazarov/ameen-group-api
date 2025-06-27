@@ -11,6 +11,8 @@ import { SubscriptionTypeService } from '../subscription-type/subscription-type.
 import { StripeService } from '../stripe/stripe.service';
 import { SettingsService } from '../settings/settings.service';
 import { autoRetry } from '@grammyjs/auto-retry';
+import { Message, MessageUser, User } from '@prisma/client';
+import { MessageService } from '../message/message.service';
 
 @Injectable()
 export class TelegramService implements OnModuleInit {
@@ -33,6 +35,8 @@ export class TelegramService implements OnModuleInit {
     @Inject(forwardRef(() => StripeService))
     private readonly stripeService: StripeService,
     private readonly settingsService: SettingsService,
+    @Inject(forwardRef(() => MessageService))
+    private readonly messageService: MessageService,
   ) {}
 
   onModuleInit() {
@@ -43,12 +47,30 @@ export class TelegramService implements OnModuleInit {
     return Math.ceil((expiredDate.getTime() - Date.now()) / this.MS_PER_DAY);
   }
 
-  public async sendMessage(telegramId: string, message: string) {
+  async onReactionCallBack(ctx: Context) {
+    const messageId = ctx.match[1];
+    await this.messageService.update(+messageId, { status: 'READ' });
+    ctx.answerCallbackQuery('✅ Reaksiya bildirildi');
+  }
+
+  public async sendMessage(
+    message: MessageUser & { user: User; message: Message },
+  ) {
     try {
-      await this.bot.api.sendMessage(telegramId, message);
-      return true;
+      await this.bot.api.sendMessage(
+        message.user.telegramId,
+        message.message.text,
+        {
+          reply_markup: new InlineKeyboard().text(
+            'Reaksiya Bildirish',
+            `reaction_${message.id}`,
+          ),
+        },
+      );
+
+      await this.messageService.update(message.id, { status: 'DELIVERED' });
     } catch {
-      return false;
+      await this.messageService.update(message.id, { status: 'NOTSENT' });
     }
   }
 
@@ -193,6 +215,7 @@ export class TelegramService implements OnModuleInit {
           firstName: ctx.session.first_name,
           lastName: ctx.session.last_name,
           phoneNumber: ctx.session.phone,
+          username: ctx.from.username,
           email: ctx.session.email === 'skipped' ? null : ctx.session.email,
           telegramId: ctx.from.id.toString(),
         });
@@ -254,6 +277,8 @@ export class TelegramService implements OnModuleInit {
   async onMessage(ctx: Context) {
     if (ctx.chat.type != 'private') return;
     if (!ctx.session.id && (await this.handleExistingUser(ctx))) return;
+    if (ctx.session.id)
+      this.userService.update(ctx.session.id, { lastActiveAt: new Date() });
     if (
       ctx.message.text?.startsWith('/start') &&
       (await this.handleStartCommand(ctx))

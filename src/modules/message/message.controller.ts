@@ -1,16 +1,9 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param } from '@nestjs/common';
 import { MessageService } from './message.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { UpdateMessageDto } from './dto/update-message.dto';
 import { FindAllMessageDto } from './dto/findAllMessage.dto';
+import { FindAllMessageUserDto } from './dto/findAllMessageUser.dto';
 
 @Controller('message')
 export class MessageController {
@@ -24,6 +17,15 @@ export class MessageController {
   @Get()
   findAll(dto: FindAllMessageDto) {
     return this.messageService.findAll(dto);
+  }
+  @Get('/user')
+  findAllUser(dto: FindAllMessageUserDto) {
+    return this.messageService.findAllUser(dto);
+  }
+
+  @Get('/user/:id')
+  findOneUser(@Param('id') id: string) {
+    return this.messageService.findOneUser(+id);
   }
 
   @Get(':id')

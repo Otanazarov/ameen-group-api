@@ -45,7 +45,9 @@ export class AtmosService {
         userId,
         subscriptionTypeId,
         startDate: new Date(),
-        expiredDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * subscriptionType.expireDays), 
+        expiredDate: new Date(
+          Date.now() + 1000 * 60 * 60 * 24 * subscriptionType.expireDays,
+        ),
         price: subscriptionType.price,
         paymentType: 'ATMOS',
         status: 'Created',

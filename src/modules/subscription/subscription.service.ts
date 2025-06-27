@@ -49,8 +49,7 @@ export class SubscriptionService {
     }
 
     const expiredDate = new Date(
-      startDate.getTime() +
-        subscriptionType.expireDays * 24 * 60 * 60 * 1000,
+      startDate.getTime() + subscriptionType.expireDays * 24 * 60 * 60 * 1000,
     );
     const subscription = await this.prisma.subscription.create({
       data: {

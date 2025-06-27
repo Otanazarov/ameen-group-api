@@ -1,13 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsNotEmpty,
-  IsString,
-  IsEmail,
-  IsPhoneNumber,
-  IsNumber,
-  IsOptional,
-} from 'class-validator';
-import { UserRole, UserStatus } from '@prisma/client'; // agar enumlar kerak bo‘lsa
+import { IsNotEmpty, IsString, IsEmail, IsOptional } from 'class-validator';
 
 export class CreateUserDto {
   @ApiProperty({ example: 'Otabek' })
@@ -34,4 +26,10 @@ export class CreateUserDto {
   @IsString()
   @IsNotEmpty()
   telegramId: string;
+
+  @ApiPropertyOptional({ example: 'username' })
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  username?: string;
 }

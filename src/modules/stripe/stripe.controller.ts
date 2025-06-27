@@ -24,7 +24,7 @@ export class StripeController {
     let eventType: any;
     // Check if webhook signing is configured.
     const webhookSecret = env.STRIPE_WEBHOOK_SECRET;
-    if (webhookSecret) {
+    if (webhookSecret && env.ENV === 'prod') {
       // Retrieve the event by verifying the signature using the raw body and secret.
       let event: any;
       const signature = req.headers['stripe-signature'];
@@ -33,7 +33,6 @@ export class StripeController {
           .getInstance()
           .webhooks.constructEvent(req.rawBody, signature, webhookSecret);
       } catch (err) {
-        console.log(err);
         console.log(`⚠️  Webhook signature verification failed.`);
         return res.sendStatus(400);
       }
