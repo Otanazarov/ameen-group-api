@@ -61,6 +61,11 @@ export class TelegramUpdate {
     this.telegramService.onEditCallBack(ctx);
   }
 
+  @CallbackQuery(/reaction_(.+)/)
+  async onReactionCallbackQuery(@Ctx() ctx: Context): Promise<void> {
+    this.telegramService.onReactionCallBack(ctx);
+  }
+
   @On('chat_join_request')
   async onJoin(ctx: Context) {
     const chatMember = ctx.update.chat_join_request;
