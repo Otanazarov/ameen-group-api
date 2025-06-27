@@ -4,7 +4,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { HttpError } from 'src/common/exception/http.error';
 import { FindAllUserDto } from './dto/findAll-user.dto';
-import { SubscriptionStatus } from '@prisma/client';
+import { Prisma, SubscriptionStatus } from '@prisma/client';
 
 @Injectable()
 export class UserService implements OnModuleInit {
@@ -56,45 +56,51 @@ export class UserService implements OnModuleInit {
       status,
       subscriptionTypeId,
     } = dto;
-
+  
+    const where: Prisma.UserWhereInput = {
+      firstName: name?.trim()
+        ? {
+            contains: name.trim(),
+            mode: 'insensitive',
+          }
+        : undefined,
+      phoneNumber: phoneNumber?.trim()
+        ? {
+            contains: phoneNumber.trim(),
+            mode: 'insensitive',
+          }
+        : undefined,
+      telegramId: telegramId?.trim()
+        ? {
+            contains: telegramId.trim(),
+            mode: 'insensitive',
+          }
+        : undefined,
+      status: status || undefined,
+      subscription: subscriptionTypeId
+        ? {
+            some: {
+              subscriptionType: {
+                id: subscriptionTypeId,
+              },
+            },
+          }
+        : undefined,
+    };
+  
     const [data, total] = await this.prisma.$transaction([
       this.prisma.user.findMany({
-        where: {
-          firstName: {
-            contains: name?.trim() || '',
-            mode: 'insensitive',
-          },
-          phoneNumber: phoneNumber
-            ? { contains: phoneNumber.trim(), mode: 'insensitive' }
-            : undefined,
-          telegramId: telegramId
-            ? { contains: telegramId.trim(), mode: 'insensitive' }
-            : undefined,
-          status: status ? { equals: status } : undefined,
-          subscription: subscriptionTypeId
-            ? {
-                some: {
-                  subscriptionType: {
-                    id: subscriptionTypeId,
-                  },
-                },
-              }
-            : undefined,
-        },
+        where,
         skip: (page - 1) * limit,
         take: limit,
         orderBy: { createdAt: 'desc' },
-      }),
-      this.prisma.user.count({
-        where: {
-          firstName: {
-            contains: name?.trim() || '',
-            mode: 'insensitive',
-          },
+        include: {
+          subscription: true,
         },
       }),
+      this.prisma.user.count({ where }),
     ]);
-
+  
     return {
       total,
       page,
@@ -102,6 +108,7 @@ export class UserService implements OnModuleInit {
       data,
     };
   }
+  
 
   async getSubscription(telegramId: number) {
     const subscription = await this.prisma.subscription.findFirst({
