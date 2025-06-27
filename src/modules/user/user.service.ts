@@ -12,7 +12,7 @@ export class UserService implements OnModuleInit {
 
   async onModuleInit() {
     const currentUserCount = await this.prisma.user.count();
-    const userCount = currentUserCount - 5;
+    const userCount = 5 - currentUserCount;
 
     for (let i = 0; i < userCount; i++) {
       this.create({
