@@ -74,6 +74,15 @@ export class StripeService {
     }
 
     const botUsername = this.telegramService.bot.botInfo.username;
+
+    const subscription = await this.subscriptionService.create({
+      subscriptionTypeId,
+      userId,
+      status: SubscriptionStatus.Created,
+      paymentType: PaymentType.STRIPE,
+      price: subscriptionType.price,
+    });
+
     const session = await this.stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'subscription',
@@ -87,18 +96,10 @@ export class StripeService {
       metadata: {
         userId: userId.toString(),
         subscriptionTypeId: subscriptionTypeId.toString(),
+        subscriptionId: subscription.id.toString(),
       },
       success_url: `https://t.me/${botUsername}?start=success`,
       cancel_url: `https://t.me/${botUsername}?start=cancel`,
-    });
-
-    await this.subscriptionService.create({
-      subscriptionTypeId,
-      userId,
-      status: SubscriptionStatus.Created,
-      paymentType: PaymentType.STRIPE,
-      price: subscriptionType.price,
-      transactionId: session.id,
     });
 
     return session;
@@ -109,7 +110,7 @@ export class StripeService {
       const object = data.object as Stripe.Checkout.Session;
       const subscription = await this.prisma.subscription.findFirst({
         where: {
-          transactionId: object.id,
+          id: +object.metadata.subscriptionId,
         },
       });
       await this.subscriptionService.update(subscription.id, {
