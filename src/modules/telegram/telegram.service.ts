@@ -118,10 +118,11 @@ export class TelegramService implements OnModuleInit {
     return { subscriptionType, stripe };
   }
 
-  @Interval(1000)
+  @Interval(10000)
   async onCron() {
     await this.kickExpired();
     await this.sendAlertMessage();
+    await this.sendMessages();
   }
 
   private async handleExistingUser(ctx: Context) {
@@ -249,6 +250,21 @@ export class TelegramService implements OnModuleInit {
       return true;
     }
     return false;
+  }
+
+  async sendMessages() {
+    const messages = await this.prismaService.messageUser.findMany({
+      where: { status: 'PENDING' },
+      take: 20,
+      include: {
+        user: true,
+        message: true,
+      },
+    });
+
+    for (const message of messages) {
+      await this.sendMessage(message);
+    }
   }
 
   private async handleSettings(ctx: Context) {
