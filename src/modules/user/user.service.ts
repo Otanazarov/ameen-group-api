@@ -10,8 +10,9 @@ import { SubscriptionStatus } from '@prisma/client';
 export class UserService implements OnModuleInit {
   constructor(private readonly prisma: PrismaService) {}
 
-  onModuleInit() {
-    const userCount = 5;
+  async onModuleInit() {
+    const currentUserCount = await this.prisma.user.count();
+    const userCount = currentUserCount - 5;
 
     for (let i = 0; i < userCount; i++) {
       this.create({
