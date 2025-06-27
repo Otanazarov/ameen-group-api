@@ -19,8 +19,10 @@ model Admin {
 model User {
   id            Int            @id @default(autoincrement())
   telegramId    String         @unique
+  username      String?
   firstName     String
   lastName      String
+  lastActiveAt  DateTime?
   email         String?        @unique
   phoneNumber   String         @unique
   lastMessageAt DateTime? // foydalanuvchi oxirgi marta botga yozgan vaqt

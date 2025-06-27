@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -7,8 +7,24 @@ import { FindAllUserDto } from './dto/findAll-user.dto';
 import { SubscriptionStatus } from '@prisma/client';
 
 @Injectable()
-export class UserService {
+export class UserService implements OnModuleInit {
   constructor(private readonly prisma: PrismaService) {}
+
+  onModuleInit() {
+    const userCount = 5;
+
+    for (let i = 0; i < userCount; i++) {
+      this.create({
+        firstName: `User ${i}`,
+        lastName: `User ${i}`,
+        email: `user${i}@gmail.com`,
+        phoneNumber: `+998${i}1234567`,
+        telegramId: i.toString(),
+        username: 'user' + i.toString(),
+      });
+    }
+  }
+
   async create(createUserDto: CreateUserDto) {
     const phoneNumber = await this.prisma.user.findFirst({
       where: { phoneNumber: createUserDto.phoneNumber },
@@ -153,8 +169,8 @@ export class UserService {
       lastName: updateUserDto.lastName ?? user.lastName,
       phoneNumber: updateUserDto.phoneNumber ?? user.phoneNumber,
       status: updateUserDto.status ?? user.status,
-      role: updateUserDto.role ?? user.role,
       inGroup: updateUserDto.inGroup ?? user.inGroup,
+      lastActiveAt: updateUserDto.lastActiveAt ?? user.lastActiveAt,
     };
 
     return this.prisma.user.update({

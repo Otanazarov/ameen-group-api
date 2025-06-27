@@ -1,14 +1,15 @@
-import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { CreateUserDto } from './create-user.dto';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsBoolean,
+  IsDateString,
   IsEmail,
   IsEnum,
+  IsNotEmpty,
   IsOptional,
   IsPhoneNumber,
   IsString,
 } from 'class-validator';
-import { UserRole, UserStatus } from '@prisma/client';
+import { UserStatus } from '@prisma/client';
 
 export class UpdateUserDto {
   @ApiPropertyOptional({ example: 'Otabek' })
@@ -42,8 +43,14 @@ export class UpdateUserDto {
   @IsEnum(UserStatus)
   status?: UserStatus;
 
-  @ApiPropertyOptional({ enum: UserRole })
+  @ApiPropertyOptional({ example: 'username' })
   @IsOptional()
-  @IsEnum(UserRole)
-  role?: UserRole;
+  @IsString()
+  @IsNotEmpty()
+  username?: string;
+
+  @ApiPropertyOptional({ example: 'username' })
+  @IsOptional()
+  @IsDateString()
+  lastActiveAt?: Date;
 }

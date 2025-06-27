@@ -208,6 +208,7 @@ export class TelegramService implements OnModuleInit {
           firstName: ctx.session.first_name,
           lastName: ctx.session.last_name,
           phoneNumber: ctx.session.phone,
+          username: ctx.from.username,
           email: ctx.session.email === 'skipped' ? null : ctx.session.email,
           telegramId: ctx.from.id.toString(),
         });
@@ -269,6 +270,7 @@ export class TelegramService implements OnModuleInit {
   async onMessage(ctx: Context) {
     if (ctx.chat.type != 'private') return;
     if (!ctx.session.id && (await this.handleExistingUser(ctx))) return;
+    this.userService.update(ctx.session.id, { lastActiveAt: new Date() });
     if (
       ctx.message.text?.startsWith('/start') &&
       (await this.handleStartCommand(ctx))
