@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { UpdateMessageDto } from './dto/update-message.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -11,10 +11,12 @@ import { FindAllMessageDto } from './dto/findAllMessage.dto';
 export class MessageService {
   constructor(
     private readonly prisma: PrismaService,
+    @Inject(forwardRef(() => TelegramService))
     private readonly telegramService: TelegramService,
   ) {}
   async create(createMessageDto: CreateMessageDto) {
-    const { userIds, status, text, subscriptionTypeId } = createMessageDto;
+    const { userIds, status, text, subscriptionTypeId, sendTime } =
+      createMessageDto;
 
     const users = await this.prisma.user.findMany({
       where: {
@@ -45,6 +47,7 @@ export class MessageService {
           text,
           userId: user.id,
           status: MessageStatus.PENDING,
+          time: sendTime || new Date(),
         },
         include: { user: true },
       });

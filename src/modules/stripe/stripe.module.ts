@@ -8,6 +8,6 @@ import { TelegramModule } from '../telegram/telegram.module';
   providers: [StripeService],
   controllers: [StripeController],
   exports: [StripeService],
-  imports: [SubscriptionModule, TelegramModule],
+  imports: [SubscriptionModule, forwardRef(() => TelegramModule)],
 })
 export class StripeModule {}

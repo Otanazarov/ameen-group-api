@@ -35,6 +35,7 @@ export class TelegramService implements OnModuleInit {
     @Inject(forwardRef(() => StripeService))
     private readonly stripeService: StripeService,
     private readonly settingsService: SettingsService,
+    @Inject(forwardRef(() => MessageService))
     private readonly messageService: MessageService,
   ) {}
 
