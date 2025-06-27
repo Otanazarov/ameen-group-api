@@ -74,7 +74,6 @@ model Settings {
 model Message {
   id        Int           @id @default(autoincrement())
   text      String
-  time      DateTime
   users     MessageUser[]
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt

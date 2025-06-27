@@ -48,7 +48,7 @@ export class MessageService {
     for (const user of users) {
       if (!user.telegramId) continue;
 
-      const messageUser = await this.prisma.messageUser.create({
+      await this.prisma.messageUser.create({
         data: {
           userId: user.id,
           status: MessageStatus.PENDING,
@@ -56,8 +56,6 @@ export class MessageService {
         },
         include: { user: true, message: true },
       });
-
-      await this.telegramService.sendMessage(messageUser);
     }
 
     return message;
