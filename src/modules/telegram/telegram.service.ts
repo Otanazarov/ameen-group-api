@@ -11,7 +11,7 @@ import { SubscriptionTypeService } from '../subscription-type/subscription-type.
 import { StripeService } from '../stripe/stripe.service';
 import { SettingsService } from '../settings/settings.service';
 import { autoRetry } from '@grammyjs/auto-retry';
-import { Message, User } from '@prisma/client';
+import { Message, MessageUser, User } from '@prisma/client';
 import { MessageService } from '../message/message.service';
 
 @Injectable()
@@ -53,14 +53,20 @@ export class TelegramService implements OnModuleInit {
     ctx.answerCallbackQuery('✅ Reaksiya bildirildi');
   }
 
-  public async sendMessage(message: Message & { user: User }) {
+  public async sendMessage(
+    message: MessageUser & { user: User; message: Message },
+  ) {
     try {
-      await this.bot.api.sendMessage(message.user.telegramId, message.text, {
-        reply_markup: new InlineKeyboard().text(
-          'Reaksiya Bildirish',
-          `reaction_${message.id}`,
-        ),
-      });
+      await this.bot.api.sendMessage(
+        message.user.telegramId,
+        message.message.text,
+        {
+          reply_markup: new InlineKeyboard().text(
+            'Reaksiya Bildirish',
+            `reaction_${message.id}`,
+          ),
+        },
+      );
 
       await this.messageService.update(message.id, { status: 'DELIVERED' });
     } catch {

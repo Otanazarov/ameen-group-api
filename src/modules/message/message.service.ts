@@ -6,6 +6,7 @@ import { HttpError } from 'src/common/exception/http.error';
 import { TelegramService } from '../telegram/telegram.service';
 import { MessageStatus } from '@prisma/client';
 import { FindAllMessageDto } from './dto/findAllMessage.dto';
+import { FindAllMessageUserDto } from './dto/findAllMessageUser.dto';
 
 @Injectable()
 export class MessageService {
@@ -37,36 +38,50 @@ export class MessageService {
       },
     });
 
-    const result = [];
+    const message = await this.prisma.message.create({
+      data: {
+        text,
+        time: sendTime || new Date(),
+      },
+    });
 
     for (const user of users) {
       if (!user.telegramId) continue;
 
-      const message = await this.prisma.message.create({
+      const messageUser = await this.prisma.messageUser.create({
         data: {
-          text,
           userId: user.id,
           status: MessageStatus.PENDING,
-          time: sendTime || new Date(),
+          messageId: message.id,
         },
-        include: { user: true },
+        include: { user: true, message: true },
       });
 
-      await this.telegramService.sendMessage(message);
-
-      result.push(message);
+      await this.telegramService.sendMessage(messageUser);
     }
 
-    return {
-      count: result.length,
-      messages: result,
-    };
+    return message;
   }
 
   async findAll(dto: FindAllMessageDto) {
-    const { page, limit, status } = dto;
+    const { page, limit, text } = dto;
     const skip = (page - 1) * limit;
     return await this.prisma.message.findMany({
+      where: {
+        text,
+      },
+      skip,
+      take: limit,
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+
+  async findAllUser(dto: FindAllMessageUserDto) {
+    const { page, limit, status } = dto;
+    const skip = (page - 1) * limit;
+    return await this.prisma.messageUser.findMany({
       where: {
         status,
       },
@@ -90,6 +105,18 @@ export class MessageService {
     return message;
   }
 
+  async findOneUser(id: number) {
+    const message = await this.prisma.messageUser.findUnique({
+      where: {
+        id,
+      },
+    });
+    if (!message) {
+      throw HttpError({ code: 404, message: 'Message not found' });
+    }
+    return message;
+  }
+
   async update(id: number, updateMessageDto: UpdateMessageDto) {
     const message = await this.prisma.message.findUnique({
       where: {
@@ -99,7 +126,7 @@ export class MessageService {
     if (!message) {
       throw HttpError({ code: 404, message: 'Message not found' });
     }
-    const updatedMessage = await this.prisma.message.update({
+    const updatedMessage = await this.prisma.messageUser.update({
       where: {
         id,
       },

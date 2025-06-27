@@ -32,7 +32,7 @@ model User {
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   subscription  Subscription[]
-  messages      Message[]
+  MessageUser   MessageUser[]
 }
 
 model Subscription {
@@ -74,10 +74,19 @@ model Settings {
 model Message {
   id        Int           @id @default(autoincrement())
   text      String
+  time      DateTime
+  users     MessageUser[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
+model MessageUser {
+  id        Int           @id @default(autoincrement())
   user      User          @relation(fields: [userId], references: [id])
   userId    Int
   status    MessageStatus
-  time      DateTime
+  message   Message?      @relation(fields: [messageId], references: [id])
+  messageId Int?
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
 }
