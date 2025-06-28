@@ -33,7 +33,12 @@ export class StatisticsService {
         },
       });
 
-      data.push({ activeCount, expiredCount, subscriptionType });
+      data.push({
+        activeCount,
+        expiredCount,
+        total: activeCount + expiredCount,
+        subscriptionType,
+      });
     }
 
     return data;
