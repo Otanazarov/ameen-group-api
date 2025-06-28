@@ -19,7 +19,7 @@ export class UserService implements OnModuleInit {
         firstName: `User ${i}`,
         lastName: `User ${i}`,
         email: `user${i}@gmail.com`,
-        phoneNumber: `+998${i}1234567`,
+        phoneNumber: `+998${i + Math.floor(Math.random() * 80)}1234567`,
         telegramId: i.toString(),
         username: 'user' + i.toString(),
       });
