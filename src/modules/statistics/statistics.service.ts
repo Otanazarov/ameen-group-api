@@ -9,13 +9,31 @@ export class StatisticsService {
     const data = [];
 
     for (const subscriptionType of subscriptionTypes) {
-      const count = await this.prisma.user.count({
+      const activeCount = await this.prisma.user.count({
         where: {
-          subscription: { some: { subscriptionTypeId: subscriptionType.id } },
+          subscription: {
+            some: {
+              subscriptionTypeId: subscriptionType.id,
+              status: 'Paid',
+              expiredDate: { gte: new Date() },
+            },
+          },
         },
       });
 
-      data.push({ count, subscriptionType });
+      const expiredCount = await this.prisma.user.count({
+        where: {
+          subscription: {
+            some: {
+              subscriptionTypeId: subscriptionType.id,
+              status: 'Paid',
+              expiredDate: { lte: new Date() },
+            },
+          },
+        },
+      });
+
+      data.push({ activeCount, expiredCount, subscriptionType });
     }
 
     return data;
