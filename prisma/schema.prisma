@@ -61,6 +61,7 @@ model SubscriptionType {
   telegramTopicIds Json
   expireDays       Int            @default(30)
   subscriptions    Subscription[]
+  isDeleted        Boolean        @default(false)
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
 }

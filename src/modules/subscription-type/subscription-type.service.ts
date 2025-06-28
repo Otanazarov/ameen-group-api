@@ -96,12 +96,21 @@ export class SubscriptionTypeService {
     const existing = await this.prisma.subscriptionType.findUnique({
       where: { id },
     });
+  
     if (!existing) {
       throw new Error(`Subscription type with id ${id} not found`);
     }
-    await this.prisma.subscriptionType.delete({
+  
+    if (existing.isDeleted) {
+      throw new Error(`Subscription type with id ${id} is already deleted`);
+    }
+  
+    await this.prisma.subscriptionType.update({
       where: { id },
+      data: { isDeleted: true },
     });
-    return { message: `Subscription type with id ${id} deleted successfully` };
+  
+    return { message: `Subscription type with id ${id} marked as deleted` };
   }
+  
 }
