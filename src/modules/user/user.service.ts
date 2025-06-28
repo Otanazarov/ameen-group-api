@@ -171,7 +171,7 @@ export class UserService implements OnModuleInit {
     }
 
     const updateData = {
-      firstName: updateUserDto.firsName ?? user.firstName,
+      firstName: updateUserDto.firstName ?? user.firstName,
       email: updateUserDto.email ?? user.email,
       lastName: updateUserDto.lastName ?? user.lastName,
       phoneNumber: updateUserDto.phoneNumber ?? user.phoneNumber,
