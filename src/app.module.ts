@@ -14,6 +14,7 @@ import { SubscriptionModule } from './modules/subscription/subscription.module';
 import { UserModule } from './modules/user/user.module';
 import { freeStorage } from '@grammyjs/storage-free';
 import { SessionData } from './modules/telegram/Context.type';
+import { StatisticsModule } from './modules/statistics/statistics.module';
 
 @Module({
   controllers: [],
@@ -46,6 +47,7 @@ import { SessionData } from './modules/telegram/Context.type';
         }),
       ],
     }),
+    StatisticsModule,
   ],
 })
 export class AppModule {}
