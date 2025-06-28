@@ -19,11 +19,12 @@ export class SubscriptionTypeService {
   }
 
   async findAll(dto: FindAllSubscriptionTypeDto) {
-    const { limit = 10, page = 1, title } = dto;
+    const { limit = 10, page = 1, title, isDeleted = false } = dto;
 
     const [data, total] = await this.prisma.$transaction([
       this.prisma.subscriptionType.findMany({
         where: {
+          isDeleted,
           title: {
             contains: title?.trim() || '',
             mode: 'insensitive',
@@ -96,21 +97,20 @@ export class SubscriptionTypeService {
     const existing = await this.prisma.subscriptionType.findUnique({
       where: { id },
     });
-  
+
     if (!existing) {
       throw new Error(`Subscription type with id ${id} not found`);
     }
-  
+
     if (existing.isDeleted) {
       throw new Error(`Subscription type with id ${id} is already deleted`);
     }
-  
+
     await this.prisma.subscriptionType.update({
       where: { id },
       data: { isDeleted: true },
     });
-  
+
     return { message: `Subscription type with id ${id} marked as deleted` };
   }
-  
 }
