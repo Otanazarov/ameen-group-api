@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { AtmosService } from './modules/atmos/atmos.service';
 
-// app.service.ts
 @Injectable()
 export class AppService {
   constructor(private readonly atmosService: AtmosService) {}
@@ -12,8 +11,8 @@ export class AppService {
       for (const subscription of subscriptions) {
         await this.atmosService.checkTransactionStatus(
           subscription.transactionId,
-        ); // corrected variable name
+        );
       }
-    }, 60_000); // har 60 soniyada tekshiriladi
+    }, 60_000);
   }
 }

@@ -56,7 +56,7 @@ export class UserService implements OnModuleInit {
       status,
       subscriptionTypeId,
     } = dto;
-  
+
     const where: Prisma.UserWhereInput = {
       firstName: name?.trim()
         ? {
@@ -87,7 +87,7 @@ export class UserService implements OnModuleInit {
           }
         : undefined,
     };
-  
+
     const [data, total] = await this.prisma.$transaction([
       this.prisma.user.findMany({
         where,
@@ -100,7 +100,7 @@ export class UserService implements OnModuleInit {
       }),
       this.prisma.user.count({ where }),
     ]);
-  
+
     return {
       total,
       page,
@@ -108,7 +108,6 @@ export class UserService implements OnModuleInit {
       data,
     };
   }
-  
 
   async getSubscription(telegramId: number) {
     const subscription = await this.prisma.subscription.findFirst({

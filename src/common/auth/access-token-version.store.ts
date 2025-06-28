@@ -19,7 +19,7 @@ export function getTokenVersion(userId: string): string {
   return store[userId] ?? randomUUID();
 }
 
-export function incrementTokenVersion(userId: string): string {
+export function incrementAccessTokenVersion(userId: string): string {
   const store = loadTokenVersions();
   const updated = randomUUID();
   store[userId] = updated;

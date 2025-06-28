@@ -1,16 +1,16 @@
-import { Bot, InlineKeyboard, Keyboard } from 'grammy';
 import {
-  InjectBot,
-  Update,
-  On,
-  Ctx,
-  Command,
   CallbackQuery,
+  Command,
+  Ctx,
+  InjectBot,
+  On,
+  Update,
 } from '@grammyjs/nestjs';
-import { TelegramService } from './telegram.service';
-import { Context } from './Context.type';
-import { UserService } from '../user/user.service';
+import { Bot } from 'grammy';
 import { env } from 'src/common/config';
+import { UserService } from '../user/user.service';
+import { Context } from './Context.type';
+import { TelegramService } from './telegram.service';
 
 @Update()
 export class TelegramUpdate {

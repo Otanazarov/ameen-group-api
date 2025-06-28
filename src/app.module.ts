@@ -1,27 +1,34 @@
-import { Module } from '@nestjs/common';
-import { AdminModule } from './modules/admin/admin.module';
-import { PrismaModule } from './modules/prisma/prisma.module';
-import { UserModule } from './modules/user/user.module';
-import { SubscriptionTypeModule } from './modules/subscription-type/subscription-type.module';
-import { StripeModule } from './modules/stripe/stripe.module';
-import { env } from './common/config';
 import { NestjsGrammyModule } from '@grammyjs/nestjs';
-import { session } from 'grammy';
-import { SubscriptionModule } from './modules/subscription/subscription.module';
-import { AtmosModule } from './modules/atmos/atmos.module';
+import { Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
-import { SettingsModule } from './modules/settings/settings.module';
+import { session } from 'grammy';
+import { env } from './common/config';
+import { AdminModule } from './modules/admin/admin.module';
+import { AtmosModule } from './modules/atmos/atmos.module';
 import { MessageModule } from './modules/message/message.module';
+import { PrismaModule } from './modules/prisma/prisma.module';
+import { SettingsModule } from './modules/settings/settings.module';
+import { StripeModule } from './modules/stripe/stripe.module';
+import { SubscriptionTypeModule } from './modules/subscription-type/subscription-type.module';
+import { SubscriptionModule } from './modules/subscription/subscription.module';
+import { UserModule } from './modules/user/user.module';
+import { freeStorage } from '@grammyjs/storage-free';
+import { SessionData } from './modules/telegram/Context.type';
 
 @Module({
   controllers: [],
   providers: [],
   imports: [
     AdminModule,
-    PrismaModule,
     UserModule,
+    SettingsModule,
+    MessageModule,
+    SubscriptionModule,
     SubscriptionTypeModule,
+    AtmosModule,
     StripeModule,
+    PrismaModule,
+    ScheduleModule.forRoot(),
     NestjsGrammyModule.forRoot({
       token: env.TELEGRAM_BOT_TOKEN,
       pollingOptions: {
@@ -35,15 +42,10 @@ import { MessageModule } from './modules/message/message.module';
       middlewares: [
         session({
           initial: () => ({}),
-          // storage: freeStorage<SessionData>(env.TELEGRAM_BOT_TOKEN) as any,
+          storage: freeStorage<SessionData>(env.TELEGRAM_BOT_TOKEN) as any,
         }),
       ],
     }),
-    SubscriptionModule,
-    AtmosModule,
-    ScheduleModule.forRoot(),
-    SettingsModule,
-    MessageModule,
   ],
 })
 export class AppModule {}

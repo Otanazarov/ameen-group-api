@@ -6,7 +6,7 @@ import { HttpError } from 'src/common/exception/http.error';
 import { Role } from './role.enum';
 import { ROLES_KEY } from './roles.decorator';
 import { env } from 'src/common/config';
-import { getTokenVersion } from '../token-version.store';
+import { getTokenVersion } from '../access-token-version.store';
 import { getRefreshTokenVersion } from '../refresh-token-version.store';
 
 export class RolesGuard implements CanActivate {

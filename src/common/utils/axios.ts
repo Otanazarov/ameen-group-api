@@ -12,7 +12,7 @@ atmosApi.interceptors.response.use(
     if (error.response?.status === 401) {
       const originalRequest = error.config;
       try {
-        let data = await atmosApi.post(
+        const data = await atmosApi.post(
           '/token',
           new URLSearchParams({
             grant_type: 'client_credentials',
@@ -24,7 +24,7 @@ atmosApi.interceptors.response.use(
             },
           },
         );
-        let token = data.data.access_token;
+        const token = data.data.access_token;
         atmosApi.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         originalRequest.headers['Authorization'] = `Bearer ${token}`;
 

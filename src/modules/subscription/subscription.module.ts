@@ -4,7 +4,7 @@ import { SubscriptionController } from './subscription.controller';
 import { UserModule } from '../user/user.module';
 
 @Module({
-  imports:[UserModule],
+  imports: [UserModule],
   controllers: [SubscriptionController],
   providers: [SubscriptionService],
   exports: [SubscriptionService],

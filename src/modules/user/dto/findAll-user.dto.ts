@@ -25,8 +25,6 @@ export class FindAllUserDto extends PaginationDto {
   @IsEnum(UserStatus)
   status?: UserStatus;
 
-
-
   @IsId(false)
   subscriptionTypeId?: number;
 }

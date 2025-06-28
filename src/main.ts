@@ -1,13 +1,17 @@
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
 import { BadRequestException, ValidationPipe } from '@nestjs/common';
-import { env } from './common/config';
+import { NestFactory } from '@nestjs/core';
 import { SwaggerModule } from '@nestjs/swagger';
-import { ApiSwaggerOptions } from './common/swagger/config.swagger';
-import { HttpExceptionFilter } from './common/filter/httpException.filter';
 import * as bodyParser from 'body-parser';
+import { AppModule } from './app.module';
+import { env } from './common/config';
+import { HttpExceptionFilter } from './common/filter/httpException.filter';
+import { ApiSwaggerOptions } from './common/swagger/config.swagger';
+
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { cors: { origin: '*' },rawBody: true });
+  const app = await NestFactory.create(AppModule, {
+    cors: { origin: '*' },
+    rawBody: true,
+  });
 
   app.setGlobalPrefix('/api');
   app.use('/webhook', bodyParser.raw({ type: 'application/json' }));

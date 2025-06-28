@@ -12,12 +12,12 @@ export class AtmosController {
   }
 
   @Post('/preapply')
-  async preapply(@Body() dto) {
+  async preapply(@Body() dto: any) {
     return this.atmosService.preApplyTransaction(dto);
   }
 
   @Post('/apply')
-  apply(@Body() dto) {
+  apply(@Body() dto: any) {
     return this.atmosService.applyTransaction(dto);
   }
 }

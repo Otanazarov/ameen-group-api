@@ -1,10 +1,8 @@
-import { forwardRef, Module } from '@nestjs/common';
-import { MessageService } from './message.service';
+import { Module } from '@nestjs/common';
 import { MessageController } from './message.controller';
-import { TelegramModule } from '../telegram/telegram.module';
+import { MessageService } from './message.service';
 
 @Module({
-  imports: [forwardRef(() => TelegramModule)],
   controllers: [MessageController],
   providers: [MessageService],
   exports: [MessageService],

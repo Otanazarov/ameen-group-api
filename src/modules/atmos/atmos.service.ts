@@ -1,16 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { CreateAtmosDto } from './dto/create.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { TelegramService } from '../telegram/telegram.service';
 import { env } from 'src/common/config';
 import { SubscriptionStatus } from '@prisma/client';
 import { atmosApi } from 'src/common/utils/axios';
 import { SubscriptionService } from '../subscription/subscription.service';
+
 @Injectable()
 export class AtmosService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly telegramService: TelegramService,
     private readonly subscriptionService: SubscriptionService,
   ) {}
 

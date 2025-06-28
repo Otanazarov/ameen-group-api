@@ -15,7 +15,7 @@ export const env = cleanEnv(process.env, {
 
   ATMOS_STORE_ID: str(),
   ATMOS_CONSUMER_KEY: str(),
-  ATMOS_CONSUMER_SECRET:str(),
+  ATMOS_CONSUMER_SECRET: str(),
 
   STRIPE_SECRET_KEY: str(),
   STRIPE_WEBHOOK_SECRET: str(),

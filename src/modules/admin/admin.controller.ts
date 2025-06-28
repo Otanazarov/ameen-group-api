@@ -22,8 +22,8 @@ import { UpdateAdminDto } from './dto/update-admin.dto';
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
-  @Post('register')
-  @DecoratorWrapper('Register Admin')
+  @Post('create')
+  @DecoratorWrapper('Create Admin')
   create(@Body() createAdminDto: CreateAdminDto) {
     return this.adminService.create(createAdminDto);
   }
@@ -66,10 +66,4 @@ export class AdminController {
   ) {
     return this.adminService.update(+id, updateAdminDto);
   }
-
-  // @Delete(':id')
-  // @DecoratorWrapper('Delete Admin', true, [Role.Admin])
-  // remove(@Param('id',ParseIntPipe) id: string) {
-  //   return this.adminService.remove(+id);
-  // }
 }

@@ -8,8 +8,8 @@ import {
 import { Role } from 'src/common/auth/roles/role.enum';
 import {
   getTokenVersion,
-  incrementTokenVersion,
-} from 'src/common/auth/token-version.store';
+  incrementAccessTokenVersion,
+} from 'src/common/auth/access-token-version.store';
 import { env } from 'src/common/config';
 import { HttpError } from 'src/common/exception/http.error';
 import { PrismaService } from '../prisma/prisma.service';
@@ -23,8 +23,8 @@ import { UpdateAdminDto } from './dto/update-admin.dto';
 export class AdminService implements OnModuleInit {
   constructor(private readonly prisma: PrismaService) {}
   async onModuleInit() {
-    const admin = await this.prisma.admin.findFirst({ where: { id: 1 } });
-    if (!admin) {
+    const admin = await this.prisma.admin.count();
+    if (admin == 0) {
       await this.create({ name: 'admin', password: 'admin' });
     }
   }
@@ -56,7 +56,7 @@ export class AdminService implements OnModuleInit {
     if (!match) {
       throw HttpError({ code: 'Invalid credentials' });
     }
-    incrementTokenVersion(admin.id.toString());
+    incrementAccessTokenVersion(admin.id.toString());
     incrementRefreshTokenVersion(admin.id.toString());
 
     const tokenVersion = getTokenVersion(admin.id.toString());
@@ -67,14 +67,14 @@ export class AdminService implements OnModuleInit {
         { id: admin.id, role: Role.Admin, tokenVersion },
         env.ACCESS_TOKEN_SECRET,
         {
-          expiresIn: '2h',
+          expiresIn: '10h',
         },
       ),
       sign(
         { id: admin.id, role: Role.Admin, refreshTokenVersion },
         env.REFRESH_TOKEN_SECRET,
         {
-          expiresIn: '1d',
+          expiresIn: '5d',
         },
       ),
     ];
@@ -110,7 +110,6 @@ export class AdminService implements OnModuleInit {
       throw HttpError({ code: 'Admin not found' });
     }
 
-    // Validate refresh token against database
     if (!admin.refreshToken) {
       throw HttpError({ code: 'REFRESH_TOKEN_NOT_FOUND' });
     }
@@ -128,7 +127,7 @@ export class AdminService implements OnModuleInit {
       throw HttpError({ code: 'TOKEN_INVALIDATED' });
     }
 
-    incrementTokenVersion(admin.id.toString());
+    incrementAccessTokenVersion(admin.id.toString());
     const currentTokenVersion = getTokenVersion(admin.id.toString());
 
     const accessToken = sign(
@@ -138,7 +137,7 @@ export class AdminService implements OnModuleInit {
         role: Role.Admin,
       },
       env.ACCESS_TOKEN_SECRET,
-      { expiresIn: '2h' },
+      { expiresIn: '10h' },
     );
 
     return { accessToken };
@@ -149,7 +148,7 @@ export class AdminService implements OnModuleInit {
     if (!admin) {
       throw HttpError({ code: 'Admin not found' });
     }
-    incrementTokenVersion(admin.id.toString());
+    incrementAccessTokenVersion(admin.id.toString());
     incrementRefreshTokenVersion(admin.id.toString());
 
     // Clear refresh token from database

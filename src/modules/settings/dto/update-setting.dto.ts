@@ -1,5 +1,4 @@
-import { ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { CreateSettingDto } from './create-setting.dto';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsOptional, IsString } from 'class-validator';
 
 export class UpdateSettingDto {

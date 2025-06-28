@@ -1,20 +1,15 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { UpdateMessageDto } from './dto/update-message.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { HttpError } from 'src/common/exception/http.error';
-import { TelegramService } from '../telegram/telegram.service';
 import { MessageStatus } from '@prisma/client';
 import { FindAllMessageDto } from './dto/findAllMessage.dto';
 import { FindAllMessageUserDto } from './dto/findAllMessageUser.dto';
 
 @Injectable()
 export class MessageService {
-  constructor(
-    private readonly prisma: PrismaService,
-    @Inject(forwardRef(() => TelegramService))
-    private readonly telegramService: TelegramService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
   async create(createMessageDto: CreateMessageDto) {
     const { userIds, status, text, subscriptionTypeId } = createMessageDto;
 
