@@ -136,6 +136,10 @@ export class UserService implements OnModuleInit {
   async findOne(id: number) {
     const user = await this.prisma.user.findUnique({
       where: { id: id },
+      include: {
+        MessageUser: { include: { message: true } },
+        subscription: { include: { subscriptionType: true } },
+      },
     });
     if (!user) {
       throw HttpError({ code: 'User not found' });
