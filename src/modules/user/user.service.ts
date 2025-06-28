@@ -55,6 +55,7 @@ export class UserService implements OnModuleInit {
       telegramId,
       status,
       subscriptionTypeId,
+      subscriptionStatus,
     } = dto;
 
     const where: Prisma.UserWhereInput = {
@@ -83,6 +84,12 @@ export class UserService implements OnModuleInit {
               subscriptionType: {
                 id: subscriptionTypeId,
               },
+              expiredDate:
+                subscriptionStatus !== undefined
+                  ? subscriptionStatus === 'EXPIRED'
+                    ? { lt: new Date() }
+                    : { gt: new Date() }
+                  : undefined,
             },
           }
         : undefined,

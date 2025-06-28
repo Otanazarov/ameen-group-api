@@ -8,13 +8,11 @@ import { AtmosModule } from './modules/atmos/atmos.module';
 import { MessageModule } from './modules/message/message.module';
 import { PrismaModule } from './modules/prisma/prisma.module';
 import { SettingsModule } from './modules/settings/settings.module';
+import { StatisticsModule } from './modules/statistics/statistics.module';
 import { StripeModule } from './modules/stripe/stripe.module';
 import { SubscriptionTypeModule } from './modules/subscription-type/subscription-type.module';
 import { SubscriptionModule } from './modules/subscription/subscription.module';
 import { UserModule } from './modules/user/user.module';
-import { freeStorage } from '@grammyjs/storage-free';
-import { SessionData } from './modules/telegram/Context.type';
-import { StatisticsModule } from './modules/statistics/statistics.module';
 
 @Module({
   controllers: [],
@@ -43,7 +41,6 @@ import { StatisticsModule } from './modules/statistics/statistics.module';
       middlewares: [
         session({
           initial: () => ({}),
-          storage: freeStorage<SessionData>(env.TELEGRAM_BOT_TOKEN) as any,
         }),
       ],
     }),
