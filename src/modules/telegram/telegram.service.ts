@@ -351,7 +351,7 @@ export class TelegramService implements OnModuleInit {
   async handleEdit(ctx: Context) {
     if (ctx.session.edit == 'firstname') {
       await this.userService.update(ctx.session.id, {
-        firsName: ctx.message.text,
+        firstName: ctx.message.text,
       });
       delete ctx.session.edit;
       await ctx.reply("✅ Ism o'zgartirildi", {
