@@ -50,6 +50,7 @@ export class TransactionService {
       page = 1,
       userId,
       paymentType,
+      type,
       subscriptionTypeId,
     } = dto;
 
@@ -65,6 +66,10 @@ export class TransactionService {
 
     if (paymentType) {
       where.paymentType = paymentType;
+    }
+
+    if (type) {
+      where.type = type;
     }
 
     const [data, total] = await this.prisma.$transaction([
