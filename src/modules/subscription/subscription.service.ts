@@ -2,7 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 import { UpdateSubscriptionDto } from './dto/update-subscription.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { FindAllSubscriptionDto } from './dto/findAll-subscription.dto';
+import {
+  FindAllSubscriptionDto,
+  SubscriptionStatus,
+} from './dto/findAll-subscription.dto';
 import { Prisma } from '@prisma/client';
 
 @Injectable()
@@ -76,6 +79,7 @@ export class SubscriptionService {
       limit = 10,
       page = 1,
       userId,
+      status,
       subscriptionTypeId,
       startDateFrom,
       startDateTo,
@@ -105,7 +109,15 @@ export class SubscriptionService {
       if (expireDateTo) where.expiredDate.lte = expireDateTo;
     }
 
-    const [data, total] = await this.prisma.$transaction([
+    if (status) {
+      if (status == SubscriptionStatus.ACTIVE)
+        where.expiredDate = { lt: new Date() };
+      if (status == SubscriptionStatus.EXPIRED)
+        where.expiredDate = { gt: new Date() };
+    }
+
+    // eslint-disable-next-line prefer-const
+    let [data, total] = await this.prisma.$transaction([
       this.prisma.subscription.findMany({
         where,
         skip: (page - 1) * limit,
@@ -122,6 +134,13 @@ export class SubscriptionService {
         where,
       }),
     ]);
+
+    data = data.map((subscription) => {
+      return {
+        ...subscription,
+        status: subscription.expiredDate < new Date() ? 'EXPIRED' : 'ACTIVE',
+      };
+    });
 
     return {
       total,
