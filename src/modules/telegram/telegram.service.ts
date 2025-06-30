@@ -206,25 +206,23 @@ export class TelegramService implements OnModuleInit {
 
   private async handleEmail(ctx: Context) {
     if (!ctx.session.email) {
-      if (!isEmail(ctx.message.text)) {
-        if (ctx.message.text === "⏭ O'tkazish") {
-          ctx.session.email = 'skipped';
-        } else {
-          this.sendEmailRequest(ctx);
-        }
-        const user = await this.userService.create({
-          firstName: ctx.session.first_name,
-          lastName: ctx.session.last_name,
-          phoneNumber: ctx.session.phone,
-          username: ctx.from.username,
-          email: ctx.session.email === 'skipped' ? null : ctx.session.email,
-          telegramId: ctx.from.id.toString(),
-        });
-        ctx.session.id = user.id;
-        this.sendStartMessage(ctx);
+      console.log(ctx.message.text, isEmail(ctx.message.text));
+      if (ctx.message.text === "⏭ O'tkazish") {
+        ctx.session.email = 'skipped';
+      } else if (!isEmail(ctx.message.text)) {
+        this.sendEmailRequest(ctx, 2);
         return true;
       }
-      ctx.session.email = ctx.message.text;
+      const user = await this.userService.create({
+        firstName: ctx.session.first_name,
+        lastName: ctx.session.last_name,
+        phoneNumber: ctx.session.phone,
+        username: ctx.from.username,
+        email: ctx.session.email === 'skipped' ? null : ctx.session.email,
+        telegramId: ctx.from.id.toString(),
+      });
+      ctx.session.id = user.id;
+      this.sendStartMessage(ctx);
       return true;
     }
     return false;
@@ -246,6 +244,10 @@ export class TelegramService implements OnModuleInit {
           .row();
       });
 
+      if (subscriptionTypes.data.length == 0) {
+        ctx.reply("❌ Obunalar mavjud emas iltimos keyinroq urunib ko'ring");
+        return true;
+      }
       ctx.reply("🔥 Obuna Bo'lish", { reply_markup: keyboard });
       return true;
     }
@@ -532,14 +534,22 @@ export class TelegramService implements OnModuleInit {
     );
   }
 
-  sendEmailRequest(ctx: Context) {
-    ctx.reply(
-      `🎉 ${ctx.session.last_name} ${ctx.session.first_name} sizga qo'shimcha imkoniyatlar ochildi.\n📧 Siz uchun maxsus takliflarni elektron pochtangizga yuborishimiz uchun iltimos email manzilingizni kiriting!`,
-      {
+  sendEmailRequest(ctx: Context, type = 1) {
+    if (type == 1) {
+      ctx.reply(
+        `🎉 ${ctx.session.last_name} ${ctx.session.first_name} sizga qo'shimcha imkoniyatlar ochildi.\n📧 Siz uchun maxsus takliflarni elektron pochtangizga yuborishimiz uchun iltimos email manzilingizni kiriting!`,
+        {
+          reply_markup: {
+            keyboard: new Keyboard().text("⏭ O'tkazish").resized().build(),
+          },
+        },
+      );
+    } else {
+      ctx.reply(`📧 Iltimos Email yuboring`, {
         reply_markup: {
           keyboard: new Keyboard().text("⏭ O'tkazish").resized().build(),
         },
-      },
-    );
+      });
+    }
   }
 }
