@@ -1,10 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import Stripe from 'stripe';
-import { SubscriptionService } from '../subscription/subscription.service';
-import { PaymentType, SubscriptionStatus } from '@prisma/client';
+import {
+  PaymentType,
+  TransactionStatus,
+  TransactionType,
+} from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateSessionDto } from './dto/create-session.dto';
 import { TelegramService } from '../telegram/telegram.service';
+import { TransactionService } from '../trasnaction/transaction.service';
 
 @Injectable()
 export class StripeService {
@@ -12,7 +16,7 @@ export class StripeService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly subscriptionService: SubscriptionService,
+    private readonly transactionService: TransactionService,
     private readonly telegramService: TelegramService,
   ) {
     this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {});
@@ -75,10 +79,10 @@ export class StripeService {
 
     const botUsername = this.telegramService.bot.botInfo.username;
 
-    const subscription = await this.subscriptionService.create({
+    const transaction = await this.transactionService.create({
       subscriptionTypeId,
       userId,
-      status: SubscriptionStatus.Created,
+      status: TransactionStatus.Created,
       paymentType: PaymentType.STRIPE,
       price: subscriptionType.price,
     });
@@ -96,7 +100,7 @@ export class StripeService {
       metadata: {
         userId: userId.toString(),
         subscriptionTypeId: subscriptionTypeId.toString(),
-        subscriptionId: subscription.id.toString(),
+        transactionId: transaction.id.toString(),
       },
       success_url: `https://t.me/${botUsername}?start=success`,
       cancel_url: `https://t.me/${botUsername}?start=cancel`,
@@ -110,18 +114,13 @@ export class StripeService {
       const object = data.object as Stripe.Checkout.Session;
       const subscription = await this.prisma.subscription.findFirst({
         where: {
-          id: +object.metadata.subscriptionId,
+          id: +object.metadata.transactionId,
         },
       });
-      await this.subscriptionService.update(subscription.id, {
-        status: SubscriptionStatus.Paid,
-      });
-
-      await this.stripe.subscriptions.update(object.subscription.toString(), {
-        metadata: {
-          userId: object.metadata.userId,
-          subscriptionTypeId: object.metadata.subscriptionTypeId,
-        },
+      await this.transactionService.update(subscription.id, {
+        status: TransactionStatus.Paid,
+        subscriptonTypeId: +object.metadata.subscriptionTypeId,
+        userId: +object.metadata.userId,
       });
 
       return true;
@@ -137,8 +136,9 @@ export class StripeService {
         },
       });
 
-      await this.subscriptionService.create({
-        status: SubscriptionStatus.Paid,
+      await this.transactionService.create({
+        type: TransactionType.AUTO,
+        status: TransactionStatus.Paid,
         paymentType: PaymentType.STRIPE,
         subscriptionTypeId:
           +object.parent.subscription_details.metadata.subscriptionTypeId,
@@ -156,8 +156,8 @@ export class StripeService {
         },
       });
 
-      await this.subscriptionService.create({
-        status: SubscriptionStatus.Canceled,
+      await this.transactionService.create({
+        status: TransactionStatus.Canceled,
         paymentType: PaymentType.STRIPE,
         subscriptionTypeId: +object.metadata.subscriptionTypeId,
         userId: +object.metadata.userId,

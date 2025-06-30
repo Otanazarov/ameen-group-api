@@ -1,6 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { PaymentType, SubscriptionStatus } from '@prisma/client';
-import { IsDateString, IsEnum, IsNumber, IsOptional } from 'class-validator';
+import { IsDateString, IsOptional } from 'class-validator';
 import { IsId } from 'src/common/dtos/id.dto';
 
 export class UpdateSubscriptionDto {
@@ -16,21 +15,6 @@ export class UpdateSubscriptionDto {
   @IsOptional()
   @IsDateString()
   expiredDate?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsEnum(SubscriptionStatus)
-  status?: SubscriptionStatus;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsNumber()
-  price?: number;
-
-  @ApiPropertyOptional({ enum: PaymentType })
-  @IsOptional()
-  @IsEnum(PaymentType)
-  paymentType?: PaymentType;
 
   @IsId(false)
   subscriptionTypeId?: number;

@@ -17,53 +17,68 @@ model Admin {
 }
 
 model User {
-  id            Int            @id @default(autoincrement())
-  telegramId    String         @unique
-  username      String?
-  firstName     String
-  lastName      String
-  lastActiveAt  DateTime?
-  email         String?        @unique
-  phoneNumber   String         @unique
-  lastMessageAt DateTime? // foydalanuvchi oxirgi marta botga yozgan vaqt
-  inGroup       Boolean        @default(false)
-  status        UserStatus     @default(REGISTERED)
-  role          UserRole       @default(USER)
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  subscription  Subscription[]
-  MessageUser   MessageUser[]
+  id           Int            @id @default(autoincrement())
+  telegramId   String         @unique
+  username     String?
+  firstName    String
+  lastName     String
+  lastActiveAt DateTime?
+  email        String?        @unique
+  phoneNumber  String         @unique
+  inGroup      Boolean        @default(false)
+  status       UserStatus     @default(REGISTERED)
+  role         UserRole       @default(USER)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  subscription Subscription[]
+  MessageUser  MessageUser[]
+  Transaction  Transaction[]
 }
 
 model Subscription {
-  id                 Int                @id @default(autoincrement())
+  id                 Int      @id @default(autoincrement())
   userId             Int
+  transactionId      Int      @unique
   expiredDate        DateTime
   startDate          DateTime
-  alertCount         Int                @default(0)
-  price              Int
-  paymentType        PaymentType
-  status             SubscriptionStatus @default(Created)
+  alertCount         Int      @default(0)
   subscriptionTypeId Int
-  createdAt          DateTime           @default(now())
-  updatedAt          DateTime           @updatedAt
-  transactionId      String?            @unique
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
   user             User             @relation(fields: [userId], references: [id])
   subscriptionType SubscriptionType @relation(fields: [subscriptionTypeId], references: [id])
+  transaction      Transaction      @relation(fields: [transactionId], references: [id])
+}
+
+model Transaction {
+  id                 Int               @id @default(autoincrement())
+  price              Int
+  transactionId      String?
+  status             TransactionStatus @default(Created)
+  paymentType        PaymentType
+  userId             Int
+  subscriptionTypeId Int
+  type               TransactionType   @default(NORMAL)
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  user             User             @relation(fields: [userId], references: [id])
+  subscriptionType SubscriptionType @relation(fields: [subscriptionTypeId], references: [id])
+  subscription     Subscription?
 }
 
 model SubscriptionType {
-  id               Int            @id @default(autoincrement())
-  price            Int
-  title            String
-  description      String
-  telegramTopicIds Json
-  expireDays       Int            @default(30)
-  subscriptions    Subscription[]
-  isDeleted        Boolean        @default(false)
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
+  id            Int            @id @default(autoincrement())
+  price         Int
+  title         String
+  description   String
+  expireDays    Int            @default(30)
+  subscriptions Subscription[]
+  isDeleted     Boolean        @default(false)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  Transaction   Transaction[]
 }
 
 model Settings {
@@ -116,8 +131,14 @@ enum PaymentType {
   STRIPE
 }
 
-enum SubscriptionStatus {
+enum TransactionType {
+  AUTO
+  NORMAL
+}
+
+enum TransactionStatus {
   Created
   Paid
+  Failed
   Canceled
 }

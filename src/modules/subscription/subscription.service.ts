@@ -3,7 +3,7 @@ import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 import { UpdateSubscriptionDto } from './dto/update-subscription.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { FindAllSubscriptionDto } from './dto/findAll-subscription.dto';
-import { Prisma, SubscriptionStatus } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class SubscriptionService {
@@ -56,11 +56,9 @@ export class SubscriptionService {
         userId: createSubscriptionDto.userId,
         startDate,
         expiredDate,
-        price: createSubscriptionDto.price,
-        paymentType: createSubscriptionDto.paymentType,
         subscriptionTypeId: createSubscriptionDto.subscriptionTypeId,
         alertCount: 0,
-        status: createSubscriptionDto.status || SubscriptionStatus.Created,
+        transactionId: createSubscriptionDto.transactionId,
       },
       include: {
         user: true,
@@ -68,9 +66,7 @@ export class SubscriptionService {
       },
     });
 
-    if (subscription.status === SubscriptionStatus.Paid) {
-      await this.subscriptionPaid(subscription);
-    }
+    await this.subscriptionPaid(subscription);
 
     return subscription;
   }
@@ -81,7 +77,6 @@ export class SubscriptionService {
       page = 1,
       userId,
       subscriptionTypeId,
-      paymentType,
       startDateFrom,
       startDateTo,
       expireDateFrom,
@@ -96,10 +91,6 @@ export class SubscriptionService {
 
     if (subscriptionTypeId) {
       where.subscriptionTypeId = subscriptionTypeId;
-    }
-
-    if (paymentType) {
-      where.paymentType = paymentType;
     }
 
     if (startDateFrom || startDateTo) {
@@ -170,10 +161,6 @@ export class SubscriptionService {
         subscriptionType: true,
       },
     });
-
-    if (updateSubscriptionDto.status === SubscriptionStatus.Paid) {
-      await this.subscriptionPaid(subscription);
-    }
 
     return subscription;
   }

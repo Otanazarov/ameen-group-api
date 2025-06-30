@@ -150,7 +150,7 @@ export class TelegramService implements OnModuleInit {
     const subscription = await this.userService.getSubscription(
       +user.telegramId,
     );
-    if (subscription?.status == 'Paid' && !user.inGroup) {
+    if (subscription && !user.inGroup) {
       const link = await ctx.api.createChatInviteLink(env.TELEGRAM_GROUP_ID, {
         name: ctx.from.first_name,
         creates_join_request: true,

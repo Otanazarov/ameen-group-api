@@ -79,7 +79,6 @@ export class SubscriptionTypeService {
       price: dto.price ?? existing.price,
       title: dto.title ?? existing.title,
       description: dto.description ?? existing.description,
-      telegramTopicIds: dto.telegramTopicIds ?? existing.telegramTopicIds,
     };
 
     const updatedSubscriptionType = await this.prisma.subscriptionType.update({

@@ -1,10 +1,10 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { PrismaService } from '../prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 import { HttpError } from 'src/common/exception/http.error';
+import { PrismaService } from '../prisma/prisma.service';
+import { CreateUserDto } from './dto/create-user.dto';
 import { FindAllUserDto } from './dto/findAll-user.dto';
-import { Prisma, SubscriptionStatus } from '@prisma/client';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UserService implements OnModuleInit {
@@ -120,12 +120,11 @@ export class UserService implements OnModuleInit {
     const subscription = await this.prisma.subscription.findFirst({
       where: {
         user: { telegramId: telegramId.toString() },
-        status: SubscriptionStatus.Paid,
         expiredDate: {
           gt: new Date(),
         },
       },
-      include: { subscriptionType: true, user: true },
+      include: { subscriptionType: true, user: true, transaction: true },
     });
     return subscription;
   }

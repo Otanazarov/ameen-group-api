@@ -2,15 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { CreateAtmosDto } from './dto/create.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { env } from 'src/common/config';
-import { SubscriptionStatus } from '@prisma/client';
 import { atmosApi } from 'src/common/utils/axios';
-import { SubscriptionService } from '../subscription/subscription.service';
+import { TransactionService } from '../trasnaction/transaction.service';
+import { TransactionStatus } from '@prisma/client';
 
 @Injectable()
 export class AtmosService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly subscriptionService: SubscriptionService,
+    private readonly transactionService: TransactionService,
   ) {}
 
   async createLink(dto: CreateAtmosDto) {
@@ -38,20 +38,13 @@ export class AtmosService {
     });
     const transactionId = res.data.transaction_id;
 
-    // Subscription yaratish
-    await this.prisma.subscription.create({
-      data: {
-        userId,
-        subscriptionTypeId,
-        startDate: new Date(),
-        expiredDate: new Date(
-          Date.now() + 1000 * 60 * 60 * 24 * subscriptionType.expireDays,
-        ),
-        price: subscriptionType.price,
-        paymentType: 'ATMOS',
-        status: 'Created',
-        transactionId: transactionId.toString(), // string type
-      },
+    await this.transactionService.create({
+      userId,
+      subscriptionTypeId,
+      price: subscriptionType.price,
+      paymentType: 'ATMOS',
+      status: 'Created',
+      transactionId: transactionId.toString(),
     });
 
     return res.data;
@@ -85,13 +78,11 @@ export class AtmosService {
     const result = await atmosApi.post('/merchant/pay/confirm', applyData);
     if (!result.data.store_transaction) return result.data;
     if (result.data.store_transaction.status_message == 'Success') {
-      const subscription = await this.prisma.subscription.findUnique({
-        where: {
-          transactionId: result.data.store_transaction.trans_id.toString(),
-        },
-      });
-      await this.subscriptionService.update(subscription.id, {
-        status: SubscriptionStatus.Paid,
+      const subscription = await this.transactionService.findOneByTransactionId(
+        result.data.store_transaction.trans_id.toString(),
+      );
+      await this.transactionService.update(subscription.id, {
+        status: TransactionStatus.Paid,
       });
     }
 
@@ -99,9 +90,9 @@ export class AtmosService {
   }
 
   async getPendingInvoices() {
-    return this.prisma.subscription.findMany({
+    return this.prisma.transaction.findMany({
       where: {
-        status: SubscriptionStatus.Created,
+        status: TransactionStatus.Created,
         paymentType: 'ATMOS',
         createdAt: {
           gt: new Date(Date.now() - 1000 * 60 * 30),
@@ -116,22 +107,24 @@ export class AtmosService {
       transaction_id: +transactionId,
     });
 
+    const transaction =
+      await this.transactionService.findOneByTransactionId(transactionId);
+    if (!transaction) {
+      throw new Error('Transaction not found');
+    }
+
     const isSuccess =
       data.store_transaction?.confirmed === true &&
       data.store_transaction?.status_message === 'Success';
 
     if (isSuccess) {
-      await this.prisma.subscription.update({
-        where: { transactionId },
-        data: { status: 'Paid' },
-      });
+      await this.transactionService.update(transaction.id, { status: 'Paid' });
     } else if (
       data.store_transaction?.status_message === 'Canceled' ||
       data.result?.code === 'STPIMS-ERR-092'
     ) {
-      await this.prisma.subscription.update({
-        where: { transactionId },
-        data: { status: 'Canceled' },
+      await this.transactionService.update(transaction.id, {
+        status: 'Canceled',
       });
     }
     return data;
