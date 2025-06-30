@@ -5,12 +5,14 @@ import { PrismaService } from '../prisma/prisma.service';
 import { FindAllTransactionDto } from './dto/findAll-transaction.dto';
 import { Prisma, Transaction, TransactionStatus } from '@prisma/client';
 import { SubscriptionService } from '../subscription/subscription.service';
+import { SubscriptionTypeService } from '../subscription-type/subscription-type.service';
 
 @Injectable()
 export class TransactionService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly subscriptionService: SubscriptionService,
+    private readonly subscriptionTypeService: SubscriptionTypeService,
   ) {}
 
   async create(createTransactionDto: CreateTransactionDto) {
@@ -144,7 +146,7 @@ export class TransactionService {
   }
 
   async transactionPaid(transaction: Transaction) {
-    const subscriptionType = await this.subscriptionService.findOne(
+    const subscriptionType = await this.subscriptionTypeService.findOne(
       transaction.subscriptionTypeId,
     );
     await this.subscriptionService.create({

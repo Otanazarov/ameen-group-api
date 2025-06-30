@@ -112,14 +112,17 @@ export class StripeService {
   async webhook(eventType: Stripe.Event.Type, data: Stripe.Event.Data) {
     if (eventType === 'checkout.session.completed') {
       const object = data.object as Stripe.Checkout.Session;
-      const subscription = await this.prisma.subscription.findFirst({
+      const subscription = await this.prisma.transaction.findFirst({
         where: {
           id: +object.metadata.transactionId,
         },
       });
+      if (!subscription) {
+        throw new Error('Transaction not found');
+      }
       await this.transactionService.update(subscription.id, {
         status: TransactionStatus.Paid,
-        subscriptonTypeId: +object.metadata.subscriptionTypeId,
+        subscriptionTypeId: +object.metadata.subscriptionTypeId,
         userId: +object.metadata.userId,
       });
 

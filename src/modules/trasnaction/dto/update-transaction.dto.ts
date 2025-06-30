@@ -23,5 +23,5 @@ export class UpdateTransactionDto {
   paymentType?: PaymentType;
 
   @IsId(false)
-  subscriptonTypeId?: number;
+  subscriptionTypeId?: number;
 }

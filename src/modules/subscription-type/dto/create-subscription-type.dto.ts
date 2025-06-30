@@ -23,12 +23,4 @@ export class CreateSubscriptionTypeDto {
   @IsNotEmpty()
   @IsNumber()
   expireDays: number;
-
-  @ApiProperty({
-    example: [123456, 654321],
-    type: [Number],
-  })
-  @IsNotEmpty()
-  @IsArray()
-  telegramTopicIds: number[];
 }
