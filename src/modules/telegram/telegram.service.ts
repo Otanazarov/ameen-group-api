@@ -19,8 +19,10 @@ export class TelegramService implements OnModuleInit {
   private readonly MS_PER_DAY = 1000 * 60 * 60 * 24;
   private readonly DEFAULT_KEYBOARD = new Keyboard()
     .text("📝 Obuna Bo'lish")
+    .row()
     .text('⚙️ Sozlamalar')
     .text('📋 Obunalarim')
+    .row()
     .text('ℹ️ Biz haqimizda')
     .text("👨‍🏫 Kozimxon To'ayev haqida")
     .resized()
