@@ -55,22 +55,31 @@ export class MessageService {
   }
 
   async findAll(dto: FindAllMessageDto) {
-    const { page, limit, text } = dto;
+    const { page = 1, limit = 10, text } = dto;
     const skip = (page - 1) * limit;
-    return await this.prisma.message.findMany({
-      where: {
-        text,
-      },
-      skip,
-      take: limit,
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+    return (
+      await this.prisma.message.findMany({
+        where: {
+          text,
+        },
+        skip,
+        take: limit,
+        orderBy: {
+          createdAt: 'desc',
+        },
+        include: {
+          _count: { select: { users: true } },
+        },
+      })
+    ).map((message) => ({
+      ...message,
+      users: message._count.users,
+      _count: undefined,
+    }));
   }
 
   async findAllUser(dto: FindAllMessageUserDto) {
-    const { page, limit, status } = dto;
+    const { page = 1, limit = 10, status } = dto;
     const skip = (page - 1) * limit;
     return await this.prisma.messageUser.findMany({
       where: {
@@ -89,6 +98,7 @@ export class MessageService {
       where: {
         id,
       },
+      include: { users: true },
     });
     if (!message) {
       throw HttpError({ code: 404, message: 'Message not found' });

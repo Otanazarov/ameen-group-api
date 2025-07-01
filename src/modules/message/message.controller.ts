@@ -23,11 +23,11 @@ export class MessageController {
   }
 
   @Get()
-  findAll(dto: FindAllMessageDto) {
+  findAll(@Body() dto: FindAllMessageDto) {
     return this.messageService.findAll(dto);
   }
   @Get('/user')
-  findAllUser(dto: FindAllMessageUserDto) {
+  findAllUser(@Body() dto: FindAllMessageUserDto) {
     return this.messageService.findAllUser(dto);
   }
 
