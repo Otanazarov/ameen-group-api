@@ -119,7 +119,7 @@ export class MessageService {
   }
 
   async update(id: number, updateMessageDto: UpdateMessageDto) {
-    const message = await this.prisma.message.findUnique({
+    const message = await this.prisma.messageUser.findUnique({
       where: {
         id,
       },

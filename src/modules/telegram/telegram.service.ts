@@ -1,18 +1,17 @@
-import { forwardRef, Inject, Injectable, OnModuleInit } from '@nestjs/common';
-import { Bot, InlineKeyboard, Keyboard } from 'grammy';
 import { InjectBot } from '@grammyjs/nestjs';
-import { Context } from './Context.type';
-import { UserService } from '../user/user.service';
-import { PrismaService } from '../prisma/prisma.service';
-import { env } from 'src/common/config';
+import { forwardRef, Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { Interval } from '@nestjs/schedule';
-import { isEmail } from 'class-validator';
-import { SubscriptionTypeService } from '../subscription-type/subscription-type.service';
-import { StripeService } from '../stripe/stripe.service';
-import { SettingsService } from '../settings/settings.service';
-import { autoRetry } from '@grammyjs/auto-retry';
 import { Message, MessageUser, User } from '@prisma/client';
+import { isEmail } from 'class-validator';
+import { Bot, InlineKeyboard, Keyboard } from 'grammy';
+import { env } from 'src/common/config';
 import { MessageService } from '../message/message.service';
+import { PrismaService } from '../prisma/prisma.service';
+import { SettingsService } from '../settings/settings.service';
+import { StripeService } from '../stripe/stripe.service';
+import { SubscriptionTypeService } from '../subscription-type/subscription-type.service';
+import { UserService } from '../user/user.service';
+import { Context } from './Context.type';
 
 @Injectable()
 export class TelegramService implements OnModuleInit {
@@ -41,9 +40,7 @@ export class TelegramService implements OnModuleInit {
     private readonly messageService: MessageService,
   ) {}
 
-  onModuleInit() {
-    this.bot.api.config.use(autoRetry());
-  }
+  onModuleInit() {}
 
   private calculateDaysLeft(expiredDate: Date): number {
     return Math.ceil((expiredDate.getTime() - Date.now()) / this.MS_PER_DAY);
@@ -67,6 +64,7 @@ export class TelegramService implements OnModuleInit {
             'Reaksiya Bildirish',
             `reaction_${message.id}`,
           ),
+          parse_mode: 'MarkdownV2',
         },
       );
 
