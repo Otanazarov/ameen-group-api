@@ -6,9 +6,15 @@ import { DecoratorWrapper } from 'src/common/auth/decorator.auth';
 export class StatisticsController {
   constructor(private readonly statisticsService: StatisticsService) {}
 
+  @Get('/')
+  @DecoratorWrapper('get stats')
+  async getUserCountBySubscriptionType() {
+    return this.statisticsService.getStats();
+  }
+
   @Get('user/subscriptionType')
   @DecoratorWrapper('get user count by subscription type')
-  async getUserCountBySubscriptionType() {
+  async statistics() {
     return this.statisticsService.getUserCountBySubscriptionType();
   }
 }
