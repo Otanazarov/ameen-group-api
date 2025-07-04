@@ -31,8 +31,8 @@ model User {
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
   subscription Subscription[]
-  MessageUser  MessageUser[]
-  Transaction  Transaction[]
+  messageUser  MessageUser[]
+  transaction  Transaction[]
 }
 
 model Subscription {

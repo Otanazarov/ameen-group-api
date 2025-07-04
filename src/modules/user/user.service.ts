@@ -103,6 +103,8 @@ export class UserService implements OnModuleInit {
         orderBy: { createdAt: 'desc' },
         include: {
           subscription: true,
+          messageUser: true,
+          transaction: true,
         },
       }),
       this.prisma.user.count({ where }),
@@ -132,6 +134,11 @@ export class UserService implements OnModuleInit {
   async findOneByTelegramID(id: string) {
     const user = await this.prisma.user.findFirst({
       where: { telegramId: id },
+      include: {
+        messageUser: true,
+        subscription: true,
+        transaction: true,
+      },
     });
     if (!user) {
       return null;
@@ -143,7 +150,8 @@ export class UserService implements OnModuleInit {
     const user = await this.prisma.user.findUnique({
       where: { id: id },
       include: {
-        MessageUser: { include: { message: true } },
+        messageUser: { include: { message: true } },
+        transaction: true,
         subscription: { include: { subscriptionType: true } },
       },
     });

@@ -115,6 +115,7 @@ export class MessageService {
         orderBy: { createdAt: 'desc' },
         include: {
           user: true,
+          message: true,
         },
       }),
       this.prisma.messageUser.count({ where }),
