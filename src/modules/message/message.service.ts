@@ -3,7 +3,7 @@ import { CreateMessageDto } from './dto/create-message.dto';
 import { UpdateMessageDto } from './dto/update-message.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { HttpError } from 'src/common/exception/http.error';
-import { MessageStatus } from '@prisma/client';
+import { MessageStatus, Prisma } from '@prisma/client';
 import { FindAllMessageDto } from './dto/findAllMessage.dto';
 import { FindAllMessageUserDto } from './dto/findAllMessageUser.dto';
 
@@ -57,40 +57,75 @@ export class MessageService {
   async findAll(dto: FindAllMessageDto) {
     const { page = 1, limit = 10, text } = dto;
     const skip = (page - 1) * limit;
-    return (
-      await this.prisma.message.findMany({
-        where: {
-          text,
-        },
+
+    const where: Prisma.MessageWhereInput = {
+      text: text?.trim()
+        ? {
+            contains: text.trim(),
+            mode: 'insensitive',
+          }
+        : undefined,
+    };
+
+    // eslint-disable-next-line prefer-const
+    let [data, total] = await this.prisma.$transaction([
+      this.prisma.message.findMany({
+        where,
         skip,
         take: limit,
-        orderBy: {
-          createdAt: 'desc',
-        },
+        orderBy: { createdAt: 'desc' },
         include: {
           _count: { select: { users: true } },
         },
-      })
-    ).map((message) => ({
-      ...message,
-      users: message._count.users,
-      _count: undefined,
-    }));
+      }),
+      this.prisma.message.count({ where }),
+    ]);
+
+    data = data.map((message) => {
+      return {
+        ...message,
+        _count: {
+          users: message._count.users,
+        },
+      };
+    });
+
+    return {
+      total,
+      page,
+      limit,
+      data,
+    };
   }
 
   async findAllUser(dto: FindAllMessageUserDto) {
     const { page = 1, limit = 10, status } = dto;
     const skip = (page - 1) * limit;
-    return await this.prisma.messageUser.findMany({
-      where: {
-        status,
-      },
-      skip,
-      take: limit,
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
+
+    const where: Prisma.MessageUserWhereInput = {
+      status: status ? { equals: status } : undefined,
+    };
+
+    // eslint-disable-next-line prefer-const
+    let [data, total] = await this.prisma.$transaction([
+      this.prisma.messageUser.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          user: true,
+        },
+      }),
+      this.prisma.messageUser.count({ where }),
+    ]);
+
+    return {
+      total,
+      page,
+      limit,
+      data,
+    };
   }
 
   async findOne(id: number) {
