@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   ParseIntPipe,
+  Query,
 } from '@nestjs/common';
 import { MessageService } from './message.service';
 import { CreateMessageDto } from './dto/create-message.dto';
@@ -27,12 +28,12 @@ export class MessageController {
 
   @Get()
   @DecoratorWrapper('Get Messages')
-  findAll(@Param() dto: FindAllMessageDto) {
+  findAll(@Query() dto: FindAllMessageDto) {
     return this.messageService.findAll(dto);
   }
   @Get('/user')
   @DecoratorWrapper('get Message users')
-  findAllUser(@Param() dto: FindAllMessageUserDto) {
+  findAllUser(@Query() dto: FindAllMessageUserDto) {
     return this.messageService.findAllUser(dto);
   }
 

@@ -84,11 +84,11 @@ export class MessageService {
     data = data.map((message) => {
       return {
         ...message,
-        _count: {
-          users: message._count.users,
-        },
+        users: message._count.users,
+        _count: undefined,
       };
     });
+    console.log(skip, page);
 
     return {
       total,
