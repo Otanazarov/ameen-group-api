@@ -12,6 +12,7 @@ import { SubscriptionService } from './subscription.service';
 import { UpdateSubscriptionDto } from './dto/update-subscription.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { FindAllSubscriptionDto } from './dto/findAll-subscription.dto';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
 
 @Controller('subscription')
 @ApiTags('Subscription')
@@ -21,6 +22,14 @@ export class SubscriptionController {
   @Get()
   findAll(@Query() dto: FindAllSubscriptionDto) {
     return this.subscriptionService.findAll(dto);
+  }
+
+  @Get('user/:id')
+  findOneByUser(
+    @Param('id', ParseIntPipe) id: string,
+    @Query() dto: PaginationDto,
+  ) {
+    return this.subscriptionService.findOneByUserId(+id, dto);
   }
 
   @Get(':id')

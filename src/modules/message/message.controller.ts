@@ -15,6 +15,7 @@ import { FindAllMessageDto } from './dto/findAllMessage.dto';
 import { FindAllMessageUserDto } from './dto/findAllMessageUser.dto';
 import { DecoratorWrapper } from 'src/common/auth/decorator.auth';
 import { Role } from 'src/common/auth/roles/role.enum';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
 
 @Controller('message')
 export class MessageController {
@@ -31,13 +32,22 @@ export class MessageController {
   findAll(@Query() dto: FindAllMessageDto) {
     return this.messageService.findAll(dto);
   }
-  @Get('/user')
+
+  @Get('/message')
   @DecoratorWrapper('get Message users')
   findAllUser(@Query() dto: FindAllMessageUserDto) {
     return this.messageService.findAllUser(dto);
   }
 
-  @Get('/user/:id')
+  @Get('user/:id')
+  findOneByUser(
+    @Param('id', ParseIntPipe) id: string,
+    @Query() dto: PaginationDto,
+  ) {
+    return this.messageService.findOneByUserId(+id, dto);
+  }
+
+  @Get('/message/:id')
   @DecoratorWrapper('get Message user')
   findOneUser(@Param('id', ParseIntPipe) id: string) {
     return this.messageService.findOneUser(+id);

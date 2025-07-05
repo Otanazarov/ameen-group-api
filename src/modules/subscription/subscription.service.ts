@@ -7,6 +7,7 @@ import {
   SubscriptionStatus,
 } from './dto/findAll-subscription.dto';
 import { Prisma } from '@prisma/client';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
 
 @Injectable()
 export class SubscriptionService {
@@ -141,6 +142,30 @@ export class SubscriptionService {
         status: subscription.expiredDate < new Date() ? 'EXPIRED' : 'ACTIVE',
       };
     });
+
+    return {
+      total,
+      page,
+      limit,
+      data,
+    };
+  }
+
+  async findOneByUserId(userId: number, dto: PaginationDto) {
+    const { limit = 10, page = 1 } = dto;
+
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.subscription.findMany({
+        where: { user: { id: userId } },
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: { subscriptionType: true },
+      }),
+      this.prisma.subscription.count({ where: { user: { id: userId } } }),
+    ]);
 
     return {
       total,

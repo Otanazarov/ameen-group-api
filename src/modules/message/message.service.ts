@@ -6,6 +6,7 @@ import { HttpError } from 'src/common/exception/http.error';
 import { MessageStatus, Prisma } from '@prisma/client';
 import { FindAllMessageDto } from './dto/findAllMessage.dto';
 import { FindAllMessageUserDto } from './dto/findAllMessageUser.dto';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
 
 @Injectable()
 export class MessageService {
@@ -89,6 +90,30 @@ export class MessageService {
       };
     });
     console.log(skip, page);
+
+    return {
+      total,
+      page,
+      limit,
+      data,
+    };
+  }
+
+  async findOneByUserId(userId: number, dto: PaginationDto) {
+    const { limit = 10, page = 1 } = dto;
+
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.messageUser.findMany({
+        where: { user: { id: userId } },
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: { message: true },
+      }),
+      this.prisma.messageUser.count({ where: { user: { id: userId } } }),
+    ]);
 
     return {
       total,

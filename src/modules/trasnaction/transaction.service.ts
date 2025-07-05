@@ -6,6 +6,7 @@ import { FindAllTransactionDto } from './dto/findAll-transaction.dto';
 import { Prisma, Transaction, TransactionStatus } from '@prisma/client';
 import { SubscriptionService } from '../subscription/subscription.service';
 import { SubscriptionTypeService } from '../subscription-type/subscription-type.service';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
 
 @Injectable()
 export class TransactionService {
@@ -88,6 +89,29 @@ export class TransactionService {
       this.prisma.transaction.count({
         where,
       }),
+    ]);
+
+    return {
+      total,
+      page,
+      limit,
+      data,
+    };
+  }
+
+  async findOneByUserId(userId: number, dto: PaginationDto) {
+    const { limit = 10, page = 1 } = dto;
+
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.transaction.findMany({
+        where: { user: { id: userId } },
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.transaction.count({ where: { user: { id: userId } } }),
     ]);
 
     return {

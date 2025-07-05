@@ -134,11 +134,6 @@ export class UserService implements OnModuleInit {
   async findOneByTelegramID(id: string) {
     const user = await this.prisma.user.findFirst({
       where: { telegramId: id },
-      include: {
-        messageUser: true,
-        subscription: true,
-        transaction: true,
-      },
     });
     if (!user) {
       return null;
@@ -149,11 +144,6 @@ export class UserService implements OnModuleInit {
   async findOne(id: number) {
     const user = await this.prisma.user.findUnique({
       where: { id: id },
-      include: {
-        messageUser: { include: { message: true } },
-        transaction: true,
-        subscription: { include: { subscriptionType: true } },
-      },
     });
     if (!user) {
       throw HttpError({ code: 'User not found' });
