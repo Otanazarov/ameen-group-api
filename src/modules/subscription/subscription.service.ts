@@ -156,7 +156,8 @@ export class SubscriptionService {
 
     const skip = (page - 1) * limit;
 
-    const [data, total] = await this.prisma.$transaction([
+    // eslint-disable-next-line prefer-const
+    let [data, total] = await this.prisma.$transaction([
       this.prisma.subscription.findMany({
         where: { user: { id: userId } },
         skip,
@@ -166,6 +167,15 @@ export class SubscriptionService {
       }),
       this.prisma.subscription.count({ where: { user: { id: userId } } }),
     ]);
+
+    data = data.map((subscription) => ({
+      ...subscription,
+      status: subscription.expiredDate < new Date() ? 'EXPIRED' : 'ACTIVE',
+      days: Math.floor(
+        (subscription.expiredDate.getTime() - new Date().getTime()) /
+          (1000 * 60 * 60 * 24),
+      ),
+    }));
 
     return {
       total,
