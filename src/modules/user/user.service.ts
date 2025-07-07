@@ -95,7 +95,8 @@ export class UserService implements OnModuleInit {
         : undefined,
     };
 
-    const [data, total] = await this.prisma.$transaction([
+    // eslint-disable-next-line prefer-const
+    let [data, total] = await this.prisma.$transaction([
       this.prisma.user.findMany({
         where,
         skip: (page - 1) * limit,
@@ -109,6 +110,14 @@ export class UserService implements OnModuleInit {
       }),
       this.prisma.user.count({ where }),
     ]);
+
+    data = data.map((user) => {
+      return {
+        ...user,
+        subscriptionTitle: user.subscription[0]?.subscriptionType.title,
+        subscriptonExpiredDate: user.subscription[0]?.expiredDate,
+      };
+    });
 
     return {
       total,
