@@ -28,7 +28,7 @@ export class SubscriptionService {
     }
 
     const existingSubscription = await this.prisma.subscription.findFirst({
-      where: { expiredDate: { gt: new Date() } },
+      where: { expiredDate: { gt: new Date() }, user: { id: user.id } },
       orderBy: { expiredDate: 'desc' },
       include: { subscriptionType: true },
     });
@@ -45,7 +45,7 @@ export class SubscriptionService {
           (1000 * 60 * 60 * existingSubscription.subscriptionType.expireDays);
 
         if (daysDifference < 3) {
-          throw new Error();
+          throw new Error('you already have an active subscription');
         }
       }
 

@@ -27,7 +27,7 @@ export class UserService implements OnModuleInit {
   }
 
   async create(createUserDto: CreateUserDto) {
-    const phoneNumber = await this.prisma.user.findFirst({
+    const phoneNumber = await this.prisma.user.findUnique({
       where: { phoneNumber: createUserDto.phoneNumber },
     });
     if (phoneNumber) {
@@ -102,7 +102,7 @@ export class UserService implements OnModuleInit {
         take: limit,
         orderBy: { createdAt: 'desc' },
         include: {
-          subscription: true,
+          subscription: { include: { subscriptionType: true } },
           messageUser: true,
           transaction: true,
         },
@@ -144,6 +144,11 @@ export class UserService implements OnModuleInit {
   async findOne(id: number) {
     const user = await this.prisma.user.findUnique({
       where: { id: id },
+      include: {
+        messageUser: { include: { message: true } },
+        subscription: { include: { subscriptionType: true } },
+        transaction: true,
+      },
     });
     if (!user) {
       throw HttpError({ code: 'User not found' });
