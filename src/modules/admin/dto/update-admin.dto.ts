@@ -1,13 +1,20 @@
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { IsName } from 'src/common/dtos/name.dto';
-import { IsPassword } from 'src/common/dtos/password.dto';
 
 export class UpdateAdminDto {
   @IsName(false)
   name?: string;
 
-  @IsPassword(false)
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNotEmpty()
+  @IsString()
   newPassword?: string;
 
-  @IsPassword(false)
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNotEmpty()
+  @IsString()
   oldPassword?: string;
 }
