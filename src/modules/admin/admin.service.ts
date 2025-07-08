@@ -247,6 +247,10 @@ export class AdminService implements OnModuleInit {
     return updatedAdmin;
   }
 
+  async me(id: number) {
+    return this.findOne(id);
+  }
+
   async remove(id: number) {
     const admin = await this.prisma.admin.findUnique({
       where: { id: id },

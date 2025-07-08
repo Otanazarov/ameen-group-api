@@ -45,6 +45,12 @@ export class AdminController {
     return this.adminService.logout(req.user.id);
   }
 
+  @Get('me')
+  @DecoratorWrapper('Get My Info', true, [Role.Admin])
+  me(@Req() req: any) {
+    return this.adminService.me(req.user.id);
+  }
+
   @Get()
   @DecoratorWrapper('Get All Admins', true, [Role.Admin])
   findAll(@Query() query: FindAllAdminQueryDto) {
