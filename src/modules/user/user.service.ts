@@ -166,7 +166,9 @@ export class UserService implements OnModuleInit {
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
-    const user = await this.prisma.user.findUnique({ where: { id } });
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+    });
 
     if (!user) {
       throw HttpError({ code: 'User not found' });
@@ -206,21 +208,5 @@ export class UserService implements OnModuleInit {
       where: { id },
       data: updateData,
     });
-  }
-
-  async remove(id: number) {
-    const user = await this.prisma.user.findUnique({
-      where: { id },
-    });
-    if (!user) {
-      throw HttpError({ code: 'User not found' });
-    }
-    const deletedUser = await this.prisma.user.delete({
-      where: { id },
-    });
-    return {
-      message: 'User deleted successfully',
-      user: deletedUser,
-    };
   }
 }

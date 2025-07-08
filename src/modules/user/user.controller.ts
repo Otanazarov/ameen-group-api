@@ -4,7 +4,6 @@ import {
   Body,
   Patch,
   Param,
-  Delete,
   Query,
   ParseIntPipe,
 } from '@nestjs/common';
@@ -39,11 +38,5 @@ export class UserController {
     @Body() updateUserDto: UpdateUserDto,
   ) {
     return this.userService.update(+id, updateUserDto);
-  }
-
-  @Delete(':id')
-  @DecoratorWrapper('User remove', true, [Role.Admin])
-  remove(@Param('id', ParseIntPipe) id: string) {
-    return this.userService.remove(+id);
   }
 }
