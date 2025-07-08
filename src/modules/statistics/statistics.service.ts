@@ -1,95 +1,144 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import {
+  startOfMonth,
+  endOfMonth,
+  eachMonthOfInterval,
+  format,
+} from 'date-fns';
 
 @Injectable()
 export class StatisticsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getStats() {
+    const now = new Date();
+    const firstDayOfMonth = startOfMonth(now);
+    const lastDayOfMonth = endOfMonth(now);
+
     const [
-      totalUsers,
-      inGroupUsers,
-      registeredUsers,
-      activeUsers,
-      totalSubscriptions,
-      activeSubscriptions,
-      expiredSubscriptions,
-      revenue,
-      subscriptionDistribution,
-      failedTransactions,
-      canceledTransactions,
+      usersCount,
+      activeSubscriptionsCount,
+      totalRevenueThisMonth,
+      pendingPaymentsThisMonth,
+      monthlyRevenue,
+      monthlyActiveSubscriptions,
     ] = await Promise.all([
       this.prisma.user.count(),
-      this.prisma.user.count({ where: { inGroup: true } }),
-      this.prisma.user.count({ where: { status: 'REGISTERED' } }),
-      this.prisma.user.count({ where: { lastActiveAt: { not: null } } }),
-      this.prisma.subscription.count(),
       this.prisma.subscription.count({
-        where: { expiredDate: { gt: new Date() } },
+        where: { expiredDate: { gt: now } },
       }),
-      this.prisma.subscription.count({
-        where: { expiredDate: { lt: new Date() } },
+      this.prisma.transaction.aggregate({
+        _sum: { price: true },
+        where: {
+          status: 'Paid',
+          createdAt: {
+            gte: firstDayOfMonth,
+            lte: lastDayOfMonth,
+          },
+        },
       }),
-      this.getRevenueGroupedByPaymentType(),
-      this.getSubscriptionTypeDistribution(),
-      this.prisma.transaction.count({ where: { status: 'Failed' } }),
-      this.prisma.transaction.count({ where: { status: 'Canceled' } }),
+      this.prisma.transaction.aggregate({
+        _sum: { price: true },
+        where: {
+          status: 'Created',
+          createdAt: {
+            gte: firstDayOfMonth,
+            lte: lastDayOfMonth,
+          },
+        },
+      }),
+      this.getMonthlyRevenue(),
+      this.getMonthlyActiveSubscriptions(),
     ]);
 
     return {
-      users: {
-        total: totalUsers,
-        inGroup: inGroupUsers,
-        registered: registeredUsers,
-        active: activeUsers,
-      },
-      subscriptions: {
-        total: totalSubscriptions,
-        active: activeSubscriptions,
-        expired: expiredSubscriptions,
-      },
-      revenue,
-      subscriptionDistribution,
-      transactions: {
-        failed: failedTransactions,
-        canceled: canceledTransactions,
-      },
+      usersCount,
+      activeSubscriptionsCount,
+      totalRevenueThisMonth: totalRevenueThisMonth._sum.price || 0,
+      pendingPaymentsThisMonth: pendingPaymentsThisMonth._sum.price || 0,
+      monthlyRevenue,
+      monthlyActiveSubscriptions,
     };
   }
 
-  private async getRevenueGroupedByPaymentType() {
-    const result = await this.prisma.transaction.groupBy({
-      by: ['paymentType'],
-      where: { status: 'Paid' },
-      _sum: { price: true },
-    });
-
-    return result.reduce(
-      (acc, item) => {
-        acc[item.paymentType] = item._sum.price || 0;
-        return acc;
-      },
-      {} as Record<string, number>,
+  private async getMonthlyRevenue() {
+    const now = new Date();
+    const last12MonthsStart = new Date(
+      now.getFullYear() - 1,
+      now.getMonth(),
+      1,
     );
-  }
+    const last12MonthsEnd = new Date();
 
-  private async getSubscriptionTypeDistribution() {
-    const result = await this.prisma.subscription.groupBy({
-      by: ['subscriptionTypeId'],
-      _count: true,
+    const monthlyRevenue = await this.prisma.transaction.groupBy({
+      by: ['createdAt'],
+      where: {
+        status: 'Paid',
+        createdAt: {
+          gte: last12MonthsStart,
+          lte: last12MonthsEnd,
+        },
+      },
+      _sum: { price: true },
+      orderBy: {
+        createdAt: 'asc',
+      },
     });
 
-    const types = await this.prisma.subscriptionType.findMany({
-      select: { id: true, title: true },
+    const months = eachMonthOfInterval({
+      start: last12MonthsStart,
+      end: last12MonthsEnd,
     });
-
-    const typeMap = Object.fromEntries(types.map((t) => [t.id, t.title]));
-
-    return result.map((r) => ({
-      type: typeMap[r.subscriptionTypeId] ?? `Type ${r.subscriptionTypeId}`,
-      count: r._count,
+    const monthlyData = months.map((month) => ({
+      month: format(month, 'MMMM'),
+      revenue: 0,
     }));
+
+    monthlyRevenue.forEach((item) => {
+      const monthName = format(new Date(item.createdAt), 'MMMM');
+      const monthData = monthlyData.find((m) => m.month === monthName);
+      if (monthData) {
+        monthData.revenue += item._sum.price || 0;
+      }
+    });
+
+    return monthlyData;
   }
+
+  private async getMonthlyActiveSubscriptions() {
+    const now = new Date();
+    const last12MonthsStart = new Date(
+      now.getFullYear() - 1,
+      now.getMonth(),
+      1,
+    );
+    const last12MonthsEnd = new Date();
+    const months = eachMonthOfInterval({
+      start: last12MonthsStart,
+      end: last12MonthsEnd,
+    });
+
+    const monthlyActiveSubscriptions = await Promise.all(
+      months.map(async (month) => {
+        const monthStart = startOfMonth(month);
+        const monthEnd = endOfMonth(month);
+        const count = await this.prisma.subscription.count({
+          where: {
+            startDate: { lte: monthEnd },
+            expiredDate: { gte: monthStart },
+          },
+        });
+        return {
+          month: format(month, 'MMMM'),
+          activeSubscriptions: count,
+        };
+      }),
+    );
+
+    return monthlyActiveSubscriptions;
+  }
+
   async getUserCountBySubscriptionType() {
     const subscriptionTypes = await this.prisma.subscriptionType.findMany({});
     const data = [];

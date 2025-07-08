@@ -5,6 +5,7 @@ import { env } from 'src/common/config';
 import { atmosApi } from 'src/common/utils/axios';
 import { TransactionService } from '../trasnaction/transaction.service';
 import { TransactionStatus } from '@prisma/client';
+import { PreApplyAtmosDto } from './dto/preapply.dto';
 
 @Injectable()
 export class AtmosService {
@@ -49,11 +50,7 @@ export class AtmosService {
 
     return res.data;
   }
-  async preApplyTransaction(dto: {
-    transaction_id: number;
-    card_number: string;
-    expiry: string;
-  }): Promise<any> {
+  async preApplyTransaction(dto: PreApplyAtmosDto): Promise<any> {
     const preApplyData = {
       transaction_id: dto.transaction_id,
       card_number: dto.card_number,
@@ -61,6 +58,7 @@ export class AtmosService {
       store_id: env.ATMOS_STORE_ID,
     };
 
+    console.log('preApplyData', preApplyData);
     const result = await atmosApi.post('/merchant/pay/pre-apply', preApplyData);
 
     return result.data;

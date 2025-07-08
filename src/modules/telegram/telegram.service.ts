@@ -316,11 +316,13 @@ export class TelegramService implements OnModuleInit {
   async handleInfo(ctx: Context) {
     const settings = await this.settingsService.findOne();
     if (ctx.message.text == 'ℹ️ Biz haqimizda') {
-      await ctx.reply(settings.aboutAminGroup);
+      await ctx.reply(settings.aboutAminGroup, { parse_mode: 'MarkdownV2' });
       return true;
     }
     if (ctx.message.text == "👨‍🏫 Kozimxon To'ayev haqida") {
-      await ctx.reply(settings.aboutKozimxonTorayev);
+      await ctx.reply(settings.aboutKozimxonTorayev, {
+        parse_mode: 'MarkdownV2',
+      });
       return true;
     }
     return false;
