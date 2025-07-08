@@ -13,6 +13,8 @@ import { UpdateSubscriptionDto } from './dto/update-subscription.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { FindAllSubscriptionDto } from './dto/findAll-subscription.dto';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
+import { DecoratorWrapper } from 'src/common/auth/decorator.auth';
+import { Role } from 'src/common/auth/roles/role.enum';
 
 @Controller('subscription')
 @ApiTags('Subscription')
@@ -20,11 +22,13 @@ export class SubscriptionController {
   constructor(private readonly subscriptionService: SubscriptionService) {}
 
   @Get()
+  @DecoratorWrapper('Find Subscriptions', true, [Role.Admin])
   findAll(@Query() dto: FindAllSubscriptionDto) {
     return this.subscriptionService.findAll(dto);
   }
 
   @Get('user/:id')
+  @DecoratorWrapper('Find Subscription by userID')
   findOneByUser(
     @Param('id', ParseIntPipe) id: string,
     @Query() dto: PaginationDto,
@@ -33,11 +37,13 @@ export class SubscriptionController {
   }
 
   @Get(':id')
+  @DecoratorWrapper('Get Subscription', true, [Role.Admin])
   findOne(@Param('id', ParseIntPipe) id: string) {
     return this.subscriptionService.findOne(+id);
   }
 
   @Patch(':id')
+  @DecoratorWrapper('Update Subscription', true, [Role.Admin])
   update(
     @Param('id', ParseIntPipe) id: string,
     @Body() updateSubscriptionDto: UpdateSubscriptionDto,
@@ -46,6 +52,7 @@ export class SubscriptionController {
   }
 
   @Delete(':id')
+  @DecoratorWrapper('Delete Subscription ', true, [Role.Admin])
   remove(@Param('id', ParseIntPipe) id: string) {
     return this.subscriptionService.remove(+id);
   }

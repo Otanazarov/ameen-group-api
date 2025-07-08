@@ -64,7 +64,7 @@ export class TelegramService implements OnModuleInit {
             'Reaksiya Bildirish',
             `reaction_${message.id}`,
           ),
-          parse_mode: 'MarkdownV2',
+          parse_mode: 'Markdown',
         },
       );
 
@@ -206,7 +206,6 @@ export class TelegramService implements OnModuleInit {
 
   private async handleEmail(ctx: Context) {
     if (!ctx.session.email) {
-      console.log(ctx.message.text, isEmail(ctx.message.text));
       if (ctx.message.text === "⏭ O'tkazish") {
         ctx.session.email = 'skipped';
       } else if (!isEmail(ctx.message.text)) {
@@ -316,12 +315,14 @@ export class TelegramService implements OnModuleInit {
   async handleInfo(ctx: Context) {
     const settings = await this.settingsService.findOne();
     if (ctx.message.text == 'ℹ️ Biz haqimizda') {
-      await ctx.reply(settings.aboutAminGroup, { parse_mode: 'MarkdownV2' });
+      await ctx.reply(settings.aboutAminGroup, {
+        parse_mode: 'Markdown',
+      });
       return true;
     }
     if (ctx.message.text == "👨‍🏫 Kozimxon To'ayev haqida") {
       await ctx.reply(settings.aboutKozimxonTorayev, {
-        parse_mode: 'MarkdownV2',
+        parse_mode: 'Markdown',
       });
       return true;
     }

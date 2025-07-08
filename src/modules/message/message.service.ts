@@ -14,18 +14,22 @@ export class MessageService {
   async create(createMessageDto: CreateMessageDto) {
     const { userIds, status, text, subscriptionTypeId } = createMessageDto;
 
+    const orConditions: Prisma.UserWhereInput[] = [];
+    if (status) {
+      orConditions.push({ status: { equals: status } });
+    }
+    if (userIds?.length) {
+      orConditions.push({ id: { in: userIds } });
+    }
+    if (subscriptionTypeId) {
+      orConditions.push({
+        subscription: {
+          some: { subscriptionType: { id: subscriptionTypeId } },
+        },
+      });
+    }
     const users = await this.prisma.user.findMany({
-      where: {
-        OR: [
-          { status: status ? { equals: status } : undefined },
-          { id: userIds ? { in: userIds } : undefined },
-          {
-            subscription: subscriptionTypeId
-              ? { some: { subscriptionType: { id: subscriptionTypeId } } }
-              : undefined,
-          },
-        ],
-      },
+      where: orConditions.length > 0 ? { OR: orConditions } : {},
       include: {
         subscription: {
           where: {

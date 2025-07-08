@@ -40,6 +40,7 @@ export class MessageController {
   }
 
   @Get('user/:id')
+  @DecoratorWrapper('get user messages')
   findOneByUser(
     @Param('id', ParseIntPipe) id: string,
     @Query() dto: PaginationDto,

@@ -29,7 +29,6 @@ export class AdminController {
   }
 
   @Post('login')
-  @DecoratorWrapper('Admin Login')
   login(@Body() loginAdminDto: LoginAdminDto) {
     return this.adminService.login(loginAdminDto);
   }

@@ -20,13 +20,13 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get()
-  @DecoratorWrapper('User findAll')
+  @DecoratorWrapper('User findAll', true, [Role.Admin])
   findAll(@Query() dto: FindAllUserDto) {
     return this.userService.findAll(dto);
   }
 
   @Get(':id')
-  @DecoratorWrapper('User findOne')
+  @DecoratorWrapper('User findOne', true, [Role.Admin])
   findOne(@Param('id', ParseIntPipe) id: string) {
     return this.userService.findOne(+id);
   }

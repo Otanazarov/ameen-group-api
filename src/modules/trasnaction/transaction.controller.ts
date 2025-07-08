@@ -22,11 +22,13 @@ export class TransactionController {
   constructor(private readonly transactionService: TransactionService) {}
 
   @Get()
+  @DecoratorWrapper('Find All Transactions')
   findAll(@Query() dto: FindAllTransactionDto) {
     return this.transactionService.findAll(dto);
   }
 
   @Get('user/:id')
+  @DecoratorWrapper('Find Transaction by User ID')
   findOneByUser(
     @Param('id', ParseIntPipe) id: string,
     @Query() dto: PaginationDto,
@@ -35,6 +37,7 @@ export class TransactionController {
   }
 
   @Get(':id')
+  @DecoratorWrapper('Find One Transaction')
   findOne(@Param('id', ParseIntPipe) id: string) {
     return this.transactionService.findOne(+id);
   }

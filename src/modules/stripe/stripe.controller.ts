@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { StripeService } from './stripe.service';
+import { DecoratorWrapper } from 'src/common/auth/decorator.auth';
 import { env } from 'src/common/config';
 
 @Controller('stripe')
@@ -16,6 +17,7 @@ export class StripeController {
 
   @Post()
   @HttpCode(200)
+  @DecoratorWrapper('Stripe Webhook')
   async handleWebhook(
     @Req() req: RawBodyRequest<Request>,
     @Res() res: Response,
