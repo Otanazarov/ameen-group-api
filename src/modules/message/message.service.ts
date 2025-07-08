@@ -16,11 +16,15 @@ export class MessageService {
 
     const users = await this.prisma.user.findMany({
       where: {
-        status: status ? { equals: status } : undefined,
-        id: userIds ? { in: userIds } : undefined,
-        subscription: subscriptionTypeId
-          ? { some: { subscriptionType: { id: subscriptionTypeId } } }
-          : undefined,
+        OR: [
+          { status: status ? { equals: status } : undefined },
+          { id: userIds ? { in: userIds } : undefined },
+          {
+            subscription: subscriptionTypeId
+              ? { some: { subscriptionType: { id: subscriptionTypeId } } }
+              : undefined,
+          },
+        ],
       },
       include: {
         subscription: {
