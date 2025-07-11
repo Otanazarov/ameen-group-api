@@ -24,24 +24,27 @@ export class TransactionService {
       throw new Error('User not found');
     }
 
+    const subscriptionType = await this.prisma.subscriptionType.findFirst({
+      where: { id: createTransactionDto.subscriptionTypeId },
+    });
+    if (!subscriptionType) {
+      throw new Error('Subscription type not found');
+    }
     const transaction = await this.prisma.transaction.create({
       data: {
         type: createTransactionDto.type,
-        userId: createTransactionDto.userId,
+        transactionId: createTransactionDto.transactionId,
+        userId: user.id,
+        subscriptionTypeId: subscriptionType.id,
         price: createTransactionDto.price,
-        subscriptionTypeId: createTransactionDto.subscriptionTypeId,
         paymentType: createTransactionDto.paymentType,
         status: createTransactionDto.status || TransactionStatus.Created,
-      },
-      include: {
-        user: true,
       },
     });
 
     if (transaction.status === TransactionStatus.Paid) {
       await this.transactionPaid(transaction);
     }
-
     return transaction;
   }
 

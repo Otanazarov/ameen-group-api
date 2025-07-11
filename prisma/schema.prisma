@@ -129,6 +129,7 @@ enum UserRole {
 enum PaymentType {
   ATMOS
   STRIPE
+  OCTOBANK
 }
 
 enum TransactionType {

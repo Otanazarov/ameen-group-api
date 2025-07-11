@@ -5,6 +5,7 @@ config();
 export const env = cleanEnv(process.env, {
   PORT: num(),
   ENV: str(),
+  BACKEND_URL: str(),
 
   ACCESS_TOKEN_SECRET: str(),
   REFRESH_TOKEN_SECRET: str(),
@@ -16,6 +17,9 @@ export const env = cleanEnv(process.env, {
   ATMOS_STORE_ID: str(),
   ATMOS_CONSUMER_KEY: str(),
   ATMOS_CONSUMER_SECRET: str(),
+
+  OCTOBANK_SECRET_KEY: str(),
+  OCTOBANK_SHOP_ID: str(),
 
   STRIPE_SECRET_KEY: str(),
   STRIPE_WEBHOOK_SECRET: str(),

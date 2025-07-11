@@ -13,6 +13,7 @@ import { StripeModule } from './modules/stripe/stripe.module';
 import { SubscriptionTypeModule } from './modules/subscription-type/subscription-type.module';
 import { SubscriptionModule } from './modules/subscription/subscription.module';
 import { UserModule } from './modules/user/user.module';
+import { OctoBankModule } from './modules/octobank/octobank.module';
 
 @Module({
   controllers: [],
@@ -26,6 +27,7 @@ import { UserModule } from './modules/user/user.module';
     SubscriptionTypeModule,
     AtmosModule,
     StripeModule,
+    OctoBankModule,
     PrismaModule,
     ScheduleModule.forRoot(),
     NestjsGrammyModule.forRoot({
