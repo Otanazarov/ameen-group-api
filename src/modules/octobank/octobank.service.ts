@@ -99,15 +99,15 @@ export class OctoBankService {
 
   async webhook(dto: OctobankDto) {
     if (dto.status === OctobankStatus.succeeded) {
-      const subscription = await this.prisma.transaction.findFirst({
+      const transaction = await this.prisma.transaction.findFirst({
         where: {
-          id: +dto.shop_transaction_id,
+          transactionId: dto.shop_transaction_id.toString(),
         },
       });
-      if (!subscription) {
+      if (!transaction) {
         throw new Error('Transaction not found');
       }
-      await this.transactionService.update(subscription.id, {
+      await this.transactionService.update(transaction.id, {
         status: TransactionStatus.Paid,
       });
 

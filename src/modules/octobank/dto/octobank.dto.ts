@@ -34,20 +34,11 @@ export class OctobankDto {
   refunded_sum: number;
 
   @IsString()
-  card_country: string;
-
-  @IsString()
   maskedPan: string;
-
-  @IsNumber()
-  rrn: number;
 
   @IsNumber()
   riskLevel: number;
 
   @IsDateString()
   payed_time: string;
-
-  @IsString()
-  card_type: string;
 }

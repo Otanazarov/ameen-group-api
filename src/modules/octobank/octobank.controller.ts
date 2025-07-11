@@ -18,7 +18,7 @@ export class OctoBankController {
   @Post()
   @HttpCode(200)
   @DecoratorWrapper('OctoBank Webhook')
-  async handleWebhook(@Body() dto: any) {
+  async handleWebhook(@Body() dto: OctobankDto) {
     console.log(dto);
     return await this.octobankService.webhook(dto);
   }
