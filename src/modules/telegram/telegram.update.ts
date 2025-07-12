@@ -66,6 +66,36 @@ export class TelegramUpdate {
     this.telegramService.onReactionCallBack(ctx);
   }
 
+  @CallbackQuery('settings')
+  async onSettingsCallbackQuery(@Ctx() ctx: Context): Promise<void> {
+    this.telegramService.onSettingsCallBack(ctx);
+  }
+
+  @CallbackQuery('start_message')
+  async onStartMessageCallbackQuery(@Ctx() ctx: Context): Promise<void> {
+    this.telegramService.onStartMessageCallBack(ctx);
+  }
+
+  @CallbackQuery('subscribe_menu')
+  async onSubscriptionMenuCallbackQuery(@Ctx() ctx: Context): Promise<void> {
+    this.telegramService.onSubscriptionMenuCallBack(ctx);
+  }
+
+  @CallbackQuery('my_subscriptions')
+  async onMySubscriptionsCallbackQuery(@Ctx() ctx: Context): Promise<void> {
+    this.telegramService.onMySubscriptionsCallBack(ctx);
+  }
+
+  @CallbackQuery('about_us')
+  async onAboutUsCallbackQuery(@Ctx() ctx: Context): Promise<void> {
+    this.telegramService.onAboutUsCallBack(ctx);
+  }
+
+  @CallbackQuery('about_teacher')
+  async onAboutTeacherCallbackQuery(@Ctx() ctx: Context): Promise<void> {
+    this.telegramService.onAboutTeacherCallBack(ctx);
+  }
+
   @On('chat_join_request')
   async onJoin(ctx: Context) {
     const chatMember = ctx.update.chat_join_request;

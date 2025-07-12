@@ -3,7 +3,7 @@ import { forwardRef, Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { Interval } from '@nestjs/schedule';
 import { Message, MessageUser, User } from '@prisma/client';
 import { isEmail } from 'class-validator';
-import { Bot, InlineKeyboard, Keyboard } from 'grammy';
+import { Bot, InlineKeyboard, Keyboard, InputFile } from 'grammy';
 import { env } from 'src/common/config';
 import { MessageService } from '../message/message.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -12,22 +12,17 @@ import { StripeService } from '../stripe/stripe.service';
 import { SubscriptionTypeService } from '../subscription-type/subscription-type.service';
 import { UserService } from '../user/user.service';
 import { Context } from './Context.type';
-
 @Injectable()
 export class TelegramService implements OnModuleInit {
   private readonly MS_PER_DAY = 1000 * 60 * 60 * 24;
-  private readonly DEFAULT_KEYBOARD = new Keyboard()
-    .text("📝 Obuna Bo'lish")
+  private readonly DEFAULT_KEYBOARD = new InlineKeyboard()
+    .text("📝 Obuna Bo'lish", 'subscribe_menu')
     .row()
-    .text('⚙️ Sozlamalar')
-    .text('📋 Obunalarim')
+    .text('⚙️ Sozlamalar', 'settings')
+    .text('📋 Obunalarim', 'my_subscriptions')
     .row()
-    .text('ℹ️ Biz haqimizda')
-    .text("👨‍🏫 Kozimxon To'ayev haqida")
-    .resized()
-    .oneTime()
-    .build();
-
+    .text('ℹ️ Biz haqimizda', 'about_us')
+    .text("👨‍🏫 Kozimxon To'ayev haqida", 'about_teacher');
   constructor(
     @InjectBot() readonly bot: Bot<Context>,
     private readonly userService: UserService,
@@ -39,41 +34,145 @@ export class TelegramService implements OnModuleInit {
     @Inject(forwardRef(() => MessageService))
     private readonly messageService: MessageService,
   ) {}
-
   onModuleInit() {}
-
   private calculateDaysLeft(expiredDate: Date): number {
     return Math.ceil((expiredDate.getTime() - Date.now()) / this.MS_PER_DAY);
   }
-
   async onReactionCallBack(ctx: Context) {
     const messageId = ctx.match[1];
     await this.messageService.update(+messageId, { status: 'READ' });
     ctx.answerCallbackQuery('✅ Reaksiya bildirildi');
   }
-
+  async onSubscribeCallBack(ctx: Context) {
+    const subscriptionTypeId = +ctx.match[1];
+    const result = await this.handleSubscriptionPayment(
+      ctx,
+      subscriptionTypeId,
+    );
+    if (!result) return;
+    const { subscriptionType, stripe } = result;
+    await this.sendSubscriptionPaymentInfo(ctx, subscriptionType, stripe);
+  }
+  async onEditCallBack(ctx: Context) {
+    const editName = ctx.match[1];
+    ctx.session.edit = editName;
+    const backKeyboard = new InlineKeyboard().text('⬅️ Orqaga', 'settings');
+    let text = '';
+    if (editName == 'firstname') {
+      text = '👤 Yangi ismni kiriting';
+    } else if (editName == 'lastname') {
+      text = '👥 Yangi familyani kiriting';
+    } else if (editName == 'email') {
+      text = '📧 Yangi emailni kiriting';
+    }
+    const message = await ctx.editMessageText(text, {
+      reply_markup: backKeyboard,
+    });
+    if (typeof message === 'object') {
+      ctx.session.message_id = message.message_id;
+    }
+  }
+  async onSettingsCallBack(ctx: Context) {
+    delete ctx.session.edit;
+    await this.sendSettingsMessage(ctx);
+  }
+  async onSubscriptionMenuCallBack(ctx: Context) {
+    await this.sendSubscriptionMenu(ctx);
+  }
+  async onStartMessageCallBack(ctx: Context) {
+    const text = `👋 Salom! Botga xush kelibsiz!`;
+    try {
+      await ctx.editMessageText(text, { reply_markup: this.DEFAULT_KEYBOARD });
+    } catch (e) {
+      await ctx.reply(text, { reply_markup: this.DEFAULT_KEYBOARD });
+    }
+  }
+  async onMySubscriptionsCallBack(ctx: Context) {
+    const subscription = await this.userService.getSubscription(ctx.from.id);
+    if (!subscription) {
+      await ctx.answerCallbackQuery({
+        text: '❌ Sizda hozircha faol obuna mavjud emas',
+        show_alert: true,
+      });
+      return;
+    }
+    const daysLeft = this.calculateDaysLeft(subscription.expiredDate);
+    const subscriptionType = await this.subscriptionTypeService.findOne(
+      subscription.subscriptionTypeId,
+    );
+    const keyboard = new InlineKeyboard().text('⬅️ Orqaga', 'start_message');
+    const text =
+      `📌 Obuna turi: ${subscriptionType.title}
+` +
+      `💰 Narxi: ${subscriptionType.price} so'm
+` +
+      `📅 Tugash sanasi: ${subscription.expiredDate.toLocaleDateString()}
+` +
+      `⏳ Qolgan kunlar: ${daysLeft} kun`;
+    await ctx.editMessageText(text, { reply_markup: keyboard });
+  }
+  async onAboutUsCallBack(ctx: Context) {
+    const settings = await this.settingsService.findOne();
+    const keyboard = new InlineKeyboard().text('⬅️ Orqaga', 'start_message');
+    await ctx.editMessageText(settings.aboutAminGroup, {
+      parse_mode: 'Markdown',
+      reply_markup: keyboard,
+    });
+  }
+  async onAboutTeacherCallBack(ctx: Context) {
+    const settings = await this.settingsService.findOne();
+    const keyboard = new InlineKeyboard().text('⬅️ Orqaga', 'start_message');
+    await ctx.editMessageText(settings.aboutKozimxonTorayev, {
+      parse_mode: 'Markdown',
+      reply_markup: keyboard,
+    });
+  }
   public async sendMessage(
     message: MessageUser & { user: User; message: Message },
   ) {
     try {
-      await this.bot.api.sendMessage(
-        message.user.telegramId,
-        message.message.text,
-        {
+      const { text, image, video, file } = message.message;
+      const commonOptions: any = {
+        caption: text,
+        parse_mode: 'Markdown',
+        reply_markup: new InlineKeyboard().text(
+          'Reaksiya Bildirish',
+          `reaction_${message.id}`,
+        ),
+      };
+      if (image) {
+        await this.bot.api.sendPhoto(
+          message.user.telegramId,
+          new InputFile(image),
+          { ...commonOptions },
+        );
+      } else if (video) {
+        await this.bot.api.sendVideo(
+          message.user.telegramId,
+          new InputFile(video),
+          { ...commonOptions },
+        );
+      } else if (file) {
+        await this.bot.api.sendDocument(
+          message.user.telegramId,
+          new InputFile(file),
+          { ...commonOptions },
+        );
+      } else {
+        await this.bot.api.sendMessage(message.user.telegramId, text, {
           reply_markup: new InlineKeyboard().text(
             'Reaksiya Bildirish',
             `reaction_${message.id}`,
           ),
           parse_mode: 'Markdown',
-        },
-      );
-
+        });
+      }
       await this.messageService.update(message.id, { status: 'DELIVERED' });
-    } catch {
+    } catch (e) {
+      console.log(e);
       await this.messageService.update(message.id, { status: 'NOTSENT' });
     }
   }
-
   private async updateUserSession(ctx: Context, user: any) {
     ctx.session.id = user.id;
     ctx.session.phone = user.phoneNumber;
@@ -81,7 +180,6 @@ export class TelegramService implements OnModuleInit {
     ctx.session.last_name = user.lastName;
     ctx.session.email = user.email || 'skipped';
   }
-
   private async handleSubscriptionPayment(
     ctx: Context,
     subscriptionTypeId: number,
@@ -89,24 +187,25 @@ export class TelegramService implements OnModuleInit {
     const subscriptionType =
       await this.subscriptionTypeService.findOne(subscriptionTypeId);
     if (!subscriptionType) {
-      ctx.reply('❌ Subscription type not found');
+      await ctx.answerCallbackQuery('❌ Subscription type not found');
+      await ctx.deleteMessage();
       return;
     }
-
     const subscription = await this.userService.getSubscription(ctx.from.id);
     const daysLeft = subscription
       ? this.calculateDaysLeft(subscription.expiredDate)
       : 0;
-
     if (
       subscription &&
       subscription.subscriptionTypeId == subscriptionTypeId &&
       daysLeft > 3
     ) {
-      ctx.reply("⚠️ Siz allaqachon ushbu obunaga a'zo bo'lgansiz");
+      await ctx.answerCallbackQuery({
+        text: "⚠️ Siz allaqachon ushbu obunaga a'zo bo'lgansiz",
+        show_alert: true,
+      });
       return;
     }
-
     const user = await this.userService.findOneByTelegramID(
       ctx.from.id.toString(),
     );
@@ -114,17 +213,13 @@ export class TelegramService implements OnModuleInit {
       subscriptionTypeId,
       userId: user.id,
     });
-
     return { subscriptionType, stripe };
   }
-
-  @Interval(10000)
-  async onCron() {
+  @Interval(10000) async onCron() {
     await this.kickExpired();
     await this.sendAlertMessage();
     await this.sendMessages();
   }
-
   private async handleExistingUser(ctx: Context) {
     if (ctx.session.id) return false;
     const user = await this.userService.findOneByTelegramID(
@@ -136,7 +231,6 @@ export class TelegramService implements OnModuleInit {
     }
     return false;
   }
-
   private async handleStartCommand(ctx: Context) {
     const user = await this.userService.findOneByTelegramID(
       ctx.from.id.toString(),
@@ -146,7 +240,6 @@ export class TelegramService implements OnModuleInit {
       this.sendNameRequest(ctx, 1);
       return true;
     }
-
     const subscription = await this.userService.getSubscription(
       +user.telegramId,
     );
@@ -163,7 +256,6 @@ export class TelegramService implements OnModuleInit {
     this.sendStartMessage(ctx);
     return true;
   }
-
   private async handleUserRegistration(ctx: Context) {
     if (!ctx.session.first_name) {
       ctx.session.first_name = ctx.message.text;
@@ -177,7 +269,6 @@ export class TelegramService implements OnModuleInit {
     }
     return false;
   }
-
   private async handlePhoneNumber(ctx: Context) {
     if (!ctx.session.phone) {
       if (!ctx.message.contact) {
@@ -186,24 +277,19 @@ export class TelegramService implements OnModuleInit {
       }
       ctx.session.phone = ctx.message.contact.phone_number;
       const user = (
-        await this.userService.findAll({
-          phoneNumber: ctx.session.phone,
-        })
+        await this.userService.findAll({ phoneNumber: ctx.session.phone })
       ).data[0];
-
       if (user) {
         ctx.session.id = user.id;
         ctx.session.email = user.email || 'skipped';
         this.sendStartMessage(ctx);
         return true;
       }
-
       this.sendEmailRequest(ctx);
       return true;
     }
     return false;
   }
-
   private async handleEmail(ctx: Context) {
     if (!ctx.session.email) {
       if (ctx.message.text === "⏭ O'tkazish") {
@@ -226,71 +312,82 @@ export class TelegramService implements OnModuleInit {
     }
     return false;
   }
-
-  private async handleSubscription(ctx: Context) {
-    if (ctx.message.text == "📝 Obuna Bo'lish") {
-      const subscriptionTypes = await this.subscriptionTypeService.findAll({
-        limit: 100,
-      });
-
-      const keyboard = new InlineKeyboard();
-      subscriptionTypes.data.forEach((subscriptionType) => {
-        keyboard
-          .text(
-            `💫 ${subscriptionType.title} - ${subscriptionType.price} so'm / ${subscriptionType.expireDays} kun`,
-            `subscribe-${subscriptionType.id}`,
-          )
-          .row();
-      });
-
-      if (subscriptionTypes.data.length == 0) {
-        ctx.reply("❌ Obunalar mavjud emas iltimos keyinroq urunib ko'ring");
-        return true;
+  private async sendSubscriptionMenu(ctx: Context) {
+    const subscriptionTypes = await this.subscriptionTypeService.findAll({
+      limit: 100,
+    });
+    const keyboard = new InlineKeyboard();
+    subscriptionTypes.data.forEach((subscriptionType) => {
+      keyboard
+        .text(
+          `💫 ${subscriptionType.title} - ${subscriptionType.price} so'm / ${subscriptionType.expireDays} kun`,
+          `subscribe-${subscriptionType.id}`,
+        )
+        .row();
+    });
+    keyboard.text('⬅️ Orqaga', 'start_message').row();
+    const text = "🔥 Obuna Bo'lish";
+    if (subscriptionTypes.data.length == 0) {
+      if (ctx.callbackQuery) {
+        await ctx.editMessageText(
+          "❌ Obunalar mavjud emas iltimos keyinroq urunib ko'ring",
+        );
+      } else {
+        await ctx.reply(
+          "❌ Obunalar mavjud emas iltimos keyinroq urunib ko'ring",
+        );
       }
-      ctx.reply("🔥 Obuna Bo'lish", { reply_markup: keyboard });
-      return true;
+      return;
     }
-    return false;
+    if (ctx.callbackQuery) {
+      await ctx.editMessageText(text, { reply_markup: keyboard });
+    } else {
+      await ctx.reply(text, { reply_markup: keyboard });
+    }
   }
-
   async sendMessages() {
     const messages = await this.prismaService.messageUser.findMany({
       where: { status: 'PENDING' },
       take: 20,
-      include: {
-        user: true,
-        message: true,
-      },
+      include: { user: true, message: true },
     });
-
     for (const message of messages) {
       await this.sendMessage(message);
     }
   }
+  private async sendSettingsMessage(ctx: Context, messageId?: number) {
+    const keyboard = new InlineKeyboard()
+      .text("👤 Ismni o'zgartitirish", 'edit_firstname')
+      .row()
+      .text("👥 Familyani o'zgartitirish", 'edit_lastname')
+      .row()
+      .text("📧 Emailni o'zgartitirish", 'edit_email')
+      .row()
+      .text('⬅️ Orqaga', 'start_message');
+    const user = await this.userService.findOneByTelegramID(
+      ctx.from.id.toString(),
+    );
+    const text =
+      `⚙️ Sozlamalar
 
-  private async handleSettings(ctx: Context) {
-    if (ctx.message.text == '⚙️ Sozlamalar') {
-      const keyboard = new InlineKeyboard();
-      keyboard.text("👤 Ismni o'zgartitirish", 'edit_firstname').row();
-      keyboard.text("👥 Familyani o'zgartitirish", 'edit_lastname').row();
-      keyboard.text("📧 Emailni o'zgartitirish", 'edit_email').row();
-
-      const user = await this.userService.findOneByTelegramID(
-        ctx.from.id.toString(),
-      );
-      await ctx.reply(
-        `⚙️ Sozlamalar\n\n` +
-          `👤 Ism: ${user.firstName}\n` +
-          `👥 Familya: ${user.lastName}\n` +
-          `📧 Email: ${user.email || 'Kiritilmagan'}\n` +
-          `📱 Telefon: ${user.phoneNumber}`,
-        { reply_markup: keyboard },
-      );
-      return true;
+` +
+      `👤 Ism: ${user.firstName}
+` +
+      `👥 Familya: ${user.lastName}
+` +
+      `📧 Email: ${user.email || 'Kiritilmagan'}
+` +
+      `📱 Telefon: ${user.phoneNumber}`;
+    if (messageId) {
+      await ctx.api.editMessageText(ctx.chat.id, messageId, text, {
+        reply_markup: keyboard,
+      });
+    } else if (ctx.callbackQuery) {
+      await ctx.editMessageText(text, { reply_markup: keyboard });
+    } else {
+      await ctx.reply(text, { reply_markup: keyboard });
     }
-    return false;
   }
-
   async onMessage(ctx: Context) {
     if (ctx.chat.type != 'private') return;
     if (!ctx.session.id && (await this.handleExistingUser(ctx))) return;
@@ -301,134 +398,53 @@ export class TelegramService implements OnModuleInit {
       (await this.handleStartCommand(ctx))
     )
       return;
-
     if (await this.handleEdit(ctx)) return;
     if (await this.handleUserRegistration(ctx)) return;
     if (await this.handlePhoneNumber(ctx)) return;
     if (await this.handleEmail(ctx)) return;
-    if (await this.handleSubscription(ctx)) return;
-    if (await this.handleSettings(ctx)) return;
-    if (await this.handleMySubscriptions(ctx)) return;
-    if (await this.handleInfo(ctx)) return;
   }
-
-  async handleInfo(ctx: Context) {
-    const settings = await this.settingsService.findOne();
-    if (ctx.message.text == 'ℹ️ Biz haqimizda') {
-      await ctx.reply(settings.aboutAminGroup, {
-        parse_mode: 'Markdown',
-      });
-      return true;
-    }
-    if (ctx.message.text == "👨‍🏫 Kozimxon To'ayev haqida") {
-      await ctx.reply(settings.aboutKozimxonTorayev, {
-        parse_mode: 'Markdown',
-      });
-      return true;
-    }
-    return false;
-  }
-
-  async handleMySubscriptions(ctx: Context) {
-    if (ctx.message.text == '📋 Obunalarim') {
-      const subscription = await this.userService.getSubscription(ctx.from.id);
-      if (!subscription) {
-        await ctx.reply('❌ Sizda hozircha faol obuna mavjud emas');
-        return true;
-      }
-
-      const daysLeft = this.calculateDaysLeft(subscription.expiredDate);
-      const subscriptionType = await this.subscriptionTypeService.findOne(
-        subscription.subscriptionTypeId,
-      );
-
-      await ctx.reply(
-        `📌 Obuna turi: ${subscriptionType.title}\n` +
-          `💰 Narxi: ${subscriptionType.price} so'm\n` +
-          `📅 Tugash sanasi: ${subscription.expiredDate.toLocaleDateString()}\n` +
-          `⏳ Qolgan kunlar: ${daysLeft} kun`,
-      );
-      return true;
-    }
-    return false;
-  }
-
   async handleEdit(ctx: Context) {
-    if (ctx.session.edit == 'firstname') {
-      await this.userService.update(ctx.session.id, {
-        firstName: ctx.message.text,
-      });
+    if (ctx.session.edit) {
+      const editType = ctx.session.edit;
+      const value = ctx.message.text;
+      if (editType === 'firstname') {
+        await this.userService.update(ctx.session.id, { firstName: value });
+      } else if (editType === 'lastname') {
+        await this.userService.update(ctx.session.id, { lastName: value });
+      } else if (editType === 'email') {
+        if (!isEmail(value)) {
+          await ctx.reply("📧 Iltimos, to'g'ri email manzil kiriting.");
+          return true;
+        }
+        await this.userService.update(ctx.session.id, { email: value });
+      }
       delete ctx.session.edit;
-      await ctx.reply("✅ Ism o'zgartirildi", {
-        reply_markup: { keyboard: this.DEFAULT_KEYBOARD },
-      });
-      return true;
-    }
-    if (ctx.session.edit == 'lastname') {
-      await this.userService.update(ctx.session.id, {
-        lastName: ctx.message.text,
-      });
-      delete ctx.session.edit;
-      await ctx.reply("✅ Familya o'zgartirildi", {
-        reply_markup: { keyboard: this.DEFAULT_KEYBOARD },
-      });
-      return true;
-    }
-    if (ctx.session.edit == 'email') {
-      await this.userService.update(ctx.session.id, {
-        email: ctx.message.text,
-      });
-      delete ctx.session.edit;
-      await ctx.reply("✅ Email o'zgartirildi", {
-        reply_markup: { keyboard: this.DEFAULT_KEYBOARD },
-      });
+      await ctx.deleteMessage();
+      if (ctx.session.message_id) {
+        await this.sendSettingsMessage(ctx, ctx.session.message_id);
+        delete ctx.session.message_id;
+      } else {
+        await this.sendSettingsMessage(ctx);
+      }
       return true;
     }
     return false;
   }
-
-  async onSubscribeCallBack(ctx: Context) {
-    const subscriptionTypeId = +ctx.match[1];
-    const result = await this.handleSubscriptionPayment(
-      ctx,
-      subscriptionTypeId,
-    );
-
-    if (!result) return;
-
-    const { subscriptionType, stripe } = result;
-    await this.sendSubscriptionPaymentInfo(ctx, subscriptionType, stripe);
-  }
-
-  async onEditCallBack(ctx: Context) {
-    const editName = ctx.match[1];
-    ctx.session.edit = editName;
-    if (editName == 'firstname') {
-      await ctx.reply('👤 Yangi ismni kiriting');
-    } else if (editName == 'lastname') {
-      await ctx.reply('👥 Yangi familyani kiriting');
-    } else if (editName == 'email') {
-      await ctx.reply('📧 Yangi emailni kiriting');
-    }
-  }
-
   private async sendSubscriptionPaymentInfo(
     ctx: Context,
     subscriptionType: any,
     stripe: any,
   ) {
-    ctx.reply(
-      `💫 ${subscriptionType.title} - ${subscriptionType.price}:\n${subscriptionType.description}`,
-      {
-        parse_mode: 'Markdown',
-        reply_markup: new InlineKeyboard().url(
-          '💳 Visa/Mastercard',
-          stripe.url,
-        ),
-      },
+    const keyboard = new InlineKeyboard()
+      .url('💳 Visa/Mastercard', stripe.url)
+      .row()
+      .text('⬅️ Orqaga', 'subscribe_menu');
+    await ctx.editMessageText(
+      `💫 ${subscriptionType.title} - ${subscriptionType.price}:
+${subscriptionType.description}`,
+      { parse_mode: 'Markdown', reply_markup: keyboard },
     );
   }
-
   async sendAlertMessage() {
     const users = await this.prismaService.user.findMany({
       where: {
@@ -436,29 +452,23 @@ export class TelegramService implements OnModuleInit {
         status: 'SUBSCRIBE',
         subscription: {
           some: {
-            expiredDate: {
-              gt: new Date(Date.now() - this.MS_PER_DAY * 3),
-            },
+            expiredDate: { gt: new Date(Date.now() - this.MS_PER_DAY * 3) },
           },
         },
       },
-      include: {
-        subscription: true,
-      },
+      include: { subscription: true },
     });
-
     for (const user of users) {
       const sub = await this.userService.getSubscription(+user.telegramId);
       if (!sub) continue;
-
       const daysLeft = this.calculateDaysLeft(sub.expiredDate);
-
       if (daysLeft > 0 && daysLeft <= 3 && sub.alertCount <= 3 - daysLeft) {
         await this.bot.api.sendMessage(
           +user.telegramId,
-          `⚠️ Ogohlantirish!\nSizning obunangiz ${sub.expiredDate.toDateString()} da tugaydi.\n⏳ ${daysLeft} kun qoldi.`,
+          `⚠️ Ogohlantirish!
+Sizning obunangiz ${sub.expiredDate.toDateString()} da tugaydi.
+⏳ ${daysLeft} kun qoldi.`,
         );
-
         await this.prismaService.subscription.update({
           where: { id: sub.id },
           data: { alertCount: sub.alertCount + 1 },
@@ -466,22 +476,14 @@ export class TelegramService implements OnModuleInit {
       }
     }
   }
-
   async kickExpired() {
     const users = await this.prismaService.user.findMany({
       where: {
         inGroup: true,
         status: 'SUBSCRIBE',
-        subscription: {
-          every: {
-            expiredDate: {
-              lte: new Date(),
-            },
-          },
-        },
+        subscription: { every: { expiredDate: { lte: new Date() } } },
       },
     });
-
     for (const user of users) {
       await this.userService.update(user.id, {
         inGroup: false,
@@ -491,28 +493,13 @@ export class TelegramService implements OnModuleInit {
       this.bot.api.unbanChatMember(env.TELEGRAM_GROUP_ID, +user.telegramId);
     }
   }
-
   sendStartMessage(ctx: Context, type: number = 1) {
-    if (type == 1) {
-      ctx.reply(`👋 Salom! Botga xush kelibsiz!`, {
-        reply_markup: {
-          keyboard: this.DEFAULT_KEYBOARD,
-        },
-      });
-    }
-
-    if (type == 2) {
-      ctx.reply(
-        `👋 ${ctx.session.last_name} ${ctx.session.first_name} sizni yana ko'rganimdan xursandman!`,
-        {
-          reply_markup: {
-            keyboard: this.DEFAULT_KEYBOARD,
-          },
-        },
-      );
-    }
+    const text =
+      type === 1
+        ? `👋 Salom! Botga xush kelibsiz!`
+        : `👋 ${ctx.session.last_name} ${ctx.session.first_name} sizni yana ko'rganimdan xursandman!`;
+    ctx.reply(text, { reply_markup: this.DEFAULT_KEYBOARD });
   }
-
   sendNameRequest(ctx: Context, step: number) {
     if (step == 1) {
       ctx.reply(`👤 Iltimos, ismingizni yuboring.`);
@@ -521,10 +508,10 @@ export class TelegramService implements OnModuleInit {
       ctx.reply(`👥 Iltimos, familiyangizni yuboring.`);
     }
   }
-
   sendPhoneRequest(ctx: Context) {
     ctx.reply(
-      `👋 ${ctx.session.last_name} ${ctx.session.first_name} to'rayevning rasmiy kanaliga xush kelibsiz!\n📱 BOTning qo'shimcha imkoniyatlaridan foydalanish uchun telefon raqamingizni yuboring!`,
+      `👋 ${ctx.session.last_name} ${ctx.session.first_name} to'rayevning rasmiy kanaliga xush kelibsiz!
+📱 BOTning qo'shimcha imkoniyatlaridan foydalanish uchun telefon raqamingizni yuboring!`,
       {
         reply_markup: {
           keyboard: new Keyboard()
@@ -536,11 +523,11 @@ export class TelegramService implements OnModuleInit {
       },
     );
   }
-
   sendEmailRequest(ctx: Context, type = 1) {
     if (type == 1) {
       ctx.reply(
-        `🎉 ${ctx.session.last_name} ${ctx.session.first_name} sizga qo'shimcha imkoniyatlar ochildi.\n📧 Siz uchun maxsus takliflarni elektron pochtangizga yuborishimiz uchun iltimos email manzilingizni kiriting!`,
+        `🎉 ${ctx.session.last_name} ${ctx.session.first_name} sizga qo'shimcha imkoniyatlar ochildi.
+📧 Siz uchun maxsus takliflarni elektron pochtangizga yuborishimiz uchun iltimos email manzilingizni kiriting!`,
         {
           reply_markup: {
             keyboard: new Keyboard().text("⏭ O'tkazish").resized().build(),

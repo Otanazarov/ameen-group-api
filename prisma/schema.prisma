@@ -90,6 +90,9 @@ model Settings {
 model Message {
   id        Int           @id @default(autoincrement())
   text      String
+  image     String?
+  video     String?
+  file      String?
   users     MessageUser[]
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt

@@ -19,6 +19,7 @@
         "@nestjs/typeorm": "^10.0.2",
         "@prisma/client": "^6.8.2",
         "@types/markdown-escape": "^1.1.3",
+        "@types/multer": "^2.0.0",
         "@types/uuid": "^10.0.0",
         "axios": "^1.10.0",
         "bcryptjs": "^2.4.3",
@@ -32,6 +33,7 @@
         "helmet": "^6.0.0",
         "jsonwebtoken": "^8.5.1",
         "markdown-escape": "^2.0.0",
+        "multer": "^2.0.1",
         "mysql2": "^3.11.5",
         "reflect-metadata": "^0.1.13",
         "rimraf": "^3.0.2",
@@ -205,6 +207,8 @@
     "@types/markdown-escape": ["@types/markdown-escape@1.1.3", "", {}, "sha512-JIc1+s3y5ujKnt/+N+wq6s/QdL2qZ11fP79MijrVXsAAnzSxCbT2j/3prHRouJdZ2yFLN3vkP0HytfnoCczjOw=="],
 
     "@types/mime": ["@types/mime@1.3.5", "", {}, "sha512-/pyBZWSLD2n0dcHE3hq8s8ZvcETHtEuF+3E7XVt0Ig2nvsVQXdghHVcEkIWjy9A0wKfTn97a/PSDYohKIlnP/w=="],
+
+    "@types/multer": ["@types/multer@2.0.0", "", { "dependencies": { "@types/express": "*" } }, "sha512-C3Z9v9Evij2yST3RSBktxP9STm6OdMc5uR1xF1SGr98uv8dUlAL2hqwrZ3GVB3uyMyiegnscEK6PGtYvNrjTjw=="],
 
     "@types/node": ["@types/node@20.19.4", "", { "dependencies": { "undici-types": "~6.21.0" } }, "sha512-OP+We5WV8Xnbuvw0zC2m4qfB/BJvjyCwtNjhHdJxV1639SGSKrLmJkc3fMnp2Qy8nJyHp8RO6umxELN/dS1/EA=="],
 

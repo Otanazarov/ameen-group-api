@@ -22,4 +22,19 @@ export class CreateMessageDto {
   @IsOptional()
   @IsInt()
   subscriptionTypeId?: number;
+
+  @ApiPropertyOptional({ type: 'string', format: 'binary' })
+  @IsOptional()
+  @IsString()
+  file?: string;
+
+  @ApiPropertyOptional({ type: 'string', format: 'binary' })
+  @IsOptional()
+  @IsString()
+  video?: string;
+
+  @ApiPropertyOptional({ type: 'string', format: 'binary' })
+  @IsOptional()
+  @IsString()
+  image?: string;
 }
