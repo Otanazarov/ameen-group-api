@@ -131,12 +131,13 @@ export class TelegramService implements OnModuleInit {
     message: MessageUser & { user: User; message: Message },
   ) {
     try {
-      const { text, image, video, file, buttons } = message.message;
+      // eslint-disable-next-line prefer-const
+      let { text, image, video, file, buttons } = message.message;
       let replyMarkup: InlineKeyboard;
-
       if (buttons) {
         replyMarkup = new InlineKeyboard();
-        buttons.inline_keyboard.forEach((row: any) => {
+        buttons = JSON.parse(JSON.parse(buttons));
+        (buttons as any).inline_keyboard.forEach((row: any) => {
           const buttonRow = row.buttons
             .map((button: any) => {
               if (button.url) {

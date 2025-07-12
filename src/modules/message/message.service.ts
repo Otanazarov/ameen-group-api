@@ -52,9 +52,9 @@ export class MessageService {
     const message = await this.prisma.message.create({
       data: {
         text,
-        image: files.image ? files.image[0].path : undefined,
-        video: files.video ? files.video[0].path : undefined,
-        file: files.file ? files.file[0].path : undefined,
+        image: files?.image ? files.image[0].path : undefined,
+        video: files?.video ? files.video[0].path : undefined,
+        file: files?.file ? files.file[0].path : undefined,
         buttons: buttons ? JSON.stringify(buttons) : undefined,
       },
     });
