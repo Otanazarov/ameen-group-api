@@ -93,6 +93,7 @@ model Message {
   image     String?
   video     String?
   file      String?
+  buttons   String?
   users     MessageUser[]
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt

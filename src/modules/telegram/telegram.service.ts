@@ -131,15 +131,39 @@ export class TelegramService implements OnModuleInit {
     message: MessageUser & { user: User; message: Message },
   ) {
     try {
-      const { text, image, video, file } = message.message;
+      const { text, image, video, file, buttons } = message.message;
+      let replyMarkup: InlineKeyboard;
+
+      if (buttons) {
+        replyMarkup = new InlineKeyboard();
+        buttons.inline_keyboard.forEach((row: any) => {
+          const buttonRow = row.buttons
+            .map((button: any) => {
+              if (button.url) {
+                return InlineKeyboard.url(button.text, button.url);
+              } else if (button.callback_data) {
+                return InlineKeyboard.text(button.text, button.callback_data);
+              }
+              return null;
+            })
+            .filter(Boolean);
+          if (buttonRow.length > 0) {
+            replyMarkup.row(...buttonRow);
+          }
+        });
+      } else {
+        replyMarkup = new InlineKeyboard().text(
+          'Reaksiya Bildirish',
+          `reaction_${message.id}`,
+        );
+      }
+
       const commonOptions: any = {
         caption: text,
         parse_mode: 'Markdown',
-        reply_markup: new InlineKeyboard().text(
-          'Reaksiya Bildirish',
-          `reaction_${message.id}`,
-        ),
+        reply_markup: replyMarkup,
       };
+
       if (image) {
         await this.bot.api.sendPhoto(
           message.user.telegramId,
@@ -160,10 +184,7 @@ export class TelegramService implements OnModuleInit {
         );
       } else {
         await this.bot.api.sendMessage(message.user.telegramId, text, {
-          reply_markup: new InlineKeyboard().text(
-            'Reaksiya Bildirish',
-            `reaction_${message.id}`,
-          ),
+          reply_markup: replyMarkup,
           parse_mode: 'Markdown',
         });
       }

@@ -19,7 +19,8 @@ export class MessageService {
       file?: Express.Multer.File[];
     },
   ) {
-    const { userIds, status, text, subscriptionTypeId } = createMessageDto;
+    const { userIds, status, text, subscriptionTypeId, buttons } =
+      createMessageDto;
 
     const orConditions: Prisma.UserWhereInput[] = [];
     if (status) {
@@ -54,6 +55,7 @@ export class MessageService {
         image: files.image ? files.image[0].path : undefined,
         video: files.video ? files.video[0].path : undefined,
         file: files.file ? files.file[0].path : undefined,
+        buttons: buttons ? JSON.stringify(buttons) : undefined,
       },
     });
 
@@ -181,6 +183,9 @@ export class MessageService {
     });
     if (!message) {
       throw HttpError({ code: 404, message: 'Message not found' });
+    }
+    if (message.buttons) {
+      message.buttons = message.buttons;
     }
     return message;
   }

@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum } from 'class-validator';
 import { MessageStatus } from '@prisma/client';
+import { IsEnum } from 'class-validator';
 
 export class UpdateMessageDto {
   @ApiPropertyOptional()

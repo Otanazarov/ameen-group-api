@@ -1,6 +1,15 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsArray, IsEnum, IsInt, IsOptional, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsEnum,
+  IsInt,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 import { UserStatus } from '@prisma/client';
+import { InlineKeyboardDto } from './inline-keyboard.dto';
+import { Type } from 'class-transformer';
 
 export class CreateMessageDto {
   @ApiProperty({ example: 'Salom, qanday yordam bera olaman?' })
@@ -37,4 +46,10 @@ export class CreateMessageDto {
   @IsOptional()
   @IsString()
   image?: string;
+
+  @ApiPropertyOptional({ type: InlineKeyboardDto })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => InlineKeyboardDto)
+  buttons?: InlineKeyboardDto;
 }
