@@ -7,8 +7,6 @@ import {
   Param,
   ParseIntPipe,
   Query,
-  UseInterceptors,
-  UploadedFiles,
 } from '@nestjs/common';
 import { MessageService } from './message.service';
 import { CreateMessageDto } from './dto/create-message.dto';
@@ -18,8 +16,6 @@ import { FindAllMessageUserDto } from './dto/findAllMessageUser.dto';
 import { DecoratorWrapper } from 'src/common/auth/decorator.auth';
 import { Role } from 'src/common/auth/roles/role.enum';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
-import { FileFieldsInterceptor } from '@nestjs/platform-express';
-import { fileUploadOptions } from 'src/common/utils/file-upload.utils';
 
 @Controller('message')
 export class MessageController {
@@ -27,26 +23,8 @@ export class MessageController {
 
   @Post()
   @DecoratorWrapper('send Message', true, [Role.Admin])
-  @UseInterceptors(
-    FileFieldsInterceptor(
-      [
-        { name: 'image', maxCount: 1 },
-        { name: 'video', maxCount: 1 },
-        { name: 'file', maxCount: 1 },
-      ],
-      fileUploadOptions,
-    ),
-  )
-  create(
-    @Body() createMessageDto: CreateMessageDto,
-    @UploadedFiles()
-    files: {
-      image?: Express.Multer.File[];
-      video?: Express.Multer.File[];
-      file?: Express.Multer.File[];
-    },
-  ) {
-    return this.messageService.create(createMessageDto, files);
+  create(@Body() createMessageDto: CreateMessageDto) {
+    return this.messageService.create(createMessageDto);
   }
 
   @Get()

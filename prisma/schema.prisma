@@ -90,13 +90,22 @@ model Settings {
 model Message {
   id        Int           @id @default(autoincrement())
   text      String
-  image     String?
-  video     String?
-  file      String?
   buttons   String?
   users     MessageUser[]
+  files     File[]
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
+}
+
+model File {
+  id        Int      @id @default(autoincrement())
+  url       String
+  mimetype  String
+  size      Int
+  message   Message? @relation(fields: [messageId], references: [id])
+  messageId Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model MessageUser {

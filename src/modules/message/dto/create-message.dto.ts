@@ -32,20 +32,11 @@ export class CreateMessageDto {
   @IsInt()
   subscriptionTypeId?: number;
 
-  @ApiPropertyOptional({ type: 'string', format: 'binary' })
+  @ApiPropertyOptional({ type: [Number] })
   @IsOptional()
-  @IsString()
-  file?: string;
-
-  @ApiPropertyOptional({ type: 'string', format: 'binary' })
-  @IsOptional()
-  @IsString()
-  video?: string;
-
-  @ApiPropertyOptional({ type: 'string', format: 'binary' })
-  @IsOptional()
-  @IsString()
-  image?: string;
+  @IsArray()
+  @IsInt({ each: true })
+  fileIds?: number[];
 
   @ApiPropertyOptional({ type: InlineKeyboardDto })
   @IsOptional()

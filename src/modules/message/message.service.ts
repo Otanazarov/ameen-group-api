@@ -11,15 +11,8 @@ import { PaginationDto } from 'src/common/dtos/pagination.dto';
 @Injectable()
 export class MessageService {
   constructor(private readonly prisma: PrismaService) {}
-  async create(
-    createMessageDto: CreateMessageDto,
-    files: {
-      image?: Express.Multer.File[];
-      video?: Express.Multer.File[];
-      file?: Express.Multer.File[];
-    },
-  ) {
-    const { userIds, status, text, subscriptionTypeId, buttons } =
+  async create(createMessageDto: CreateMessageDto) {
+    const { userIds, status, text, subscriptionTypeId, buttons, fileIds } =
       createMessageDto;
 
     const orConditions: Prisma.UserWhereInput[] = [];
@@ -52,10 +45,10 @@ export class MessageService {
     const message = await this.prisma.message.create({
       data: {
         text,
-        image: files?.image ? files.image[0].path : undefined,
-        video: files?.video ? files.video[0].path : undefined,
-        file: files?.file ? files.file[0].path : undefined,
         buttons: buttons ? JSON.stringify(buttons) : undefined,
+        files: {
+          connect: fileIds?.map((id) => ({ id })) || [],
+        },
       },
     });
 

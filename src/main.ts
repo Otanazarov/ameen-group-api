@@ -6,11 +6,17 @@ import { AppModule } from './app.module';
 import { env } from './common/config';
 import { HttpExceptionFilter } from './common/filter/httpException.filter';
 import { ApiSwaggerOptions } from './common/swagger/config.swagger';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     cors: { origin: '*' },
     rawBody: true,
+  });
+
+  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
+    prefix: '/uploads/',
   });
 
   app.setGlobalPrefix('/api');

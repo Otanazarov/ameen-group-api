@@ -1,7 +1,7 @@
 import { InjectBot } from '@grammyjs/nestjs';
 import { forwardRef, Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { Interval } from '@nestjs/schedule';
-import { Message, MessageUser, User } from '@prisma/client';
+import { File, Message, MessageUser, User } from '@prisma/client';
 import { isEmail } from 'class-validator';
 import { Bot, InlineKeyboard, Keyboard, InputFile } from 'grammy';
 import { env } from 'src/common/config';
@@ -12,6 +12,7 @@ import { StripeService } from '../stripe/stripe.service';
 import { SubscriptionTypeService } from '../subscription-type/subscription-type.service';
 import { UserService } from '../user/user.service';
 import { Context } from './Context.type';
+import { join } from 'path';
 @Injectable()
 export class TelegramService implements OnModuleInit {
   private readonly MS_PER_DAY = 1000 * 60 * 60 * 24;
@@ -128,11 +129,11 @@ export class TelegramService implements OnModuleInit {
     });
   }
   public async sendMessage(
-    message: MessageUser & { user: User; message: Message },
+    message: MessageUser & { user: User; message: Message & { files: File[] } },
   ) {
     try {
       // eslint-disable-next-line prefer-const
-      let { text, image, video, file, buttons } = message.message;
+      let { text, buttons, files } = message.message;
       let replyMarkup: InlineKeyboard;
       if (buttons) {
         replyMarkup = new InlineKeyboard();
@@ -165,24 +166,29 @@ export class TelegramService implements OnModuleInit {
         reply_markup: replyMarkup,
       };
 
-      if (image) {
-        await this.bot.api.sendPhoto(
-          message.user.telegramId,
-          new InputFile(image),
-          { ...commonOptions },
-        );
-      } else if (video) {
-        await this.bot.api.sendVideo(
-          message.user.telegramId,
-          new InputFile(video),
-          { ...commonOptions },
-        );
-      } else if (file) {
-        await this.bot.api.sendDocument(
-          message.user.telegramId,
-          new InputFile(file),
-          { ...commonOptions },
-        );
+      if (files.length > 0) {
+        for (const file of files) {
+          const filePath = join(__dirname, '..', '..', '..', file.url);
+          if (file.mimetype.startsWith('image')) {
+            await this.bot.api.sendPhoto(
+              message.user.telegramId,
+              new InputFile(filePath),
+              { ...commonOptions },
+            );
+          } else if (file.mimetype.startsWith('video')) {
+            await this.bot.api.sendVideo(
+              message.user.telegramId,
+              new InputFile(filePath),
+              { ...commonOptions },
+            );
+          } else {
+            await this.bot.api.sendDocument(
+              message.user.telegramId,
+              new InputFile(filePath),
+              { ...commonOptions },
+            );
+          }
+        }
       } else {
         await this.bot.api.sendMessage(message.user.telegramId, text, {
           reply_markup: replyMarkup,
@@ -371,10 +377,10 @@ export class TelegramService implements OnModuleInit {
     const messages = await this.prismaService.messageUser.findMany({
       where: { status: 'PENDING' },
       take: 20,
-      include: { user: true, message: true },
+      include: { user: true, message: { include: { files: true } } },
     });
     for (const message of messages) {
-      await this.sendMessage(message);
+      await this.sendMessage(message as any);
     }
   }
   private async sendSettingsMessage(ctx: Context, messageId?: number) {
