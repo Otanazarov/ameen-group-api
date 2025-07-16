@@ -491,12 +491,14 @@ ${subscriptionType.description}`,
       if (!sub) continue;
       const daysLeft = this.calculateDaysLeft(sub.expiredDate);
       if (daysLeft > 0 && daysLeft <= 3 && sub.alertCount <= 3 - daysLeft) {
-        await this.bot.api.sendMessage(
-          +user.telegramId,
-          `⚠️ Ogohlantirish!
-Sizning obunangiz ${sub.expiredDate.toDateString()} da tugaydi.
-⏳ ${daysLeft} kun qoldi.`,
-        );
+        const settings = await this.prismaService.settings.findFirst({
+          where: { id: 1 },
+        });
+
+        const text = settings.alertMessage
+          .replace('{{daysLeft}}', daysLeft.toString())
+          .replace('{{expireDate}}', sub.expiredDate.toDateString());
+        await this.bot.api.sendMessage(+user.telegramId, text);
         await this.prismaService.subscription.update({
           where: { id: sub.id },
           data: { alertCount: sub.alertCount + 1 },

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateSettingDto {
   @ApiProperty()
@@ -11,4 +11,10 @@ export class CreateSettingDto {
   @IsNotEmpty()
   @IsString()
   aboutKozimxonTorayev: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsNotEmpty()
+  @IsString()
+  alertMessage?: string;
 }

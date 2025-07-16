@@ -11,4 +11,12 @@ export class UpdateSettingDto {
   @IsOptional()
   @IsString()
   aboutKozimxonTorayev?: string;
+
+  @ApiPropertyOptional({
+    example:
+      '⚠️ Ogohlantirish! Sizning obunangiz {{expireDate}} da tugaydi. ⏳ {{daysLeft}} kun qoldi.',
+  })
+  @IsOptional()
+  @IsString()
+  alertMessage?: string;
 }
