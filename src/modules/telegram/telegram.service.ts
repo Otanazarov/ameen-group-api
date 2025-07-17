@@ -165,7 +165,14 @@ export class TelegramService implements OnModuleInit {
 
       if (files.length > 0) {
         for (const file of files) {
-          const filePath = join(__dirname, '..', '..', '..', file.url);
+          const filePath = join(
+            __dirname,
+            '..',
+            '..',
+            '..',
+            'public',
+            file.url,
+          );
           if (file.mimetype.startsWith('image')) {
             await this.bot.api.sendPhoto(
               message.user.telegramId,
