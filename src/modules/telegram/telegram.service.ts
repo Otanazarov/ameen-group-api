@@ -170,6 +170,8 @@ export class TelegramService implements OnModuleInit {
         reply_markup: replyMarkup,
       };
 
+      await this.messageService.update(message.id, { status: 'SENDING' });
+
       if (files.length > 0) {
         if (files.length == 1) {
           const file = files[0];

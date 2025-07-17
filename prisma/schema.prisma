@@ -130,6 +130,7 @@ enum UserStatus {
 
 enum MessageStatus {
   PENDING
+  SENDING
   NOTSENT
   DELIVERED
   READ
