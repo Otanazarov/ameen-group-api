@@ -11,7 +11,6 @@ import { env } from 'src/common/config';
 import { UserService } from '../user/user.service';
 import { Context } from './Context.type';
 import { TelegramService } from './telegram.service';
-import { autoRetry } from '@grammyjs/auto-retry';
 
 @Update()
 export class TelegramUpdate {
@@ -25,7 +24,6 @@ export class TelegramUpdate {
       'telegram Bot starting',
       this.bot ? this.bot.botInfo.id : '(booting)',
     );
-    bot.api.config.use(autoRetry());
     bot.catch((err) => {
       console.log('Error in telegram bot', err);
       return true;
