@@ -359,10 +359,12 @@ export class TelegramService implements OnModuleInit {
       if (ctx.callbackQuery) {
         await ctx.editMessageText(
           "❌ Obunalar mavjud emas iltimos keyinroq urunib ko'ring",
+          { reply_markup: keyboard },
         );
       } else {
         await ctx.reply(
           "❌ Obunalar mavjud emas iltimos keyinroq urunib ko'ring",
+          { reply_markup: keyboard },
         );
       }
       return;
