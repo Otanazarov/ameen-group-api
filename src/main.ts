@@ -15,7 +15,7 @@ async function bootstrap() {
     rawBody: true,
   });
 
-  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
+  app.useStaticAssets(join(__dirname, '..', 'public/uploads'), {
     prefix: '/uploads/',
   });
 

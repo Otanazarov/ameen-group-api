@@ -8,8 +8,8 @@ export class FilesService {
   constructor(private readonly prisma: PrismaService) {}
 
   async uploadFile(file: Express.Multer.File) {
-    const uploadPath = join(__dirname, 'public', 'uploads');
-    const filePath = join(uploadPath, file.originalname);
+    const uploadPath = join(__dirname, '../../../', 'public', 'uploads');
+    const filePath = join(uploadPath, Date.now() + file.originalname);
 
     await writeFile(filePath, file.buffer);
 
