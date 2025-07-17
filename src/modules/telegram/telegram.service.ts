@@ -20,6 +20,7 @@ import { Context } from './Context.type';
 import { join } from 'path';
 @Injectable()
 export class TelegramService implements OnModuleInit {
+  private cronRunning = false;
   private readonly MS_PER_DAY = 1000 * 60 * 60 * 24;
   private readonly DEFAULT_KEYBOARD = new InlineKeyboard()
     .text("📝 Obuna Bo'lish", 'subscribe_menu')
@@ -285,9 +286,12 @@ export class TelegramService implements OnModuleInit {
     return { subscriptionType };
   }
   @Interval(10000) async onCron() {
+    if (this.cronRunning) return;
+    this.cronRunning = true;
     await this.kickExpired();
     await this.sendAlertMessage();
     await this.sendMessages();
+    this.cronRunning = false;
   }
   private async handleExistingUser(ctx: Context) {
     if (ctx.session.id) return false;
