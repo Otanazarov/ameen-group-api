@@ -9,13 +9,14 @@ export class FilesService {
 
   async uploadFile(file: Express.Multer.File) {
     const uploadPath = join(__dirname, '../../../', 'public', 'uploads');
-    const filePath = join(uploadPath, Date.now() + file.originalname);
+    const fileName = Date.now() + file.originalname;
+    const filePath = join(uploadPath, fileName);
 
     await writeFile(filePath, file.buffer);
 
     return this.prisma.file.create({
       data: {
-        url: `/uploads/${file.originalname}`,
+        url: `/uploads/${fileName}`,
         mimetype: file.mimetype,
         size: file.size,
       },
