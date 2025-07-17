@@ -140,7 +140,8 @@ export class TelegramService implements OnModuleInit {
       let replyMarkup: InlineKeyboard;
       if (buttons) {
         replyMarkup = new InlineKeyboard();
-        buttons = JSON.parse(JSON.parse(buttons));
+        buttons = JSON.parse(buttons);
+        console.log(buttons);
         (buttons as any).inline_keyboard.forEach((row: any) => {
           const buttonRow = row.buttons
             .map((button: any) => {
@@ -170,7 +171,8 @@ export class TelegramService implements OnModuleInit {
       };
 
       if (files.length > 0) {
-        const inputFiles = files.map((file) => {
+        if (files.length == 1) {
+          const file = files[0];
           const filePath = join(
             __dirname,
             '..',
@@ -179,22 +181,55 @@ export class TelegramService implements OnModuleInit {
             'public',
             file.url,
           );
-
+          const inputFile = new InputFile(filePath);
           if (file.mimetype.startsWith('image')) {
-            return InputMediaBuilder.photo(new InputFile(filePath), {
+            await this.bot.api.sendPhoto(message.user.telegramId, inputFile, {
               ...commonOptions,
             });
           } else if (file.mimetype.startsWith('video')) {
-            return InputMediaBuilder.video(new InputFile(filePath), {
+            await this.bot.api.sendVideo(message.user.telegramId, inputFile, {
               ...commonOptions,
             });
           } else {
-            return InputMediaBuilder.document(new InputFile(filePath), {
-              ...commonOptions,
-            });
+            await this.bot.api.sendDocument(
+              message.user.telegramId,
+              inputFile,
+              {
+                ...commonOptions,
+              },
+            );
           }
-        });
-        await this.bot.api.sendMediaGroup(message.user.telegramId, inputFiles);
+        } else {
+          const inputFiles = files.map((file) => {
+            const filePath = join(
+              __dirname,
+              '..',
+              '..',
+              '..',
+              'public',
+              file.url,
+            );
+
+            if (file.mimetype.startsWith('image')) {
+              return InputMediaBuilder.photo(new InputFile(filePath), {
+                ...commonOptions,
+              });
+            } else if (file.mimetype.startsWith('video')) {
+              return InputMediaBuilder.video(new InputFile(filePath), {
+                ...commonOptions,
+              });
+            } else {
+              return InputMediaBuilder.document(new InputFile(filePath), {
+                ...commonOptions,
+              });
+            }
+          });
+          inputFiles[inputFiles.length - 1];
+          await this.bot.api.sendMediaGroup(
+            message.user.telegramId,
+            inputFiles,
+          );
+        }
       } else {
         await this.bot.api.sendMessage(message.user.telegramId, text, {
           reply_markup: replyMarkup,
