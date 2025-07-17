@@ -8,7 +8,6 @@ import { env } from 'src/common/config';
 import { MessageService } from '../message/message.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { SettingsService } from '../settings/settings.service';
-import { StripeService } from '../stripe/stripe.service';
 import { SubscriptionTypeService } from '../subscription-type/subscription-type.service';
 import { UserService } from '../user/user.service';
 import { Context } from './Context.type';
@@ -29,8 +28,6 @@ export class TelegramService implements OnModuleInit {
     private readonly userService: UserService,
     private readonly prismaService: PrismaService,
     private readonly subscriptionTypeService: SubscriptionTypeService,
-    @Inject(forwardRef(() => StripeService))
-    private readonly stripeService: StripeService,
     private readonly settingsService: SettingsService,
     @Inject(forwardRef(() => MessageService))
     private readonly messageService: MessageService,
@@ -51,8 +48,8 @@ export class TelegramService implements OnModuleInit {
       subscriptionTypeId,
     );
     if (!result) return;
-    const { subscriptionType, stripe } = result;
-    await this.sendSubscriptionPaymentInfo(ctx, subscriptionType, stripe);
+    const { subscriptionType } = result;
+    await this.sendSubscriptionPaymentInfo(ctx, subscriptionType);
   }
   async onEditCallBack(ctx: Context) {
     const editName = ctx.match[1];
@@ -237,11 +234,9 @@ export class TelegramService implements OnModuleInit {
     const user = await this.userService.findOneByTelegramID(
       ctx.from.id.toString(),
     );
-    const stripe = await this.stripeService.createCheckoutSession({
-      subscriptionTypeId,
-      userId: user.id,
-    });
-    return { subscriptionType, stripe };
+
+    // TO-DO add payment links
+    return { subscriptionType };
   }
   @Interval(10000) async onCron() {
     await this.kickExpired();
@@ -463,10 +458,10 @@ export class TelegramService implements OnModuleInit {
   private async sendSubscriptionPaymentInfo(
     ctx: Context,
     subscriptionType: any,
-    stripe: any,
   ) {
+    // TO-DO payment methods
     const keyboard = new InlineKeyboard()
-      .url('💳 Visa/Mastercard', stripe.url)
+      .url('💳 Visa/Mastercard', 'example.com')
       .row()
       .text('⬅️ Orqaga', 'subscribe_menu');
     await ctx.editMessageText(

@@ -9,7 +9,6 @@ import { MessageModule } from './modules/message/message.module';
 import { PrismaModule } from './modules/prisma/prisma.module';
 import { SettingsModule } from './modules/settings/settings.module';
 import { StatisticsModule } from './modules/statistics/statistics.module';
-import { StripeModule } from './modules/stripe/stripe.module';
 import { SubscriptionTypeModule } from './modules/subscription-type/subscription-type.module';
 import { SubscriptionModule } from './modules/subscription/subscription.module';
 import { UserModule } from './modules/user/user.module';
@@ -27,7 +26,6 @@ import { FilesModule } from './modules/files/files.module';
     SubscriptionModule,
     SubscriptionTypeModule,
     AtmosModule,
-    StripeModule,
     OctoBankModule,
     PrismaModule,
     ScheduleModule.forRoot(),
