@@ -3,7 +3,13 @@ import { forwardRef, Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { Interval } from '@nestjs/schedule';
 import { File, Message, MessageUser, User } from '@prisma/client';
 import { isEmail } from 'class-validator';
-import { Bot, InlineKeyboard, Keyboard, InputFile } from 'grammy';
+import {
+  Bot,
+  InlineKeyboard,
+  Keyboard,
+  InputFile,
+  InputMediaBuilder,
+} from 'grammy';
 import { env } from 'src/common/config';
 import { MessageService } from '../message/message.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -164,7 +170,7 @@ export class TelegramService implements OnModuleInit {
       };
 
       if (files.length > 0) {
-        for (const file of files) {
+        const inputFiles = files.map((file) => {
           const filePath = join(
             __dirname,
             '..',
@@ -173,26 +179,22 @@ export class TelegramService implements OnModuleInit {
             'public',
             file.url,
           );
+
           if (file.mimetype.startsWith('image')) {
-            await this.bot.api.sendPhoto(
-              message.user.telegramId,
-              new InputFile(filePath),
-              { ...commonOptions },
-            );
+            return InputMediaBuilder.photo(new InputFile(filePath), {
+              ...commonOptions,
+            });
           } else if (file.mimetype.startsWith('video')) {
-            await this.bot.api.sendVideo(
-              message.user.telegramId,
-              new InputFile(filePath),
-              { ...commonOptions },
-            );
+            return InputMediaBuilder.video(new InputFile(filePath), {
+              ...commonOptions,
+            });
           } else {
-            await this.bot.api.sendDocument(
-              message.user.telegramId,
-              new InputFile(filePath),
-              { ...commonOptions },
-            );
+            return InputMediaBuilder.document(new InputFile(filePath), {
+              ...commonOptions,
+            });
           }
-        }
+        });
+        await this.bot.api.sendMediaGroup(message.user.telegramId, inputFiles);
       } else {
         await this.bot.api.sendMessage(message.user.telegramId, text, {
           reply_markup: replyMarkup,
