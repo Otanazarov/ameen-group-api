@@ -58,12 +58,22 @@ export class TransactionService {
       paymentType,
       type,
       subscriptionTypeId,
+      phone,
+      username,
     } = dto;
 
     const where: Prisma.TransactionWhereInput = {};
 
     if (userId) {
       where.userId = userId;
+    }
+
+    if (phone) {
+      where.user.phoneNumber = { contains: phone };
+    }
+
+    if (username) {
+      where.user.username = { contains: username };
     }
 
     if (subscriptionTypeId) {

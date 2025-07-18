@@ -31,6 +31,7 @@ export class TelegramService implements OnModuleInit {
     .row()
     .text('ℹ️ Biz haqimizda', 'about_us')
     .text("👨‍🏫 Kozimxon To'ayev haqida", 'about_owner');
+
   constructor(
     @InjectBot() readonly bot: Bot<Context>,
     private readonly userService: UserService,
@@ -42,15 +43,19 @@ export class TelegramService implements OnModuleInit {
     @Inject(forwardRef(() => MessageService))
     private readonly messageService: MessageService,
   ) {}
+
   onModuleInit() {}
+
   private calculateDaysLeft(expiredDate: Date): number {
     return Math.ceil((expiredDate.getTime() - Date.now()) / this.MS_PER_DAY);
   }
+
   async onReactionCallBack(ctx: Context) {
     const messageId = ctx.match[1];
     await this.messageService.update(+messageId, { status: 'READ' });
     ctx.answerCallbackQuery('✅ Reaksiya bildirildi');
   }
+
   async onSubscribeCallBack(ctx: Context) {
     const subscriptionTypeId = +ctx.match[1];
     const result = await this.handleSubscriptionPayment(
@@ -61,6 +66,7 @@ export class TelegramService implements OnModuleInit {
     const { subscriptionType, octobank } = result;
     await this.sendSubscriptionPaymentInfo(ctx, subscriptionType, { octobank });
   }
+
   async onEditCallBack(ctx: Context) {
     const editName = ctx.match[1];
     ctx.session.edit = editName;
@@ -80,10 +86,12 @@ export class TelegramService implements OnModuleInit {
       ctx.session.message_id = message.message_id;
     }
   }
+
   async onSettingsCallBack(ctx: Context) {
     delete ctx.session.edit;
     await this.sendSettingsMessage(ctx);
   }
+
   async onSubscriptionMenuCallBack(ctx: Context) {
     await this.sendSubscriptionMenu(ctx);
   }
@@ -95,6 +103,7 @@ export class TelegramService implements OnModuleInit {
       await ctx.reply(text, { reply_markup: this.DEFAULT_KEYBOARD });
     }
   }
+
   async onMySubscriptionsCallBack(ctx: Context) {
     const subscription = await this.userService.getSubscription(ctx.from.id);
     if (!subscription) {
@@ -119,6 +128,7 @@ export class TelegramService implements OnModuleInit {
       `⏳ Qolgan kunlar: ${daysLeft} kun`;
     await ctx.editMessageText(text, { reply_markup: keyboard });
   }
+
   async onAboutUsCallBack(ctx: Context) {
     const settings = await this.settingsService.findOne();
     const keyboard = new InlineKeyboard().text('⬅️ Orqaga', 'start_message');
@@ -127,6 +137,7 @@ export class TelegramService implements OnModuleInit {
       reply_markup: keyboard,
     });
   }
+
   async onAboutTeacherCallBack(ctx: Context) {
     const settings = await this.settingsService.findOne();
     const keyboard = new InlineKeyboard().text('⬅️ Orqaga', 'start_message');
@@ -135,17 +146,17 @@ export class TelegramService implements OnModuleInit {
       reply_markup: keyboard,
     });
   }
+
   public async sendMessage(
     message: MessageUser & { user: User; message: Message & { files: File[] } },
   ) {
     try {
       // eslint-disable-next-line prefer-const
       let { text, buttons, files } = message.message;
-      let replyMarkup: InlineKeyboard;
+
+      const replyMarkup: InlineKeyboard = new InlineKeyboard();
       if (buttons) {
-        replyMarkup = new InlineKeyboard();
         buttons = JSON.parse(buttons);
-        console.log(buttons);
         (buttons as any).inline_keyboard.forEach((row: any) => {
           const buttonRow = row.buttons
             .map((button: any) => {
@@ -161,12 +172,8 @@ export class TelegramService implements OnModuleInit {
             replyMarkup.row(...buttonRow);
           }
         });
-      } else {
-        replyMarkup = new InlineKeyboard().text(
-          'Reaksiya Bildirish',
-          `reaction_${message.id}`,
-        );
       }
+      replyMarkup.row().text('Reaksiya Bildirish', `reaction_${message.id}`);
 
       const commonOptions: any = {
         caption: text,
@@ -255,6 +262,7 @@ export class TelegramService implements OnModuleInit {
     ctx.session.last_name = user.lastName;
     ctx.session.email = user.email || 'skipped';
   }
+
   private async handleSubscriptionPayment(
     ctx: Context,
     subscriptionTypeId: number,
@@ -372,12 +380,13 @@ export class TelegramService implements OnModuleInit {
   }
   private async handleEmail(ctx: Context) {
     if (!ctx.session.email) {
-      if (ctx.message.text === "⏭ O'tkazish") {
+      if (ctx.message.text == "⏭ O'tkazish") {
         ctx.session.email = 'skipped';
       } else if (!isEmail(ctx.message.text)) {
         this.sendEmailRequest(ctx, 2);
         return true;
       }
+      ctx.session.email = ctx.message.text;
       const user = await this.userService.create({
         firstName: ctx.session.first_name,
         lastName: ctx.session.last_name,
@@ -586,7 +595,9 @@ ${subscriptionType.description}`,
       type === 1
         ? `👋 Salom! Botga xush kelibsiz!`
         : `👋 ${ctx.session.last_name} ${ctx.session.first_name} sizni yana ko'rganimdan xursandman!`;
-    ctx.reply(text, { reply_markup: this.DEFAULT_KEYBOARD });
+    ctx.reply(text, {
+      reply_markup: { ...this.DEFAULT_KEYBOARD, remove_keyboard: true },
+    });
   }
   sendNameRequest(ctx: Context, step: number) {
     if (step == 1) {
@@ -601,13 +612,10 @@ ${subscriptionType.description}`,
       `👋 ${ctx.session.last_name} ${ctx.session.first_name} to'rayevning rasmiy kanaliga xush kelibsiz!
 📱 BOTning qo'shimcha imkoniyatlaridan foydalanish uchun telefon raqamingizni yuboring!`,
       {
-        reply_markup: {
-          keyboard: new Keyboard()
-            .requestContact('📱 Raqamni yuborish')
-            .resized()
-            .oneTime()
-            .build(),
-        },
+        reply_markup: new Keyboard()
+          .requestContact('📱 Raqamni yuborish')
+          .resized()
+          .oneTime(),
       },
     );
   }
@@ -617,16 +625,12 @@ ${subscriptionType.description}`,
         `🎉 ${ctx.session.last_name} ${ctx.session.first_name} sizga qo'shimcha imkoniyatlar ochildi.
 📧 Siz uchun maxsus takliflarni elektron pochtangizga yuborishimiz uchun iltimos email manzilingizni kiriting!`,
         {
-          reply_markup: {
-            keyboard: new Keyboard().text("⏭ O'tkazish").resized().build(),
-          },
+          reply_markup: new Keyboard().text("⏭ O'tkazish").resized().oneTime(),
         },
       );
     } else {
       ctx.reply(`📧 Iltimos Email yuboring`, {
-        reply_markup: {
-          keyboard: new Keyboard().text("⏭ O'tkazish").resized().build(),
-        },
+        reply_markup: new Keyboard().text("⏭ O'tkazish").resized().oneTime(),
       });
     }
   }
