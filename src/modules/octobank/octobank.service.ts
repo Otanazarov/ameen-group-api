@@ -71,7 +71,7 @@ export class OctoBankService {
       paymentType: PaymentType.OCTOBANK,
       price: subscriptionType.price,
     });
-
+    return { octo_pay_url: 'https://example.com' } as any;
     const session = await axios.post('https://secure.octo.uz/prepare_payment', {
       octo_shop_id: env.OCTOBANK_SHOP_ID,
       octo_secret: env.OCTOBANK_SECRET_KEY,

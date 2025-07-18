@@ -99,15 +99,14 @@ model Message {
 }
 
 model File {
-  id        Int      @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   url       String
   mimetype  String
   size      Int
-  hash      String   @unique
-  message   Message? @relation(fields: [messageId], references: [id])
-  messageId Int?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  hash      String    @unique
+  messages  Message[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
 model MessageUser {

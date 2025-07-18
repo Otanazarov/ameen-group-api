@@ -45,6 +45,8 @@ export class TransactionService {
     if (transaction.status === TransactionStatus.Paid) {
       await this.transactionPaid(transaction);
     }
+
+    this.update(transaction.id, { status: TransactionStatus.Paid });
     return transaction;
   }
 
