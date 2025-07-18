@@ -23,6 +23,10 @@ export class SettingsService implements OnModuleInit {
   async findOne() {
     const settings = await this.prisma.settings.findUnique({
       where: { id: 1 },
+      include: {
+        aboutAminGroupImage: true,
+        aboutKozimxonTorayevImage: true,
+      },
     });
     return settings;
   }

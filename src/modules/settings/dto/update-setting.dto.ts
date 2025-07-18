@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString } from 'class-validator';
+import { IsInt, IsOptional, IsString } from 'class-validator';
 
 export class UpdateSettingDto {
   @ApiPropertyOptional()
@@ -19,4 +19,14 @@ export class UpdateSettingDto {
   @IsOptional()
   @IsString()
   alertMessage?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsInt()
+  aboutAminGroupImageId?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsInt()
+  aboutKozimxonTorayevImageId?: number;
 }

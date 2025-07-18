@@ -82,10 +82,15 @@ model SubscriptionType {
 }
 
 model Settings {
-  id                   Int    @id @default(autoincrement())
-  aboutAminGroup       String
-  aboutKozimxonTorayev String
-  alertMessage         String @default("⚠️ Ogohlantirish! Sizning obunangiz {{expireDate}} da tugaydi. ⏳ {{daysLeft}} kun qoldi.")
+  id                          Int    @id @default(autoincrement())
+  aboutAminGroup              String
+  aboutKozimxonTorayev        String
+  alertMessage                String @default("⚠️ Ogohlantirish! Sizning obunangiz {{expireDate}} da tugaydi. ⏳ {{daysLeft}} kun qoldi.")
+  aboutAminGroupImageId       Int?
+  aboutKozimxonTorayevImageId Int?
+
+  aboutAminGroupImage       File? @relation("AboutAminGroupImage", fields: [aboutAminGroupImageId], references: [id])
+  aboutKozimxonTorayevImage File? @relation("AboutKozimxonTorayevImage", fields: [aboutKozimxonTorayevImageId], references: [id])
 }
 
 model Message {
@@ -107,6 +112,9 @@ model File {
   messages  Message[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+
+  settingsAboutAminGroup       Settings[] @relation("AboutAminGroupImage")
+  settingsAboutKozimxonTorayev Settings[] @relation("AboutKozimxonTorayevImage")
 }
 
 model MessageUser {
