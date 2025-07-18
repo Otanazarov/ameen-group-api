@@ -18,6 +18,7 @@ import { SubscriptionTypeService } from '../subscription-type/subscription-type.
 import { UserService } from '../user/user.service';
 import { Context } from './Context.type';
 import { join } from 'path';
+import { OctoBankService } from '../octobank/octobank.service';
 @Injectable()
 export class TelegramService implements OnModuleInit {
   private cronRunning = false;
@@ -36,6 +37,8 @@ export class TelegramService implements OnModuleInit {
     private readonly prismaService: PrismaService,
     private readonly subscriptionTypeService: SubscriptionTypeService,
     private readonly settingsService: SettingsService,
+    @Inject(forwardRef(() => OctoBankService))
+    private readonly octobankService: OctoBankService,
     @Inject(forwardRef(() => MessageService))
     private readonly messageService: MessageService,
   ) {}
@@ -55,8 +58,8 @@ export class TelegramService implements OnModuleInit {
       subscriptionTypeId,
     );
     if (!result) return;
-    const { subscriptionType } = result;
-    await this.sendSubscriptionPaymentInfo(ctx, subscriptionType);
+    const { subscriptionType, octobank } = result;
+    await this.sendSubscriptionPaymentInfo(ctx, subscriptionType, { octobank });
   }
   async onEditCallBack(ctx: Context) {
     const editName = ctx.match[1];
@@ -282,8 +285,12 @@ export class TelegramService implements OnModuleInit {
       ctx.from.id.toString(),
     );
 
-    // TO-DO add payment links
-    return { subscriptionType };
+    const octobank = await this.octobankService.createCheckoutSession({
+      subscriptionTypeId,
+      userId: user.id,
+    });
+
+    return { subscriptionType, octobank };
   }
   @Interval(10000) async onCron() {
     if (this.cronRunning) return;
@@ -508,10 +515,14 @@ export class TelegramService implements OnModuleInit {
   private async sendSubscriptionPaymentInfo(
     ctx: Context,
     subscriptionType: any,
+    sessions: Record<
+      string,
+      Awaited<ReturnType<OctoBankService['createCheckoutSession']>>
+    >,
   ) {
     // TO-DO payment methods
     const keyboard = new InlineKeyboard()
-      .url('💳 Visa/Mastercard', 'example.com')
+      .url('💳 Visa/Mastercard', sessions.octobank.octo_pay_url)
       .row()
       .text('⬅️ Orqaga', 'subscribe_menu');
     await ctx.editMessageText(

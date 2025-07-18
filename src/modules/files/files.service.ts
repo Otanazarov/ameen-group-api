@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { writeFile } from 'fs/promises';
 import { join } from 'path';
+import { createHash } from 'crypto';
 
 @Injectable()
 export class FilesService {
@@ -9,6 +10,10 @@ export class FilesService {
 
   async uploadFile(file: Express.Multer.File) {
     const uploadPath = join(__dirname, '../../../', 'public', 'uploads');
+    const hash = createHash('sha256').update(file.buffer).digest('hex');
+    const hashFile = await this.prisma.file.findFirst({ where: { hash } });
+    console.log(hash, hashFile);
+    if (hashFile) return hashFile;
     const fileName = Date.now() + file.originalname;
     const filePath = join(uploadPath, fileName);
 
@@ -19,6 +24,7 @@ export class FilesService {
         url: `/uploads/${fileName}`,
         mimetype: file.mimetype,
         size: file.size,
+        hash,
       },
     });
   }

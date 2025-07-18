@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { PaymentType, TransactionStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateSessionDto } from './dto/create-session.dto';
@@ -14,6 +14,7 @@ export class OctoBankService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly transactionService: TransactionService,
+    @Inject(forwardRef(() => TelegramService))
     private readonly telegramService: TelegramService,
   ) {}
 
@@ -21,7 +22,24 @@ export class OctoBankService {
     return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}:${date.getSeconds().toString().padStart(2, '0')}`;
   }
 
-  async createCheckoutSession(dto: CreateSessionDto) {
+  async createCheckoutSession(dto: CreateSessionDto): Promise<{
+    error: number;
+    data: {
+      shop_transaction_id: string;
+      octo_payment_UUID: string;
+      status: string;
+      octo_pay_url: string;
+      refunded_sum: number;
+      total_sum: number;
+    };
+    apiMessageForDevelopers: string;
+    shop_transaction_id: string;
+    octo_payment_UUID: string;
+    status: string;
+    octo_pay_url: string;
+    refunded_sum: number;
+    total_sum: number;
+  }> {
     const { userId, subscriptionTypeId } = dto;
 
     const subscriptionType = await this.prisma.subscriptionType.findFirst({

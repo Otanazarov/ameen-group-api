@@ -103,6 +103,7 @@ model File {
   url       String
   mimetype  String
   size      Int
+  hash      String   @unique
   message   Message? @relation(fields: [messageId], references: [id])
   messageId Int?
   createdAt DateTime @default(now())
