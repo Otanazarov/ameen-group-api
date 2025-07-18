@@ -91,7 +91,7 @@ export class TelegramUpdate {
     this.telegramService.onAboutUsCallBack(ctx);
   }
 
-  @CallbackQuery('about_teacher')
+  @CallbackQuery('about_owner')
   async onAboutTeacherCallbackQuery(@Ctx() ctx: Context): Promise<void> {
     this.telegramService.onAboutTeacherCallBack(ctx);
   }

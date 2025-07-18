@@ -12,7 +12,6 @@ export class FilesService {
     const uploadPath = join(__dirname, '../../../', 'public', 'uploads');
     const hash = createHash('sha256').update(file.buffer).digest('hex');
     const hashFile = await this.prisma.file.findFirst({ where: { hash } });
-    console.log(hash, hashFile);
     if (hashFile) return hashFile;
     const fileName = Date.now() + file.originalname;
     const filePath = join(uploadPath, fileName);

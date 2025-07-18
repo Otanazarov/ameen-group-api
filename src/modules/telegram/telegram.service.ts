@@ -30,7 +30,7 @@ export class TelegramService implements OnModuleInit {
     .text('📋 Obunalarim', 'my_subscriptions')
     .row()
     .text('ℹ️ Biz haqimizda', 'about_us')
-    .text("👨‍🏫 Kozimxon To'ayev haqida", 'about_teacher');
+    .text("👨‍🏫 Kozimxon To'ayev haqida", 'about_owner');
   constructor(
     @InjectBot() readonly bot: Bot<Context>,
     private readonly userService: UserService,
@@ -151,7 +151,7 @@ export class TelegramService implements OnModuleInit {
             .map((button: any) => {
               if (button.url) {
                 return InlineKeyboard.url(button.text, button.url);
-              } else if (button.callback_data) {
+              } else if (button.data) {
                 return InlineKeyboard.text(button.text, button.callback_data);
               }
               return null;
