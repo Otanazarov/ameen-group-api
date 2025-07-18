@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsOptional } from 'class-validator';
+import { IsString, IsOptional, IsUrl } from 'class-validator';
 
 export enum InlineButtonActions {
   SUBSCRIPTONS = 'subscriptons',
@@ -17,6 +17,7 @@ export class InlineButtonDto {
   @ApiPropertyOptional({ description: 'URL to open when button is clicked' })
   @IsOptional()
   @IsString()
+  @IsUrl()
   url?: string;
 
   @ApiPropertyOptional({ description: 'action to take when button is pressed' })
