@@ -1,0 +1,1 @@
+{"version":3,"file":"http.error.js","sourceRoot":"","sources":["../../../src/common/exception/http.error.ts"],"names":[],"mappings":";;AAEA,8BAQC;AAVD,2CAA2D;AAE3D,SAAgB,SAAS,CAAC,KAAiB;IACzC,MAAM,IAAI,sBAAa,CACrB,KAAK,EAAE,QAAQ;QACb,KAAK,EAAE,OAAO;QACd,KAAK,EAAE,IAAI;QACX,wBAAwB,EAC1B,KAAK,EAAE,UAAU,IAAI,mBAAU,CAAC,WAAW,CAC5C,CAAC;AACJ,CAAC"}
