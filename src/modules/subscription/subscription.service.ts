@@ -26,6 +26,20 @@ export class SubscriptionService {
     if (!subscriptionType) {
       throw new Error('Subscription type not found');
     }
+    if (subscriptionType.oneTime) {
+      const existingSubscription = await this.prisma.subscription.findFirst({
+        where: {
+          user: { id: user.id },
+          subscriptionType: { id: subscriptionType.id },
+        },
+        orderBy: { expiredDate: 'desc' },
+        include: { subscriptionType: true },
+      });
+
+      if (existingSubscription) {
+        throw new Error('You already have an this subscription');
+      }
+    }
 
     const existingSubscription = await this.prisma.subscription.findFirst({
       where: { expiredDate: { gt: new Date() }, user: { id: user.id } },
@@ -86,12 +100,16 @@ export class SubscriptionService {
       startDateTo,
       expireDateFrom,
       expireDateTo,
+      oneTime,
     } = dto;
 
     const where: Prisma.SubscriptionWhereInput = {};
 
     if (userId) {
       where.userId = userId;
+    }
+    if (oneTime !== undefined) {
+      where.subscriptionType = { oneTime: oneTime };
     }
 
     if (subscriptionTypeId) {

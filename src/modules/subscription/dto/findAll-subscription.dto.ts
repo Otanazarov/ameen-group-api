@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { IsDate, IsEnum, IsOptional } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import { IsBoolean, IsDate, IsEnum, IsOptional } from 'class-validator';
 import { IsId } from 'src/common/dtos/id.dto';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 
@@ -46,4 +46,11 @@ export class FindAllSubscriptionDto extends PaginationDto {
   @Type(() => Date)
   @IsDate()
   expireDateTo?: Date;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  @Transform(({ value }) => value === 'true' || value === true)
+  oneTime?: boolean;
 }
+ 

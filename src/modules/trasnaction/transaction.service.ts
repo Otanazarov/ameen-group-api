@@ -30,6 +30,20 @@ export class TransactionService {
     if (!subscriptionType) {
       throw new Error('Subscription type not found');
     }
+    if (subscriptionType.oneTime) {
+      const existingSubscription = await this.prisma.subscription.findFirst({
+        where: {
+          user: { id: user.id },
+          subscriptionType: { id: subscriptionType.id },
+        },
+        orderBy: { expiredDate: 'desc' },
+        include: { subscriptionType: true },
+      });
+
+      if (existingSubscription) {
+        throw new Error('You already have an this subscription');
+      }
+    }
     const transaction = await this.prisma.transaction.create({
       data: {
         type: createTransactionDto.type,
@@ -60,12 +74,17 @@ export class TransactionService {
       subscriptionTypeId,
       phone,
       username,
+      oneTime,
     } = dto;
 
     const where: Prisma.TransactionWhereInput = {};
 
     if (userId) {
       where.userId = userId;
+    }
+
+    if (oneTime !== undefined) {
+      where.subscriptionType = { oneTime };
     }
 
     if (phone) {

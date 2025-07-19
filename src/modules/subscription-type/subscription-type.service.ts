@@ -9,7 +9,13 @@ export class SubscriptionTypeService {
   constructor(private readonly prisma: PrismaService) {}
   async create(createSubscriptionTypeDto: CreateSubscriptionTypeDto) {
     const subscriptionType = await this.prisma.subscriptionType.create({
-      data: createSubscriptionTypeDto,
+      data: {
+        price: createSubscriptionTypeDto.price,
+        title: createSubscriptionTypeDto.title,
+        description: createSubscriptionTypeDto.description,
+        expireDays: createSubscriptionTypeDto.expireDays,
+        oneTime: createSubscriptionTypeDto.oneTime,
+      },
     });
 
     return {
@@ -19,12 +25,14 @@ export class SubscriptionTypeService {
   }
 
   async findAll(dto: FindAllSubscriptionTypeDto) {
-    const { limit = 10, page = 1, title, isDeleted = false } = dto;
+    const { limit = 10, page = 1, title, isDeleted = false, oneTime } = dto;
+    console.log(oneTime);
 
     const [data, total] = await this.prisma.$transaction([
       this.prisma.subscriptionType.findMany({
         where: {
           isDeleted,
+          oneTime,
           title: {
             contains: title?.trim() || '',
             mode: 'insensitive',
@@ -36,6 +44,8 @@ export class SubscriptionTypeService {
       }),
       this.prisma.subscriptionType.count({
         where: {
+          isDeleted,
+          oneTime,
           title: {
             contains: title?.trim() || '',
             mode: 'insensitive',
