@@ -8,8 +8,8 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { UserStatus } from '@prisma/client';
-import { InlineKeyboardDto } from './inline-keyboard.dto';
 import { Type } from 'class-transformer';
+import { ButtonPlacementDto } from './button-placement.dto';
 
 export class CreateMessageDto {
   @ApiProperty({ example: 'Salom, qanday yordam bera olaman?' })
@@ -38,9 +38,10 @@ export class CreateMessageDto {
   @IsInt({ each: true })
   fileIds?: number[];
 
-  @ApiPropertyOptional({ type: InlineKeyboardDto })
+  @ApiPropertyOptional({ type: [ButtonPlacementDto] })
   @IsOptional()
-  @ValidateNested()
-  @Type(() => InlineKeyboardDto)
-  buttons?: InlineKeyboardDto;
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ButtonPlacementDto)
+  buttonPlacements?: ButtonPlacementDto[];
 }

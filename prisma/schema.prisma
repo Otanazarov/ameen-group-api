@@ -95,13 +95,36 @@ model Settings {
 }
 
 model Message {
-  id        Int           @id @default(autoincrement())
-  text      String
-  buttons   String?
-  users     MessageUser[]
-  files     File[]
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
+  id              Int                     @id @default(autoincrement())
+  text            String
+  users           MessageUser[]
+  files           File[]
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+  buttonPlacement InlineButtonPlacement[]
+}
+
+model InlineButton {
+  id      Int     @unique @default(autoincrement())
+  text    String
+  default Boolean @default(false)
+  data    String?
+  url     String?
+
+  messagePlacements InlineButtonPlacement[]
+}
+
+model InlineButtonPlacement {
+  id        String @id @default(uuid())
+  messageId Int
+  buttonId  Int
+  row       Int // Row index (0-based)
+  column    Int // Column index (0-based)
+
+  message Message      @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  button  InlineButton @relation(fields: [buttonId], references: [id])
+
+  @@unique([messageId, row, column])
 }
 
 model File {

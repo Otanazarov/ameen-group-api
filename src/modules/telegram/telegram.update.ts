@@ -28,6 +28,11 @@ export class TelegramUpdate {
       console.log('Error in telegram bot', err);
       return true;
     });
+    bot.use((ctx, next) => {
+      if (ctx.session.id)
+        this.userService.update(ctx.session.id, { lastActiveAt: new Date() });
+      next();
+    });
   }
 
   @Command('topicid')
