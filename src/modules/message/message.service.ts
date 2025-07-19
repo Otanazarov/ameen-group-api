@@ -114,7 +114,6 @@ export class MessageService {
         _count: undefined,
       };
     });
-    console.log(skip, page);
 
     return {
       total,

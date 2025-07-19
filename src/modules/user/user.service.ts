@@ -10,21 +10,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 export class UserService implements OnModuleInit {
   constructor(private readonly prisma: PrismaService) {}
 
-  async onModuleInit() {
-    const currentUserCount = await this.prisma.user.count();
-    const userCount = 5 - currentUserCount;
-
-    for (let i = 0; i < userCount; i++) {
-      this.create({
-        firstName: `User ${i}`,
-        lastName: `User ${i}`,
-        email: `user${i}@gmail.com`,
-        phoneNumber: `+998${i + Math.floor(Math.random() * 80)}1234567`,
-        telegramId: i.toString(),
-        username: 'user' + i.toString(),
-      });
-    }
-  }
+  async onModuleInit() {}
 
   async create(createUserDto: CreateUserDto) {
     const phoneNumber = await this.prisma.user.findUnique({

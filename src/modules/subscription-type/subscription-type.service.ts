@@ -26,7 +26,6 @@ export class SubscriptionTypeService {
 
   async findAll(dto: FindAllSubscriptionTypeDto) {
     const { limit = 10, page = 1, title, isDeleted = false, oneTime } = dto;
-    console.log(oneTime);
 
     const [data, total] = await this.prisma.$transaction([
       this.prisma.subscriptionType.findMany({

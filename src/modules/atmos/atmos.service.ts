@@ -58,7 +58,6 @@ export class AtmosService {
       store_id: env.ATMOS_STORE_ID,
     };
 
-    console.log('preApplyData', preApplyData);
     const result = await atmosApi.post('/merchant/pay/pre-apply', preApplyData);
 
     return result.data;
