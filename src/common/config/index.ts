@@ -20,7 +20,4 @@ export const env = cleanEnv(process.env, {
 
   OCTOBANK_SECRET_KEY: str(),
   OCTOBANK_SHOP_ID: str(),
-
-  STRIPE_SECRET_KEY: str(),
-  STRIPE_WEBHOOK_SECRET: str(),
 });
