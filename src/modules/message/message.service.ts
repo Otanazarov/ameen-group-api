@@ -12,8 +12,14 @@ import { PaginationDto } from 'src/common/dtos/pagination.dto';
 export class MessageService {
   constructor(private readonly prisma: PrismaService) {}
   async create(createMessageDto: CreateMessageDto) {
-    const { userIds, status, text, subscriptionTypeId, buttons, fileIds } =
-      createMessageDto;
+    const {
+      userIds,
+      status,
+      text,
+      subscriptionTypeId,
+      buttonPlacements,
+      fileIds,
+    } = createMessageDto;
 
     const orConditions: Prisma.UserWhereInput[] = [];
     if (status) {
@@ -45,9 +51,15 @@ export class MessageService {
     const message = await this.prisma.message.create({
       data: {
         text,
-        buttons: buttons ? JSON.stringify(buttons) : undefined,
         files: {
           connect: fileIds?.map((id) => ({ id })) || [],
+        },
+        buttonPlacement: {
+          create: buttonPlacements?.map((placement) => ({
+            buttonId: placement.buttonId,
+            row: placement.row,
+            column: placement.column,
+          })),
         },
       },
     });
@@ -172,13 +184,10 @@ export class MessageService {
       where: {
         id,
       },
-      include: { users: true },
+      include: { users: true, buttonPlacement: { include: { button: true } } },
     });
     if (!message) {
       throw HttpError({ code: 404, message: 'Message not found' });
-    }
-    if (message.buttons) {
-      message.buttons = message.buttons;
     }
     return message;
   }

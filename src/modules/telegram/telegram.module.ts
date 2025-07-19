@@ -6,12 +6,14 @@ import { SubscriptionTypeModule } from '../subscription-type/subscription-type.m
 import { SettingsModule } from '../settings/settings.module';
 import { MessageModule } from '../message/message.module';
 import { OctoBankModule } from '../octobank/octobank.module';
+import { ButtonsModule } from '../buttons/buttons.module';
 
 @Module({
   imports: [
     UserModule,
     SubscriptionTypeModule,
     SettingsModule,
+    ButtonsModule,
     forwardRef(() => OctoBankModule),
     forwardRef(() => MessageModule),
   ],

@@ -1,7 +1,14 @@
 import { InjectBot } from '@grammyjs/nestjs';
 import { forwardRef, Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { Interval } from '@nestjs/schedule';
-import { File, Message, MessageUser, User } from '@prisma/client';
+import {
+  File,
+  InlineButton,
+  Message,
+  MessageUser,
+  Prisma,
+  User,
+} from '@prisma/client';
 import { isEmail } from 'class-validator';
 import {
   Bot,
@@ -19,18 +26,13 @@ import { UserService } from '../user/user.service';
 import { Context } from './Context.type';
 import { join } from 'path';
 import { OctoBankService } from '../octobank/octobank.service';
+import { ButtonsService } from '../buttons/buttons.service';
+
 @Injectable()
 export class TelegramService implements OnModuleInit {
   private cronRunning = false;
   private readonly MS_PER_DAY = 1000 * 60 * 60 * 24;
-  private readonly DEFAULT_KEYBOARD = new InlineKeyboard()
-    .text("📝 Obuna Bo'lish", 'subscribe_menu')
-    .row()
-    .text('⚙️ Sozlamalar', 'settings')
-    .text('📋 Obunalarim', 'my_subscriptions')
-    .row()
-    .text('ℹ️ Biz haqimizda', 'about_us')
-    .text("👨‍🏫 Kozimxon To'ayev haqida", 'about_owner');
+  private DEFAULT_KEYBOARD: InlineKeyboard;
 
   constructor(
     @InjectBot() readonly bot: Bot<Context>,
@@ -38,13 +40,31 @@ export class TelegramService implements OnModuleInit {
     private readonly prismaService: PrismaService,
     private readonly subscriptionTypeService: SubscriptionTypeService,
     private readonly settingsService: SettingsService,
+    private readonly buttonsService: ButtonsService,
     @Inject(forwardRef(() => OctoBankService))
     private readonly octobankService: OctoBankService,
     @Inject(forwardRef(() => MessageService))
     private readonly messageService: MessageService,
   ) {}
 
-  onModuleInit() {}
+  async onModuleInit() {
+    await this.setDefaultKeyboard();
+  }
+
+  private async setDefaultKeyboard() {
+    const defaultButtons = await this.prismaService.inlineButton.findMany({
+      where: { default: true },
+      orderBy: { id: 'asc' },
+    });
+    const keyboard = new InlineKeyboard();
+    defaultButtons.forEach((button, index) => {
+      keyboard.text(button.text, button.data);
+      if (index % 2 !== 0) {
+        keyboard.row();
+      }
+    });
+    this.DEFAULT_KEYBOARD = keyboard;
+  }
 
   private calculateDaysLeft(expiredDate: Date): number {
     return Math.ceil((expiredDate.getTime() - Date.now()) / this.MS_PER_DAY);
@@ -97,6 +117,7 @@ export class TelegramService implements OnModuleInit {
   }
   async onStartMessageCallBack(ctx: Context) {
     const text = `👋 Salom! Botga xush kelibsiz!`;
+    await this.setDefaultKeyboard();
     try {
       await ctx.editMessageText(text, { reply_markup: this.DEFAULT_KEYBOARD });
     } catch (e) {
@@ -148,28 +169,43 @@ export class TelegramService implements OnModuleInit {
   }
 
   public async sendMessage(
-    message: MessageUser & { user: User; message: Message & { files: File[] } },
+    message: MessageUser & {
+      user: User;
+      message: Message & {
+        files: File[];
+        buttonPlacement: Prisma.InlineButtonPlacementGetPayload<{
+          include: { button: true };
+        }>[];
+      };
+    },
   ) {
     try {
       // eslint-disable-next-line prefer-const
-      let { text, buttons, files } = message.message;
+      let { text, buttonPlacement, files } = message.message;
 
       const replyMarkup: InlineKeyboard = new InlineKeyboard();
-      if (buttons) {
-        buttons = JSON.parse(buttons);
-        (buttons as any).inline_keyboard.forEach((row: any) => {
-          const buttonRow = row.buttons
-            .map((button: any) => {
+      if (buttonPlacement.length > 0) {
+        const rows = {};
+        buttonPlacement.forEach((placement) => {
+          if (!rows[placement.row]) {
+            rows[placement.row] = [];
+          }
+          rows[placement.row].push(placement.button);
+        });
+
+        Object.values(rows).forEach((row: InlineButton[]) => {
+          const buttons = row
+            .map((button) => {
               if (button.url) {
                 return InlineKeyboard.url(button.text, button.url);
               } else if (button.data) {
-                return InlineKeyboard.text(button.text, button.callback_data);
+                return InlineKeyboard.text(button.text, button.data);
               }
               return null;
             })
             .filter(Boolean);
-          if (buttonRow.length > 0) {
-            replyMarkup.row(...buttonRow);
+          if (buttons.length > 0) {
+            replyMarkup.row(...buttons);
           }
         });
       }
@@ -300,7 +336,8 @@ export class TelegramService implements OnModuleInit {
 
     return { subscriptionType, octobank };
   }
-  @Interval(10000) async onCron() {
+  @Interval(10000)
+  async onCron() {
     if (this.cronRunning) return;
     this.cronRunning = true;
     await this.kickExpired();
@@ -380,13 +417,15 @@ export class TelegramService implements OnModuleInit {
   }
   private async handleEmail(ctx: Context) {
     if (!ctx.session.email) {
-      if (ctx.message.text == "⏭ O'tkazish") {
-        ctx.session.email = 'skipped';
-      } else if (!isEmail(ctx.message.text)) {
+      if (!isEmail(ctx.message.text)) {
         this.sendEmailRequest(ctx, 2);
         return true;
       }
-      ctx.session.email = ctx.message.text;
+      if (ctx.message.text == "⏭ O'tkazish") {
+        ctx.session.email = 'skipped';
+      } else {
+        ctx.session.email = ctx.message.text;
+      }
       const user = await this.userService.create({
         firstName: ctx.session.first_name,
         lastName: ctx.session.last_name,
@@ -440,7 +479,15 @@ export class TelegramService implements OnModuleInit {
     const messages = await this.prismaService.messageUser.findMany({
       where: { status: 'PENDING' },
       take: 20,
-      include: { user: true, message: { include: { files: true } } },
+      include: {
+        user: true,
+        message: {
+          include: {
+            files: true,
+            buttonPlacement: { include: { button: true } },
+          },
+        },
+      },
     });
     for (const message of messages) {
       await this.sendMessage(message as any);
@@ -482,8 +529,6 @@ export class TelegramService implements OnModuleInit {
   async onMessage(ctx: Context) {
     if (ctx.chat.type != 'private') return;
     if (!ctx.session.id && (await this.handleExistingUser(ctx))) return;
-    if (ctx.session.id)
-      this.userService.update(ctx.session.id, { lastActiveAt: new Date() });
     if (
       ctx.message.text?.startsWith('/start') &&
       (await this.handleStartCommand(ctx))
@@ -590,7 +635,9 @@ ${subscriptionType.description}`,
       this.bot.api.unbanChatMember(env.TELEGRAM_GROUP_ID, +user.telegramId);
     }
   }
-  sendStartMessage(ctx: Context, type: number = 1) {
+  async sendStartMessage(ctx: Context, type: number = 1) {
+    await this.setDefaultKeyboard();
+
     const text =
       type === 1
         ? `👋 Salom! Botga xush kelibsiz!`
