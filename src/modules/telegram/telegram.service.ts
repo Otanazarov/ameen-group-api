@@ -121,6 +121,7 @@ export class TelegramService implements OnModuleInit {
     try {
       await ctx.editMessageText(text, { reply_markup: this.DEFAULT_KEYBOARD });
     } catch (e) {
+      await ctx.deleteMessage();
       await ctx.reply(text, { reply_markup: this.DEFAULT_KEYBOARD });
     }
   }
@@ -153,7 +154,19 @@ export class TelegramService implements OnModuleInit {
   async onAboutUsCallBack(ctx: Context) {
     const settings = await this.settingsService.findOne();
     const keyboard = new InlineKeyboard().text('⬅️ Orqaga', 'start_message');
-    await ctx.editMessageText(settings.aboutAminGroup, {
+    const filePath = join(
+      __dirname,
+      '..',
+      '..',
+      '..',
+      'public',
+      settings.aboutAminGroupImage.url,
+    );
+    await ctx.editMessageMedia(
+      InputMediaBuilder.photo(new InputFile(filePath)),
+    );
+    await ctx.editMessageCaption({
+      caption: settings.aboutAminGroup,
       parse_mode: 'Markdown',
       reply_markup: keyboard,
     });
@@ -162,7 +175,19 @@ export class TelegramService implements OnModuleInit {
   async onAboutTeacherCallBack(ctx: Context) {
     const settings = await this.settingsService.findOne();
     const keyboard = new InlineKeyboard().text('⬅️ Orqaga', 'start_message');
-    await ctx.editMessageText(settings.aboutKozimxonTorayev, {
+    const filePath = join(
+      __dirname,
+      '..',
+      '..',
+      '..',
+      'public',
+      settings.aboutKozimxonTorayevImage.url,
+    );
+    await ctx.editMessageMedia(
+      InputMediaBuilder.photo(new InputFile(filePath)),
+    );
+    await ctx.editMessageCaption({
+      caption: settings.aboutKozimxonTorayev,
       parse_mode: 'Markdown',
       reply_markup: keyboard,
     });

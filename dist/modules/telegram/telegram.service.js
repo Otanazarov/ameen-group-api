@@ -108,6 +108,7 @@ let TelegramService = class TelegramService {
             await ctx.editMessageText(text, { reply_markup: this.DEFAULT_KEYBOARD });
         }
         catch (e) {
+            await ctx.deleteMessage();
             await ctx.reply(text, { reply_markup: this.DEFAULT_KEYBOARD });
         }
     }
@@ -135,7 +136,10 @@ let TelegramService = class TelegramService {
     async onAboutUsCallBack(ctx) {
         const settings = await this.settingsService.findOne();
         const keyboard = new grammy_1.InlineKeyboard().text('⬅️ Orqaga', 'start_message');
-        await ctx.editMessageText(settings.aboutAminGroup, {
+        const filePath = (0, path_1.join)(__dirname, '..', '..', '..', 'public', settings.aboutAminGroupImage.url);
+        await ctx.editMessageMedia(grammy_1.InputMediaBuilder.photo(new grammy_1.InputFile(filePath)));
+        await ctx.editMessageCaption({
+            caption: settings.aboutAminGroup,
             parse_mode: 'Markdown',
             reply_markup: keyboard,
         });
@@ -143,7 +147,10 @@ let TelegramService = class TelegramService {
     async onAboutTeacherCallBack(ctx) {
         const settings = await this.settingsService.findOne();
         const keyboard = new grammy_1.InlineKeyboard().text('⬅️ Orqaga', 'start_message');
-        await ctx.editMessageText(settings.aboutKozimxonTorayev, {
+        const filePath = (0, path_1.join)(__dirname, '..', '..', '..', 'public', settings.aboutKozimxonTorayevImage.url);
+        await ctx.editMessageMedia(grammy_1.InputMediaBuilder.photo(new grammy_1.InputFile(filePath)));
+        await ctx.editMessageCaption({
+            caption: settings.aboutKozimxonTorayev,
             parse_mode: 'Markdown',
             reply_markup: keyboard,
         });
