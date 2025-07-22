@@ -61,7 +61,6 @@ let TransactionService = class TransactionService {
         if (transaction.status === client_1.TransactionStatus.Paid) {
             await this.transactionPaid(transaction);
         }
-        this.update(transaction.id, { status: client_1.TransactionStatus.Paid });
         return transaction;
     }
     async findAll(dto) {

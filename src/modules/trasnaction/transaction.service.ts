@@ -60,7 +60,6 @@ export class TransactionService {
       await this.transactionPaid(transaction);
     }
 
-    this.update(transaction.id, { status: TransactionStatus.Paid });
     return transaction;
   }
 

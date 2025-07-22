@@ -417,13 +417,13 @@ export class TelegramService implements OnModuleInit {
   }
   private async handleEmail(ctx: Context) {
     if (!ctx.session.email) {
-      if (!isEmail(ctx.message.text)) {
-        this.sendEmailRequest(ctx, 2);
-        return true;
-      }
       if (ctx.message.text == "⏭ O'tkazish") {
         ctx.session.email = 'skipped';
       } else {
+        if (!isEmail(ctx.message.text)) {
+          this.sendEmailRequest(ctx, 2);
+          return true;
+        }
         ctx.session.email = ctx.message.text;
       }
       const user = await this.userService.create({
@@ -574,7 +574,6 @@ export class TelegramService implements OnModuleInit {
       Awaited<ReturnType<OctoBankService['createCheckoutSession']>>
     >,
   ) {
-    // TO-DO payment methods
     const keyboard = new InlineKeyboard()
       .url('💳 Visa/Mastercard', sessions.octobank.octo_pay_url)
       .row()

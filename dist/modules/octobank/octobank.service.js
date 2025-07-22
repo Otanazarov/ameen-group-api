@@ -58,7 +58,6 @@ let OctoBankService = class OctoBankService {
             paymentType: client_1.PaymentType.OCTOBANK,
             price: subscriptionType.price,
         });
-        return { octo_pay_url: 'https://example.com' };
         const session = await axios_1.default.post('https://secure.octo.uz/prepare_payment', {
             octo_shop_id: config_1.env.OCTOBANK_SHOP_ID,
             octo_secret: config_1.env.OCTOBANK_SECRET_KEY,
@@ -76,7 +75,7 @@ let OctoBankService = class OctoBankService {
             description: 'TEST_PAYMENT',
             basket: [
                 {
-                    position_desc: 'Йогурт MANON клубничный',
+                    position_desc: subscriptionType.title,
                     count: 1,
                     price: transaction.price,
                     spic: transaction.subscriptionTypeId,

@@ -347,14 +347,14 @@ let TelegramService = class TelegramService {
     }
     async handleEmail(ctx) {
         if (!ctx.session.email) {
-            if (!(0, class_validator_1.isEmail)(ctx.message.text)) {
-                this.sendEmailRequest(ctx, 2);
-                return true;
-            }
             if (ctx.message.text == "⏭ O'tkazish") {
                 ctx.session.email = 'skipped';
             }
             else {
+                if (!(0, class_validator_1.isEmail)(ctx.message.text)) {
+                    this.sendEmailRequest(ctx, 2);
+                    return true;
+                }
                 ctx.session.email = ctx.message.text;
             }
             const user = await this.userService.create({
