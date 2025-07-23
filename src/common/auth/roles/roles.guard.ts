@@ -45,7 +45,8 @@ export class RolesGuard implements CanActivate {
       };
       return requiredRoles?.includes(validUser.role);
     } catch (error) {
-      if (error.message == 'jwt expired') HttpError({ code: 'JWT_EXPIRED' });
+      if (error.message == 'jwt expired')
+        HttpError({ code: 'JWT_EXPIRED', statusCode: 401 });
       if (error instanceof JsonWebTokenError)
         HttpError({ code: 'JWT_INVALID' });
       throw error;

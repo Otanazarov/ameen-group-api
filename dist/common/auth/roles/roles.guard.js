@@ -36,7 +36,7 @@ class RolesGuard {
         }
         catch (error) {
             if (error.message == 'jwt expired')
-                (0, http_error_1.HttpError)({ code: 'JWT_EXPIRED' });
+                (0, http_error_1.HttpError)({ code: 'JWT_EXPIRED', statusCode: 401 });
             if (error instanceof jsonwebtoken_1.JsonWebTokenError)
                 (0, http_error_1.HttpError)({ code: 'JWT_INVALID' });
             throw error;
