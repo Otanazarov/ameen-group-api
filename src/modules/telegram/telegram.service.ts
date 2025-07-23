@@ -599,6 +599,7 @@ export class TelegramService implements OnModuleInit {
       Awaited<ReturnType<OctoBankService['createCheckoutSession']>>
     >,
   ) {
+    console.log(sessions.octobank);
     const keyboard = new InlineKeyboard()
       .url('💳 Visa/Mastercard', sessions.octobank.octo_pay_url)
       .row()

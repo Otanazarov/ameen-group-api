@@ -504,6 +504,7 @@ let TelegramService = class TelegramService {
         return false;
     }
     async sendSubscriptionPaymentInfo(ctx, subscriptionType, sessions) {
+        console.log(sessions.octobank);
         const keyboard = new grammy_1.InlineKeyboard()
             .url('💳 Visa/Mastercard', sessions.octobank.octo_pay_url)
             .row()
