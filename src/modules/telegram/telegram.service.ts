@@ -603,7 +603,8 @@ export class TelegramService implements OnModuleInit {
       .url('💳 Visa/Mastercard', sessions.octobank.octo_pay_url)
       .row()
       .text('⬅️ Orqaga', 'subscribe_menu');
-    await ctx.editMessageText(
+    await ctx.deleteMessage();
+    await ctx.reply(
       `💫 ${subscriptionType.title} - ${subscriptionType.price}:
 ${subscriptionType.description}`,
       { parse_mode: 'Markdown', reply_markup: keyboard },

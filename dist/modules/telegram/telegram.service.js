@@ -508,7 +508,8 @@ let TelegramService = class TelegramService {
             .url('💳 Visa/Mastercard', sessions.octobank.octo_pay_url)
             .row()
             .text('⬅️ Orqaga', 'subscribe_menu');
-        await ctx.editMessageText(`💫 ${subscriptionType.title} - ${subscriptionType.price}:
+        await ctx.deleteMessage();
+        await ctx.reply(`💫 ${subscriptionType.title} - ${subscriptionType.price}:
 ${subscriptionType.description}`, { parse_mode: 'Markdown', reply_markup: keyboard });
     }
     async sendAlertMessage() {
