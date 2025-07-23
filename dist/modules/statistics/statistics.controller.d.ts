@@ -2,7 +2,7 @@ import { StatisticsService } from './statistics.service';
 export declare class StatisticsController {
     private readonly statisticsService;
     constructor(statisticsService: StatisticsService);
-    getUserCountBySubscriptionType(): Promise<{
+    getStats(): Promise<{
         usersCount: number;
         activeSubscriptionsCount: number;
         totalRevenueThisMonth: number;
@@ -15,6 +15,10 @@ export declare class StatisticsController {
             month: string;
             activeSubscriptions: number;
         }[];
+        monthlyExpectedRevenue: {
+            month: string;
+            revenue: number;
+        }[];
     }>;
-    statistics(): Promise<any[]>;
+    getUserCountBySubscriptionType(): Promise<any[]>;
 }

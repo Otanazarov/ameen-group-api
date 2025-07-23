@@ -17,10 +17,10 @@ let StatisticsController = class StatisticsController {
     constructor(statisticsService) {
         this.statisticsService = statisticsService;
     }
-    async getUserCountBySubscriptionType() {
+    async getStats() {
         return this.statisticsService.getStats();
     }
-    async statistics() {
+    async getUserCountBySubscriptionType() {
         return this.statisticsService.getUserCountBySubscriptionType();
     }
 };
@@ -31,14 +31,14 @@ __decorate([
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
-], StatisticsController.prototype, "getUserCountBySubscriptionType", null);
+], StatisticsController.prototype, "getStats", null);
 __decorate([
     (0, common_1.Get)('user/subscriptionType'),
     (0, decorator_auth_1.DecoratorWrapper)('get user count by subscription type'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
-], StatisticsController.prototype, "statistics", null);
+], StatisticsController.prototype, "getUserCountBySubscriptionType", null);
 exports.StatisticsController = StatisticsController = __decorate([
     (0, common_1.Controller)('statistics'),
     __metadata("design:paramtypes", [statistics_service_1.StatisticsService])

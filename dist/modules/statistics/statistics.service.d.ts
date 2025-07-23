@@ -15,7 +15,12 @@ export declare class StatisticsService {
             month: string;
             activeSubscriptions: number;
         }[];
+        monthlyExpectedRevenue: {
+            month: string;
+            revenue: number;
+        }[];
     }>;
+    private getMonthlyExpectedRevenue;
     private getMonthlyRevenue;
     private getMonthlyActiveSubscriptions;
     getUserCountBySubscriptionType(): Promise<any[]>;

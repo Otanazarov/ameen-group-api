@@ -23,6 +23,7 @@ export class StatisticsService {
       pendingPaymentsThisMonth,
       monthlyRevenue,
       monthlyActiveSubscriptions,
+      monthlyExpectedRevenue,
     ] = await Promise.all([
       this.prisma.user.count(),
       this.prisma.subscription.count({
@@ -50,6 +51,7 @@ export class StatisticsService {
       }),
       this.getMonthlyRevenue(),
       this.getMonthlyActiveSubscriptions(),
+      this.getMonthlyExpectedRevenue(),
     ]);
 
     return {
@@ -59,7 +61,46 @@ export class StatisticsService {
       pendingPaymentsThisMonth: pendingPaymentsThisMonth._sum.price || 0,
       monthlyRevenue,
       monthlyActiveSubscriptions,
+      monthlyExpectedRevenue,
     };
+  }
+
+  private async getMonthlyExpectedRevenue() {
+    const now = new Date();
+    const last12MonthsStart = new Date(
+      now.getFullYear() - 1,
+      now.getMonth(),
+      1,
+    );
+    const last12MonthsEnd = new Date();
+
+    const months = eachMonthOfInterval({
+      start: last12MonthsStart,
+      end: last12MonthsEnd,
+    });
+    const monthlyData = months.map((month) => ({
+      month: format(month, 'MMMM'),
+      revenue: 0,
+    }));
+
+    const activeSubscriptions = await this.prisma.subscription.findMany({
+      where: {
+        expiredDate: { gt: now },
+      },
+      include: {
+        subscriptionType: true,
+      },
+    });
+
+    activeSubscriptions.forEach((subscription) => {
+      const monthName = format(new Date(subscription.createdAt), 'MMMM');
+      const monthData = monthlyData.find((m) => m.month === monthName);
+      if (monthData) {
+        monthData.revenue += subscription.subscriptionType.price || 0;
+      }
+    });
+
+    return monthlyData;
   }
 
   private async getMonthlyRevenue() {

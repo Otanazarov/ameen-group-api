@@ -21,7 +21,7 @@ let StatisticsService = class StatisticsService {
         const now = new Date();
         const firstDayOfMonth = (0, date_fns_1.startOfMonth)(now);
         const lastDayOfMonth = (0, date_fns_1.endOfMonth)(now);
-        const [usersCount, activeSubscriptionsCount, totalRevenueThisMonth, pendingPaymentsThisMonth, monthlyRevenue, monthlyActiveSubscriptions,] = await Promise.all([
+        const [usersCount, activeSubscriptionsCount, totalRevenueThisMonth, pendingPaymentsThisMonth, monthlyRevenue, monthlyActiveSubscriptions, monthlyExpectedRevenue,] = await Promise.all([
             this.prisma.user.count(),
             this.prisma.subscription.count({
                 where: { expiredDate: { gt: now } },
@@ -48,6 +48,7 @@ let StatisticsService = class StatisticsService {
             }),
             this.getMonthlyRevenue(),
             this.getMonthlyActiveSubscriptions(),
+            this.getMonthlyExpectedRevenue(),
         ]);
         return {
             usersCount,
@@ -56,7 +57,37 @@ let StatisticsService = class StatisticsService {
             pendingPaymentsThisMonth: pendingPaymentsThisMonth._sum.price || 0,
             monthlyRevenue,
             monthlyActiveSubscriptions,
+            monthlyExpectedRevenue,
         };
+    }
+    async getMonthlyExpectedRevenue() {
+        const now = new Date();
+        const last12MonthsStart = new Date(now.getFullYear() - 1, now.getMonth(), 1);
+        const last12MonthsEnd = new Date();
+        const months = (0, date_fns_1.eachMonthOfInterval)({
+            start: last12MonthsStart,
+            end: last12MonthsEnd,
+        });
+        const monthlyData = months.map((month) => ({
+            month: (0, date_fns_1.format)(month, 'MMMM'),
+            revenue: 0,
+        }));
+        const activeSubscriptions = await this.prisma.subscription.findMany({
+            where: {
+                expiredDate: { gt: now },
+            },
+            include: {
+                subscriptionType: true,
+            },
+        });
+        activeSubscriptions.forEach((subscription) => {
+            const monthName = (0, date_fns_1.format)(new Date(subscription.createdAt), 'MMMM');
+            const monthData = monthlyData.find((m) => m.month === monthName);
+            if (monthData) {
+                monthData.revenue += subscription.subscriptionType.price || 0;
+            }
+        });
+        return monthlyData;
     }
     async getMonthlyRevenue() {
         const now = new Date();

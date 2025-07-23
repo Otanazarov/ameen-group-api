@@ -8,13 +8,13 @@ export class StatisticsController {
 
   @Get('/')
   @DecoratorWrapper('get stats')
-  async getUserCountBySubscriptionType() {
+  async getStats() {
     return this.statisticsService.getStats();
   }
 
   @Get('user/subscriptionType')
   @DecoratorWrapper('get user count by subscription type')
-  async statistics() {
+  async getUserCountBySubscriptionType() {
     return this.statisticsService.getUserCountBySubscriptionType();
   }
 }
