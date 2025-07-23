@@ -1,7 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { PaymentType, TransactionType } from '@prisma/client';
-import { Transform } from 'class-transformer';
-import { IsBoolean, IsEnum, IsNumber, IsOptional } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import { IsBoolean, IsEnum, IsNumber, IsOptional, Min } from 'class-validator';
 import { IsId } from 'src/common/dtos/id.dto';
 import { IsName } from 'src/common/dtos/name.dto';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
@@ -20,11 +20,13 @@ export class FindAllTransactionDto extends PaginationDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsNumber()
+  @Type(() => Number)
   minPrice: number;
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsNumber()
+  @Type(() => Number)
   maxPrice: number;
 
   @IsId(false)

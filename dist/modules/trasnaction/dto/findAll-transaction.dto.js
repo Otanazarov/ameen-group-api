@@ -37,12 +37,14 @@ __decorate([
     (0, swagger_1.ApiPropertyOptional)(),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsNumber)(),
+    (0, class_transformer_1.Type)(() => Number),
     __metadata("design:type", Number)
 ], FindAllTransactionDto.prototype, "minPrice", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)(),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsNumber)(),
+    (0, class_transformer_1.Type)(() => Number),
     __metadata("design:type", Number)
 ], FindAllTransactionDto.prototype, "maxPrice", void 0);
 __decorate([
