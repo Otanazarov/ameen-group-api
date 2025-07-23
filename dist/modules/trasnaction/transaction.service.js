@@ -64,10 +64,16 @@ let TransactionService = class TransactionService {
         return transaction;
     }
     async findAll(dto) {
-        const { limit = 10, page = 1, userId, paymentType, type, subscriptionTypeId, phone, username, oneTime, } = dto;
+        const { limit = 10, page = 1, userId, paymentType, type, subscriptionTypeId, phone, username, oneTime, maxPrice, minPrice, } = dto;
         const where = {};
         if (userId) {
             where.userId = userId;
+        }
+        if (minPrice) {
+            where.price = { gte: minPrice };
+        }
+        if (maxPrice) {
+            where.price = { lte: maxPrice };
         }
         if (oneTime !== undefined) {
             where.subscriptionType = { oneTime };

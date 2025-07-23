@@ -4,6 +4,8 @@ export declare class FindAllTransactionDto extends PaginationDto {
     userId?: number;
     username: string;
     phone: string;
+    minPrice: number;
+    maxPrice: number;
     subscriptionTypeId?: number;
     type?: TransactionType;
     paymentType?: PaymentType;

@@ -8,6 +8,8 @@ export declare class FindAllSubscriptionDto extends PaginationDto {
     subscriptionTypeId?: number;
     startDateFrom?: Date;
     status?: SubscriptionStatus;
+    minPrice: number;
+    maxPrice: number;
     startDateTo?: Date;
     expireDateFrom?: Date;
     expireDateTo?: Date;

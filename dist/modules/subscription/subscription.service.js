@@ -80,10 +80,16 @@ let SubscriptionService = class SubscriptionService {
         return subscription;
     }
     async findAll(dto) {
-        const { limit = 10, page = 1, userId, status, subscriptionTypeId, startDateFrom, startDateTo, expireDateFrom, expireDateTo, oneTime, } = dto;
+        const { limit = 10, page = 1, userId, status, subscriptionTypeId, startDateFrom, startDateTo, expireDateFrom, expireDateTo, oneTime, maxPrice, minPrice, } = dto;
         const where = {};
         if (userId) {
             where.userId = userId;
+        }
+        if (minPrice) {
+            where.transaction.price = { gte: minPrice };
+        }
+        if (maxPrice) {
+            where.transaction.price = { lte: maxPrice };
         }
         if (oneTime !== undefined) {
             where.subscriptionType = { oneTime: oneTime };

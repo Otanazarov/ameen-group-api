@@ -74,12 +74,22 @@ export class TransactionService {
       phone,
       username,
       oneTime,
+      maxPrice,
+      minPrice,
     } = dto;
 
     const where: Prisma.TransactionWhereInput = {};
 
     if (userId) {
       where.userId = userId;
+    }
+
+    if (minPrice) {
+      where.price = { gte: minPrice };
+    }
+
+    if (maxPrice) {
+      where.price = { lte: maxPrice };
     }
 
     if (oneTime !== undefined) {

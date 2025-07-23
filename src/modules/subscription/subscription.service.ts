@@ -101,6 +101,8 @@ export class SubscriptionService {
       expireDateFrom,
       expireDateTo,
       oneTime,
+      maxPrice,
+      minPrice,
     } = dto;
 
     const where: Prisma.SubscriptionWhereInput = {};
@@ -108,6 +110,15 @@ export class SubscriptionService {
     if (userId) {
       where.userId = userId;
     }
+
+    if (minPrice) {
+      where.transaction.price = { gte: minPrice };
+    }
+
+    if (maxPrice) {
+      where.transaction.price = { lte: maxPrice };
+    }
+
     if (oneTime !== undefined) {
       where.subscriptionType = { oneTime: oneTime };
     }

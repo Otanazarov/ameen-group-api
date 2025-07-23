@@ -34,6 +34,18 @@ __decorate([
     __metadata("design:type", String)
 ], FindAllTransactionDto.prototype, "phone", void 0);
 __decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    __metadata("design:type", Number)
+], FindAllTransactionDto.prototype, "minPrice", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNumber)(),
+    __metadata("design:type", Number)
+], FindAllTransactionDto.prototype, "maxPrice", void 0);
+__decorate([
     (0, id_dto_1.IsId)(false),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Number)
