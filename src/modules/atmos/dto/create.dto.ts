@@ -1,9 +1,13 @@
-import { IsId } from 'src/common/dtos/id.dto';
+import { ApiProperty } from "@nestjs/swagger";
+import { IsNotEmpty, IsString } from "class-validator";
+import { IsId } from "src/common/dtos/id.dto";
 
 export class CreateAtmosDto {
-  @IsId()
-  userId: number;
+	@ApiProperty()
+	@IsNotEmpty()
+	@IsString()
+	chatId: string;
 
-  @IsId()
-  subscriptionTypeId: number;
+	@IsId()
+	subscriptionTypeId: number;
 }

@@ -15,12 +15,12 @@ export class AtmosService {
 	) {}
 
 	async createLink(dto: CreateAtmosDto) {
-		const { userId, subscriptionTypeId } = dto;
-		if (!userId || !subscriptionTypeId) {
+		const { chatId, subscriptionTypeId } = dto;
+		if (!chatId || !subscriptionTypeId) {
 			throw new Error("Missing userId or subscriptionTypeId");
 		}
 		const user = await this.prisma.user.findUnique({
-			where: { id: userId },
+			where: { telegramId: chatId },
 		});
 		if (!user) {
 			throw new Error("User not found");
@@ -32,17 +32,9 @@ export class AtmosService {
 			throw new Error("Subscription type not found");
 		}
 		try {
-			console.log("https://apigw.atmos.uz/merchant/pay/create");
-			console.log({
-				store_id: env.ATMOS_STORE_ID,
-				account: userId,
-				amount: subscriptionType.price.toString(),
-				details: subscriptionType.id.toString(),
-				lang: "en",
-			});
 			var res = await atmosApi.post("merchant/pay/create", {
 				store_id: env.ATMOS_STORE_ID,
-				account: userId,
+				account: user.id,
 				amount: (subscriptionType.price * 100).toString(),
 				details: subscriptionType.id.toString(),
 				lang: "en",
@@ -51,12 +43,11 @@ export class AtmosService {
 			console.log(e.response);
 			throw new Error("Error creating transaction");
 		}
-		console.log(res.data);
-		if (!res.data.transaction_id) throw new Error("Transaction ID not found");
+		if (!res.data?.transaction_id) throw new Error("Transaction ID not found");
 		const transactionId = res.data.transaction_id;
 
 		await this.transactionService.create({
-			userId,
+			userId: user.id,
 			subscriptionTypeId,
 			price: subscriptionType.price,
 			paymentType: "ATMOS",
