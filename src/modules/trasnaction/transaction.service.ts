@@ -84,25 +84,29 @@ export class TransactionService {
       where.userId = userId;
     }
 
-    if (minPrice) {
-      where.price = { gte: minPrice };
+    if (minPrice || maxPrice) {
+      where.price = {};
+      if (minPrice) where.price.gte = minPrice;
+      if (maxPrice) where.price.lte = maxPrice;
     }
-
-    if (maxPrice) {
-      where.price = { lte: maxPrice };
-    }
+    
 
     if (oneTime !== undefined) {
       where.subscriptionType = { oneTime };
     }
 
+    if (phone || username) {
+      where.user = {};
+    }
+    
     if (phone) {
       where.user.phoneNumber = { contains: phone };
     }
-
+    
     if (username) {
       where.user.username = { contains: username };
     }
+
 
     if (subscriptionTypeId) {
       where.subscriptionTypeId = subscriptionTypeId;
