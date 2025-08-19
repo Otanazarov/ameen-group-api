@@ -9,8 +9,8 @@ export declare class SettingsController {
             createdAt: Date;
             updatedAt: Date;
             url: string;
-            size: number;
             mimetype: string;
+            size: number;
             hash: string;
         };
         aboutKozimxonTorayevImage: {
@@ -18,8 +18,8 @@ export declare class SettingsController {
             createdAt: Date;
             updatedAt: Date;
             url: string;
-            size: number;
             mimetype: string;
+            size: number;
             hash: string;
         };
     } & {
