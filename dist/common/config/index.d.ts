@@ -2,6 +2,7 @@ export declare const env: Readonly<{
     PORT: number;
     ENV: string;
     BACKEND_URL: string;
+    FRONTEND_URL: string;
     ACCESS_TOKEN_SECRET: string;
     REFRESH_TOKEN_SECRET: string;
     PASSPHRASE: string;

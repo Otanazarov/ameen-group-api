@@ -15,12 +15,12 @@ export class AtmosService {
 	) {}
 
 	async createLink(dto: CreateAtmosDto) {
-		const { chatId, subscriptionTypeId } = dto;
-		if (!chatId || !subscriptionTypeId) {
+		const { userId, subscriptionTypeId } = dto;
+		if (!userId || !subscriptionTypeId) {
 			throw new Error("Missing userId or subscriptionTypeId");
 		}
 		const user = await this.prisma.user.findUnique({
-			where: { telegramId: chatId },
+			where: { id: userId },
 		});
 		if (!user) {
 			throw new Error("User not found");
@@ -46,7 +46,7 @@ export class AtmosService {
 		if (!res.data?.transaction_id) throw new Error("Transaction ID not found");
 		const transactionId = res.data.transaction_id;
 
-		await this.transactionService.create({
+		const transaction = await this.transactionService.create({
 			userId: user.id,
 			subscriptionTypeId,
 			price: subscriptionType.price,
@@ -55,7 +55,7 @@ export class AtmosService {
 			transactionId: transactionId.toString(),
 		});
 
-		return res.data;
+		return transaction;
 	}
 	async preApplyTransaction(dto: PreApplyAtmosDto): Promise<any> {
 		const preApplyData = {

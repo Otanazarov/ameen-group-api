@@ -16,6 +16,7 @@ const settings_module_1 = require("../settings/settings.module");
 const message_module_1 = require("../message/message.module");
 const octobank_module_1 = require("../octobank/octobank.module");
 const buttons_module_1 = require("../buttons/buttons.module");
+const atmos_module_1 = require("../atmos/atmos.module");
 let TelegramModule = class TelegramModule {
 };
 exports.TelegramModule = TelegramModule;
@@ -27,6 +28,7 @@ exports.TelegramModule = TelegramModule = __decorate([
             settings_module_1.SettingsModule,
             buttons_module_1.ButtonsModule,
             (0, common_1.forwardRef)(() => octobank_module_1.OctoBankModule),
+            (0, common_1.forwardRef)(() => atmos_module_1.AtmosModule),
             (0, common_1.forwardRef)(() => message_module_1.MessageModule),
         ],
         providers: [telegram_service_1.TelegramService, telegram_update_1.TelegramUpdate],

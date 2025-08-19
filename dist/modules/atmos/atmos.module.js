@@ -19,6 +19,7 @@ exports.AtmosModule = AtmosModule = __decorate([
         controllers: [atmos_controller_1.AtmosController],
         providers: [atmos_service_1.AtmosService],
         imports: [transaction_module_1.TransactionModule],
+        exports: [atmos_service_1.AtmosService],
     })
 ], AtmosModule);
 //# sourceMappingURL=atmos.module.js.map

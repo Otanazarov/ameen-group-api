@@ -27,8 +27,9 @@ const user_service_1 = require("../user/user.service");
 const path_1 = require("path");
 const octobank_service_1 = require("../octobank/octobank.service");
 const buttons_service_1 = require("../buttons/buttons.service");
+const atmos_service_1 = require("../atmos/atmos.service");
 let TelegramService = class TelegramService {
-    constructor(bot, userService, prismaService, subscriptionTypeService, settingsService, buttonsService, octobankService, messageService) {
+    constructor(bot, userService, prismaService, subscriptionTypeService, settingsService, buttonsService, octobankService, atmosService, messageService) {
         this.bot = bot;
         this.userService = userService;
         this.prismaService = prismaService;
@@ -36,6 +37,7 @@ let TelegramService = class TelegramService {
         this.settingsService = settingsService;
         this.buttonsService = buttonsService;
         this.octobankService = octobankService;
+        this.atmosService = atmosService;
         this.messageService = messageService;
         this.cronRunning = false;
         this.MS_PER_DAY = 1000 * 60 * 60 * 24;
@@ -70,8 +72,7 @@ let TelegramService = class TelegramService {
         const result = await this.handleSubscriptionPayment(ctx, subscriptionTypeId);
         if (!result)
             return;
-        const { subscriptionType, octobank } = result;
-        await this.sendSubscriptionPaymentInfo(ctx, subscriptionType, { octobank });
+        await this.sendSubscriptionPaymentInfo(ctx, result);
     }
     async onEditCallBack(ctx) {
         const editName = ctx.match[1];
@@ -276,11 +277,12 @@ let TelegramService = class TelegramService {
             return;
         }
         const user = await this.userService.findOneByTelegramID(ctx.from.id.toString());
+        const atmos = await this.atmosService.createLink({ subscriptionTypeId: subscriptionType.id, userId: user.id });
         const octobank = await this.octobankService.createCheckoutSession({
             subscriptionTypeId,
             userId: user.id,
         });
-        return { subscriptionType, octobank };
+        return { subscriptionType, octobank, atmos };
     }
     async onCron() {
         if (this.cronRunning)
@@ -503,10 +505,12 @@ let TelegramService = class TelegramService {
         }
         return false;
     }
-    async sendSubscriptionPaymentInfo(ctx, subscriptionType, sessions) {
+    async sendSubscriptionPaymentInfo(ctx, sessions) {
+        const { subscriptionType } = sessions;
         const keyboard = new grammy_1.InlineKeyboard()
             .url('💳 Visa/Mastercard', sessions.octobank.octo_pay_url)
             .row()
+            .url('💳 ATMOS', `${config_1.env.FRONTEND_URL}atmos/card?transaction_id=` + sessions.atmos.transactionId).row()
             .text('⬅️ Orqaga', 'subscribe_menu');
         await ctx.deleteMessage();
         await ctx.reply(`💫 ${subscriptionType.title} - ${subscriptionType.price}:
@@ -613,7 +617,8 @@ exports.TelegramService = TelegramService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, nestjs_1.InjectBot)()),
     __param(6, (0, common_1.Inject)((0, common_1.forwardRef)(() => octobank_service_1.OctoBankService))),
-    __param(7, (0, common_1.Inject)((0, common_1.forwardRef)(() => message_service_1.MessageService))),
+    __param(7, (0, common_1.Inject)((0, common_1.forwardRef)(() => atmos_service_1.AtmosService))),
+    __param(8, (0, common_1.Inject)((0, common_1.forwardRef)(() => message_service_1.MessageService))),
     __metadata("design:paramtypes", [grammy_1.Bot,
         user_service_1.UserService,
         prisma_service_1.PrismaService,
@@ -621,6 +626,7 @@ exports.TelegramService = TelegramService = __decorate([
         settings_service_1.SettingsService,
         buttons_service_1.ButtonsService,
         octobank_service_1.OctoBankService,
+        atmos_service_1.AtmosService,
         message_service_1.MessageService])
 ], TelegramService);
 //# sourceMappingURL=telegram.service.js.map

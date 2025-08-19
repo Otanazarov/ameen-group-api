@@ -39,17 +39,9 @@ let AtmosService = class AtmosService {
             throw new Error("Subscription type not found");
         }
         try {
-            console.log("https://apigw.atmos.uz/merchant/pay/create");
-            console.log({
-                store_id: config_1.env.ATMOS_STORE_ID,
-                account: userId,
-                amount: subscriptionType.price.toString(),
-                details: subscriptionType.id.toString(),
-                lang: "en",
-            });
             var res = await axios_1.atmosApi.post("merchant/pay/create", {
                 store_id: config_1.env.ATMOS_STORE_ID,
-                account: userId,
+                account: user.id,
                 amount: (subscriptionType.price * 100).toString(),
                 details: subscriptionType.id.toString(),
                 lang: "en",
@@ -59,19 +51,18 @@ let AtmosService = class AtmosService {
             console.log(e.response);
             throw new Error("Error creating transaction");
         }
-        console.log(res.data);
-        if (!res.data.transaction_id)
+        if (!res.data?.transaction_id)
             throw new Error("Transaction ID not found");
         const transactionId = res.data.transaction_id;
-        await this.transactionService.create({
-            userId,
+        const transaction = await this.transactionService.create({
+            userId: user.id,
             subscriptionTypeId,
             price: subscriptionType.price,
             paymentType: "ATMOS",
             status: "Created",
             transactionId: transactionId.toString(),
         });
-        return res.data;
+        return transaction;
     }
     async preApplyTransaction(dto) {
         const preApplyData = {

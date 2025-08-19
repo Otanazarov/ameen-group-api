@@ -9,6 +9,7 @@ import { UserService } from '../user/user.service';
 import { Context } from './Context.type';
 import { OctoBankService } from '../octobank/octobank.service';
 import { ButtonsService } from '../buttons/buttons.service';
+import { AtmosService } from '../atmos/atmos.service';
 export declare class TelegramService implements OnModuleInit {
     readonly bot: Bot<Context>;
     private readonly userService;
@@ -17,11 +18,12 @@ export declare class TelegramService implements OnModuleInit {
     private readonly settingsService;
     private readonly buttonsService;
     private readonly octobankService;
+    private readonly atmosService;
     private readonly messageService;
     private cronRunning;
     private readonly MS_PER_DAY;
     private DEFAULT_KEYBOARD;
-    constructor(bot: Bot<Context>, userService: UserService, prismaService: PrismaService, subscriptionTypeService: SubscriptionTypeService, settingsService: SettingsService, buttonsService: ButtonsService, octobankService: OctoBankService, messageService: MessageService);
+    constructor(bot: Bot<Context>, userService: UserService, prismaService: PrismaService, subscriptionTypeService: SubscriptionTypeService, settingsService: SettingsService, buttonsService: ButtonsService, octobankService: OctoBankService, atmosService: AtmosService, messageService: MessageService);
     onModuleInit(): Promise<void>;
     private setDefaultKeyboard;
     private calculateDaysLeft;
@@ -46,7 +48,49 @@ export declare class TelegramService implements OnModuleInit {
         };
     }): Promise<void>;
     private updateUserSession;
-    private handleSubscriptionPayment;
+    handleSubscriptionPayment(ctx: Context, subscriptionTypeId: number): Promise<{
+        subscriptionType: {
+            price: string;
+            description: string;
+            title: string;
+            id: number;
+            createdAt: Date;
+            updatedAt: Date;
+            oneTime: boolean;
+            expireDays: number;
+            isDeleted: boolean;
+        };
+        octobank: {
+            error: number;
+            data: {
+                shop_transaction_id: string;
+                octo_payment_UUID: string;
+                status: string;
+                octo_pay_url: string;
+                refunded_sum: number;
+                total_sum: number;
+            };
+            apiMessageForDevelopers: string;
+            shop_transaction_id: string;
+            octo_payment_UUID: string;
+            status: string;
+            octo_pay_url: string;
+            refunded_sum: number;
+            total_sum: number;
+        };
+        atmos: {
+            type: import(".prisma/client").$Enums.TransactionType;
+            id: number;
+            createdAt: Date;
+            updatedAt: Date;
+            userId: number;
+            subscriptionTypeId: number;
+            price: number;
+            paymentType: import(".prisma/client").$Enums.PaymentType;
+            status: import(".prisma/client").$Enums.TransactionStatus;
+            transactionId: string | null;
+        };
+    }>;
     onCron(): Promise<void>;
     private handleExistingUser;
     private handleStartCommand;

@@ -27,6 +27,7 @@ import { Context } from './Context.type';
 import { join } from 'path';
 import { OctoBankService } from '../octobank/octobank.service';
 import { ButtonsService } from '../buttons/buttons.service';
+import { AtmosService } from '../atmos/atmos.service';
 
 @Injectable()
 export class TelegramService implements OnModuleInit {
@@ -43,6 +44,8 @@ export class TelegramService implements OnModuleInit {
     private readonly buttonsService: ButtonsService,
     @Inject(forwardRef(() => OctoBankService))
     private readonly octobankService: OctoBankService,
+    @Inject(forwardRef(() => AtmosService))
+    private readonly atmosService: AtmosService,
     @Inject(forwardRef(() => MessageService))
     private readonly messageService: MessageService,
   ) {}
@@ -83,8 +86,7 @@ export class TelegramService implements OnModuleInit {
       subscriptionTypeId,
     );
     if (!result) return;
-    const { subscriptionType, octobank } = result;
-    await this.sendSubscriptionPaymentInfo(ctx, subscriptionType, { octobank });
+    await this.sendSubscriptionPaymentInfo(ctx,  result as any);
   }
 
   async onEditCallBack(ctx: Context) {
@@ -324,7 +326,7 @@ export class TelegramService implements OnModuleInit {
     ctx.session.email = user.email || 'skipped';
   }
 
-  private async handleSubscriptionPayment(
+   async handleSubscriptionPayment(
     ctx: Context,
     subscriptionTypeId: number,
   ) {
@@ -354,12 +356,14 @@ export class TelegramService implements OnModuleInit {
       ctx.from.id.toString(),
     );
 
+    const atmos=await this.atmosService.createLink({subscriptionTypeId:subscriptionType.id,userId:user.id});
+
     const octobank = await this.octobankService.createCheckoutSession({
       subscriptionTypeId,
       userId: user.id,
     });
 
-    return { subscriptionType, octobank };
+    return { subscriptionType, octobank ,atmos};
   }
   @Interval(10000)
   async onCron() {
@@ -593,15 +597,13 @@ export class TelegramService implements OnModuleInit {
   }
   private async sendSubscriptionPaymentInfo(
     ctx: Context,
-    subscriptionType: any,
-    sessions: Record<
-      string,
-      Awaited<ReturnType<OctoBankService['createCheckoutSession']>>
-    >,
+    sessions: Awaited<ReturnType<this["handleSubscriptionPayment"]>>
   ) {
+    const { subscriptionType }=sessions
     const keyboard = new InlineKeyboard()
       .url('💳 Visa/Mastercard', sessions.octobank.octo_pay_url)
       .row()
+    .url('💳 ATMOS', `${env.FRONTEND_URL}atmos/card?transaction_id=`+sessions.atmos.transactionId).row()
       .text('⬅️ Orqaga', 'subscribe_menu');
     await ctx.deleteMessage();
     await ctx.reply(
