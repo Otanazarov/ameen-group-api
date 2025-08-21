@@ -137,24 +137,40 @@ let TelegramService = class TelegramService {
     async onAboutUsCallBack(ctx) {
         const settings = await this.settingsService.findOne();
         const keyboard = new grammy_1.InlineKeyboard().text('⬅️ Orqaga', 'start_message');
-        const filePath = (0, path_1.join)(__dirname, '..', '..', '..', 'public', settings.aboutAminGroupImage.url);
-        await ctx.editMessageMedia(grammy_1.InputMediaBuilder.photo(new grammy_1.InputFile(filePath)));
-        await ctx.editMessageCaption({
-            caption: settings.aboutAminGroup,
-            parse_mode: 'Markdown',
-            reply_markup: keyboard,
-        });
+        if (settings.aboutAminGroupImage) {
+            const filePath = (0, path_1.join)(__dirname, '..', '..', '..', 'public', settings.aboutAminGroupImage.url);
+            await ctx.editMessageMedia(grammy_1.InputMediaBuilder.photo(new grammy_1.InputFile(filePath)));
+            await ctx.editMessageCaption({
+                caption: settings.aboutAminGroup,
+                parse_mode: 'Markdown',
+                reply_markup: keyboard,
+            });
+        }
+        else {
+            await ctx.editMessageText(settings.aboutAminGroup, {
+                parse_mode: 'Markdown',
+                reply_markup: keyboard,
+            });
+        }
     }
     async onAboutTeacherCallBack(ctx) {
         const settings = await this.settingsService.findOne();
         const keyboard = new grammy_1.InlineKeyboard().text('⬅️ Orqaga', 'start_message');
-        const filePath = (0, path_1.join)(__dirname, '..', '..', '..', 'public', settings.aboutKozimxonTorayevImage.url);
-        await ctx.editMessageMedia(grammy_1.InputMediaBuilder.photo(new grammy_1.InputFile(filePath)));
-        await ctx.editMessageCaption({
-            caption: settings.aboutKozimxonTorayev,
-            parse_mode: 'Markdown',
-            reply_markup: keyboard,
-        });
+        if (settings.aboutKozimxonTorayevImage) {
+            const filePath = (0, path_1.join)(__dirname, '..', '..', '..', 'public', settings.aboutKozimxonTorayevImage.url);
+            await ctx.editMessageMedia(grammy_1.InputMediaBuilder.photo(new grammy_1.InputFile(filePath)));
+            await ctx.editMessageCaption({
+                caption: settings.aboutKozimxonTorayev,
+                parse_mode: 'Markdown',
+                reply_markup: keyboard,
+            });
+        }
+        else {
+            await ctx.editMessageText(settings.aboutKozimxonTorayev, {
+                parse_mode: 'Markdown',
+                reply_markup: keyboard,
+            });
+        }
     }
     async sendMessage(message) {
         try {
@@ -277,7 +293,10 @@ let TelegramService = class TelegramService {
             return;
         }
         const user = await this.userService.findOneByTelegramID(ctx.from.id.toString());
-        const atmos = await this.atmosService.createLink({ subscriptionTypeId: subscriptionType.id, userId: user.id });
+        const atmos = await this.atmosService.createLink({
+            subscriptionTypeId: subscriptionType.id,
+            userId: user.id,
+        });
         const octobank = await this.octobankService.createCheckoutSession({
             subscriptionTypeId,
             userId: user.id,
@@ -510,7 +529,9 @@ let TelegramService = class TelegramService {
         const keyboard = new grammy_1.InlineKeyboard()
             .url('💳 Visa/Mastercard', sessions.octobank.octo_pay_url)
             .row()
-            .url('💳 ATMOS', `${config_1.env.FRONTEND_URL}atmos/card?transaction_id=` + sessions.atmos.transactionId).row()
+            .url('💳 ATMOS', `${config_1.env.FRONTEND_URL}atmos/card?transaction_id=` +
+            sessions.atmos.transactionId)
+            .row()
             .text('⬅️ Orqaga', 'subscribe_menu');
         await ctx.deleteMessage();
         await ctx.reply(`💫 ${subscriptionType.title} - ${subscriptionType.price}:

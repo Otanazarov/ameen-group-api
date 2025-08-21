@@ -89,7 +89,6 @@ export class TransactionService {
       if (minPrice) where.price.gte = minPrice;
       if (maxPrice) where.price.lte = maxPrice;
     }
-    
 
     if (oneTime !== undefined) {
       where.subscriptionType = { oneTime };
@@ -98,15 +97,14 @@ export class TransactionService {
     if (phone || username) {
       where.user = {};
     }
-    
+
     if (phone) {
       where.user.phoneNumber = { contains: phone };
     }
-    
+
     if (username) {
       where.user.username = { contains: username };
     }
-
 
     if (subscriptionTypeId) {
       where.subscriptionTypeId = subscriptionTypeId;

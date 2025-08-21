@@ -86,7 +86,7 @@ export class TelegramService implements OnModuleInit {
       subscriptionTypeId,
     );
     if (!result) return;
-    await this.sendSubscriptionPaymentInfo(ctx,  result as any);
+    await this.sendSubscriptionPaymentInfo(ctx, result as any);
   }
 
   async onEditCallBack(ctx: Context) {
@@ -156,43 +156,57 @@ export class TelegramService implements OnModuleInit {
   async onAboutUsCallBack(ctx: Context) {
     const settings = await this.settingsService.findOne();
     const keyboard = new InlineKeyboard().text('⬅️ Orqaga', 'start_message');
-    const filePath = join(
-      __dirname,
-      '..',
-      '..',
-      '..',
-      'public',
-      settings.aboutAminGroupImage.url,
-    );
-    await ctx.editMessageMedia(
-      InputMediaBuilder.photo(new InputFile(filePath)),
-    );
-    await ctx.editMessageCaption({
-      caption: settings.aboutAminGroup,
-      parse_mode: 'Markdown',
-      reply_markup: keyboard,
-    });
+    if (settings.aboutAminGroupImage) {
+      const filePath = join(
+        __dirname,
+        '..',
+        '..',
+        '..',
+        'public',
+        settings.aboutAminGroupImage.url,
+      );
+      await ctx.editMessageMedia(
+        InputMediaBuilder.photo(new InputFile(filePath)),
+      );
+      await ctx.editMessageCaption({
+        caption: settings.aboutAminGroup,
+        parse_mode: 'Markdown',
+        reply_markup: keyboard,
+      });
+    } else {
+      await ctx.editMessageText(settings.aboutAminGroup, {
+        parse_mode: 'Markdown',
+        reply_markup: keyboard,
+      });
+    }
   }
 
   async onAboutTeacherCallBack(ctx: Context) {
     const settings = await this.settingsService.findOne();
     const keyboard = new InlineKeyboard().text('⬅️ Orqaga', 'start_message');
-    const filePath = join(
-      __dirname,
-      '..',
-      '..',
-      '..',
-      'public',
-      settings.aboutKozimxonTorayevImage.url,
-    );
-    await ctx.editMessageMedia(
-      InputMediaBuilder.photo(new InputFile(filePath)),
-    );
-    await ctx.editMessageCaption({
-      caption: settings.aboutKozimxonTorayev,
-      parse_mode: 'Markdown',
-      reply_markup: keyboard,
-    });
+    if (settings.aboutKozimxonTorayevImage) {
+      const filePath = join(
+        __dirname,
+        '..',
+        '..',
+        '..',
+        'public',
+        settings.aboutKozimxonTorayevImage.url,
+      );
+      await ctx.editMessageMedia(
+        InputMediaBuilder.photo(new InputFile(filePath)),
+      );
+      await ctx.editMessageCaption({
+        caption: settings.aboutKozimxonTorayev,
+        parse_mode: 'Markdown',
+        reply_markup: keyboard,
+      });
+    } else {
+      await ctx.editMessageText(settings.aboutKozimxonTorayev, {
+        parse_mode: 'Markdown',
+        reply_markup: keyboard,
+      });
+    }
   }
 
   public async sendMessage(
@@ -326,10 +340,7 @@ export class TelegramService implements OnModuleInit {
     ctx.session.email = user.email || 'skipped';
   }
 
-   async handleSubscriptionPayment(
-    ctx: Context,
-    subscriptionTypeId: number,
-  ) {
+  async handleSubscriptionPayment(ctx: Context, subscriptionTypeId: number) {
     const subscriptionType =
       await this.subscriptionTypeService.findOne(subscriptionTypeId);
     if (!subscriptionType) {
@@ -356,14 +367,17 @@ export class TelegramService implements OnModuleInit {
       ctx.from.id.toString(),
     );
 
-    const atmos=await this.atmosService.createLink({subscriptionTypeId:subscriptionType.id,userId:user.id});
+    const atmos = await this.atmosService.createLink({
+      subscriptionTypeId: subscriptionType.id,
+      userId: user.id,
+    });
 
     const octobank = await this.octobankService.createCheckoutSession({
       subscriptionTypeId,
       userId: user.id,
     });
 
-    return { subscriptionType, octobank ,atmos};
+    return { subscriptionType, octobank, atmos };
   }
   @Interval(10000)
   async onCron() {
@@ -597,13 +611,18 @@ export class TelegramService implements OnModuleInit {
   }
   private async sendSubscriptionPaymentInfo(
     ctx: Context,
-    sessions: Awaited<ReturnType<this["handleSubscriptionPayment"]>>
+    sessions: Awaited<ReturnType<this['handleSubscriptionPayment']>>,
   ) {
-    const { subscriptionType }=sessions
+    const { subscriptionType } = sessions;
     const keyboard = new InlineKeyboard()
       .url('💳 Visa/Mastercard', sessions.octobank.octo_pay_url)
       .row()
-    .url('💳 ATMOS', `${env.FRONTEND_URL}atmos/card?transaction_id=`+sessions.atmos.transactionId).row()
+      .url(
+        '💳 ATMOS',
+        `${env.FRONTEND_URL}atmos/card?transaction_id=` +
+          sessions.atmos.transactionId,
+      )
+      .row()
       .text('⬅️ Orqaga', 'subscribe_menu');
     await ctx.deleteMessage();
     await ctx.reply(

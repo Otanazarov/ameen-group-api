@@ -1,80 +1,80 @@
-import { BadRequestException, ValidationPipe } from "@nestjs/common";
-import { NestFactory } from "@nestjs/core";
-import { SwaggerModule } from "@nestjs/swagger";
-import * as bodyParser from "body-parser";
-import { AppModule } from "./app.module";
-import { env } from "./common/config";
-import { HttpExceptionFilter } from "./common/filter/httpException.filter";
-import { ApiSwaggerOptions } from "./common/swagger/config.swagger";
-import { NestExpressApplication } from "@nestjs/platform-express";
-import { join } from "path";
-import { sign } from "jsonwebtoken";
-import { Role } from "./common/auth/roles/role.enum";
-import { apiReference } from "@scalar/nestjs-api-reference";
+import { BadRequestException, ValidationPipe } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
+import { SwaggerModule } from '@nestjs/swagger';
+import * as bodyParser from 'body-parser';
+import { AppModule } from './app.module';
+import { env } from './common/config';
+import { HttpExceptionFilter } from './common/filter/httpException.filter';
+import { ApiSwaggerOptions } from './common/swagger/config.swagger';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
+import { sign } from 'jsonwebtoken';
+import { Role } from './common/auth/roles/role.enum';
+import { apiReference } from '@scalar/nestjs-api-reference';
 
 async function bootstrap() {
-	const app = await NestFactory.create<NestExpressApplication>(AppModule, {
-		cors: { origin: "*" },
-		rawBody: true,
-	});
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    cors: { origin: '*' },
+    rawBody: true,
+  });
 
-	app.useStaticAssets(join(__dirname, "..", "public/uploads"), {
-		prefix: "/uploads/",
-	});
+  app.useStaticAssets(join(__dirname, '..', 'public/uploads'), {
+    prefix: '/uploads/',
+  });
 
-	app.setGlobalPrefix("/api");
-	app.use("/webhook", bodyParser.raw({ type: "application/json" }));
+  app.setGlobalPrefix('/api');
+  app.use('/webhook', bodyParser.raw({ type: 'application/json' }));
 
-	app.useGlobalFilters(new HttpExceptionFilter());
-	app.useGlobalPipes(
-		new ValidationPipe({
-			transform: true,
-			exceptionFactory: (errors) => {
-				const messages = errors.map((err) => {
-					const constraints = Object.values(err.constraints || {});
-					return `${err.property}: ${constraints.join(", ")}`;
-				});
-				return new BadRequestException(messages.join(" | "));
-			},
-		}),
-	);
+  app.useGlobalFilters(new HttpExceptionFilter());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      exceptionFactory: (errors) => {
+        const messages = errors.map((err) => {
+          const constraints = Object.values(err.constraints || {});
+          return `${err.property}: ${constraints.join(', ')}`;
+        });
+        return new BadRequestException(messages.join(' | '));
+      },
+    }),
+  );
 
-	if (env.ENV == "dev") {
-		const ApiDocs = SwaggerModule.createDocument(app, ApiSwaggerOptions);
-		SwaggerModule.setup("docs", app, ApiDocs, {
-			customCssUrl: "./public/swagger.css",
-		});
-		app.use(
-			"/ui",
-			apiReference({
-				content: ApiDocs,
-				theme: "bluePlanet",
-				layout: "modern",
-				defaultHttpClient: {
-					targetKey: "node",
-					clientKey: "ofetch",
-				},
-				persistAuth: true,
-				authentication: {
-					preferredSecurityScheme: "token",
-					securitySchemes: {
-						token: {
-							token: sign(
-								{
-									id: 1,
-									role: Role.Admin,
-									ignoreVersion: true,
-									tokenVersion: 0,
-								},
-								env.ACCESS_TOKEN_SECRET,
-								{},
-							),
-						},
-					},
-				},
-			}),
-		);
-	}
-	await app.listen(env.PORT || 3000);
+  if (env.ENV == 'dev') {
+    const ApiDocs = SwaggerModule.createDocument(app, ApiSwaggerOptions);
+    SwaggerModule.setup('docs', app, ApiDocs, {
+      customCssUrl: './public/swagger.css',
+    });
+    app.use(
+      '/ui',
+      apiReference({
+        content: ApiDocs,
+        theme: 'bluePlanet',
+        layout: 'modern',
+        defaultHttpClient: {
+          targetKey: 'node',
+          clientKey: 'ofetch',
+        },
+        persistAuth: true,
+        authentication: {
+          preferredSecurityScheme: 'token',
+          securitySchemes: {
+            token: {
+              token: sign(
+                {
+                  id: 1,
+                  role: Role.Admin,
+                  ignoreVersion: true,
+                  tokenVersion: 0,
+                },
+                env.ACCESS_TOKEN_SECRET,
+                {},
+              ),
+            },
+          },
+        },
+      }),
+    );
+  }
+  await app.listen(env.PORT || 3000);
 }
 bootstrap();
