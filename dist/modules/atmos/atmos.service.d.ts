@@ -1,11 +1,13 @@
-import { CreateAtmosDto } from './dto/create.dto';
-import { PrismaService } from '../prisma/prisma.service';
-import { TransactionService } from '../trasnaction/transaction.service';
-import { PreApplyAtmosDto } from './dto/preapply.dto';
+import { CreateAtmosDto } from "./dto/create.dto";
+import { PrismaService } from "../prisma/prisma.service";
+import { TransactionService } from "../trasnaction/transaction.service";
+import { PreApplyAtmosDto } from "./dto/preapply.dto";
+import { TelegramService } from "../telegram/telegram.service";
 export declare class AtmosService {
     private readonly prisma;
     private readonly transactionService;
-    constructor(prisma: PrismaService, transactionService: TransactionService);
+    private readonly telegramService;
+    constructor(prisma: PrismaService, transactionService: TransactionService, telegramService: TelegramService);
     createLink(dto: CreateAtmosDto): Promise<{
         type: import(".prisma/client").$Enums.TransactionType;
         id: number;
