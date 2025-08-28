@@ -1,8 +1,8 @@
-import { CreateAtmosDto } from "./dto/create.dto";
-import { PrismaService } from "../prisma/prisma.service";
-import { TransactionService } from "../trasnaction/transaction.service";
-import { PreApplyAtmosDto } from "./dto/preapply.dto";
-import { TelegramService } from "../telegram/telegram.service";
+import { CreateAtmosDto } from './dto/create.dto';
+import { PrismaService } from '../prisma/prisma.service';
+import { TransactionService } from '../trasnaction/transaction.service';
+import { PreApplyAtmosDto } from './dto/preapply.dto';
+import { TelegramService } from '../telegram/telegram.service';
 export declare class AtmosService {
     private readonly prisma;
     private readonly transactionService;

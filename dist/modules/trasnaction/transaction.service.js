@@ -27,13 +27,13 @@ let TransactionService = class TransactionService {
             where: { id: createTransactionDto.userId },
         });
         if (!user) {
-            throw new http_error_1.HttpError({ message: "User not found" });
+            throw new http_error_1.HttpError({ message: 'User not found' });
         }
         const subscriptionType = await this.prisma.subscriptionType.findFirst({
             where: { id: createTransactionDto.subscriptionTypeId },
         });
         if (!subscriptionType) {
-            throw new http_error_1.HttpError({ message: "Subscription type not found" });
+            throw new http_error_1.HttpError({ message: 'Subscription type not found' });
         }
         if (subscriptionType.oneTime) {
             const existingSubscription = await this.prisma.subscription.findFirst({
@@ -41,12 +41,12 @@ let TransactionService = class TransactionService {
                     user: { id: user.id },
                     subscriptionType: { id: subscriptionType.id },
                 },
-                orderBy: { expiredDate: "desc" },
+                orderBy: { expiredDate: 'desc' },
                 include: { subscriptionType: true },
             });
             if (existingSubscription) {
                 throw new http_error_1.HttpError({
-                    message: "You already have an this subscription",
+                    message: 'You already have an this subscription',
                 });
             }
         }
@@ -106,7 +106,7 @@ let TransactionService = class TransactionService {
                 skip: (page - 1) * limit,
                 take: limit,
                 orderBy: {
-                    createdAt: "desc",
+                    createdAt: 'desc',
                 },
                 include: {
                     user: true,
@@ -132,7 +132,7 @@ let TransactionService = class TransactionService {
                 where: { user: { id: userId } },
                 skip,
                 take: limit,
-                orderBy: { createdAt: "desc" },
+                orderBy: { createdAt: 'desc' },
             }),
             this.prisma.transaction.count({ where: { user: { id: userId } } }),
         ]);
@@ -152,7 +152,7 @@ let TransactionService = class TransactionService {
             },
         });
         if (!transaction) {
-            throw new http_error_1.HttpError({ message: "Transaction not found" });
+            throw new http_error_1.HttpError({ message: 'Transaction not found' });
         }
         return transaction;
     }
@@ -165,7 +165,7 @@ let TransactionService = class TransactionService {
             },
         });
         if (!transaction) {
-            throw new http_error_1.HttpError({ message: "Transaction not found" });
+            throw new http_error_1.HttpError({ message: 'Transaction not found' });
         }
         return transaction;
     }
@@ -174,7 +174,7 @@ let TransactionService = class TransactionService {
             where: { id },
         });
         if (!transaction) {
-            throw new http_error_1.HttpError({ message: "Transaction not found" });
+            throw new http_error_1.HttpError({ message: 'Transaction not found' });
         }
         transaction = await this.prisma.transaction.update({
             where: { id },
@@ -203,7 +203,7 @@ let TransactionService = class TransactionService {
             where: { id },
         });
         if (!transaction) {
-            throw new http_error_1.HttpError({ message: "Transaction not found" });
+            throw new http_error_1.HttpError({ message: 'Transaction not found' });
         }
         return await this.prisma.transaction.delete({
             where: { id },

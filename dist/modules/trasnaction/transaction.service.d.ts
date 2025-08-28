@@ -1,11 +1,11 @@
-import { CreateTransactionDto } from "./dto/create-transaction.dto";
-import { UpdateTransactionDto } from "./dto/update-transaction.dto";
-import { PrismaService } from "../prisma/prisma.service";
-import { FindAllTransactionDto } from "./dto/findAll-transaction.dto";
-import { Transaction } from "@prisma/client";
-import { SubscriptionService } from "../subscription/subscription.service";
-import { SubscriptionTypeService } from "../subscription-type/subscription-type.service";
-import { PaginationDto } from "src/common/dtos/pagination.dto";
+import { CreateTransactionDto } from './dto/create-transaction.dto';
+import { UpdateTransactionDto } from './dto/update-transaction.dto';
+import { PrismaService } from '../prisma/prisma.service';
+import { FindAllTransactionDto } from './dto/findAll-transaction.dto';
+import { Transaction } from '@prisma/client';
+import { SubscriptionService } from '../subscription/subscription.service';
+import { SubscriptionTypeService } from '../subscription-type/subscription-type.service';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
 export declare class TransactionService {
     private readonly prisma;
     private readonly subscriptionService;

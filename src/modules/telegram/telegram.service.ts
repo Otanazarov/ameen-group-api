@@ -128,6 +128,29 @@ export class TelegramService implements OnModuleInit {
     }
   }
 
+  async onCancelSubscriptionCallBack(ctx: Context) {
+    const subscription = await this.userService.getSubscription(ctx.from.id);
+    if (!subscription) {
+      await ctx.answerCallbackQuery({
+        text: '❌ Sizda hozircha faol obuna mavjud emas',
+        show_alert: true,
+      });
+      return;
+    }
+    try{
+      const user = await this.userService.cancelSubscription(
+        ctx.from.id.toString(),
+      );
+      await ctx.api.banChatMember(env.TELEGRAM_GROUP_ID, ctx.from.id);
+      await this.userService.update(user.id, { inGroup: false });
+      await ctx.answerCallbackQuery({text:"Obuna bekor qilindi"})
+      await this.onStartMessageCallBack(ctx)
+    }catch(e){
+      console.log(e)
+      await ctx.answerCallbackQuery({text:"Obuna bekor qilishda muomoga chiqdi"})
+    }
+  }
+
   async onMySubscriptionsCallBack(ctx: Context) {
     const subscription = await this.userService.getSubscription(ctx.from.id);
     if (!subscription) {
@@ -141,7 +164,10 @@ export class TelegramService implements OnModuleInit {
     const subscriptionType = await this.subscriptionTypeService.findOne(
       subscription.subscriptionTypeId,
     );
-    const keyboard = new InlineKeyboard().text('⬅️ Orqaga', 'start_message');
+    const keyboard = new InlineKeyboard()
+      .text('Bekor Qilish', 'cancel_subscription')
+      .row()
+      .text('⬅️ Orqaga', 'start_message');
     const text =
       `📌 Obuna turi: ${subscriptionType.title}
 ` +

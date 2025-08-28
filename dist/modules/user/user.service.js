@@ -23,13 +23,13 @@ let UserService = class UserService {
             where: { phoneNumber: createUserDto.phoneNumber },
         });
         if (phoneNumber) {
-            throw (0, http_error_1.HttpError)({ code: 'User with this phone number already exists' });
+            throw (0, http_error_1.HttpError)({ code: "User with this phone number already exists" });
         }
         const telegramId = await this.prisma.user.findFirst({
             where: { telegramId: createUserDto.telegramId },
         });
         if (telegramId) {
-            throw (0, http_error_1.HttpError)({ code: 'User with this telegram ID already exists' });
+            throw (0, http_error_1.HttpError)({ code: "User with this telegram ID already exists" });
         }
         const user = await this.prisma.user.create({
             data: createUserDto,
@@ -42,19 +42,19 @@ let UserService = class UserService {
             firstName: name?.trim()
                 ? {
                     contains: name.trim(),
-                    mode: 'insensitive',
+                    mode: "insensitive",
                 }
                 : undefined,
             phoneNumber: phoneNumber?.trim()
                 ? {
                     contains: phoneNumber.trim(),
-                    mode: 'insensitive',
+                    mode: "insensitive",
                 }
                 : undefined,
             telegramId: telegramId?.trim()
                 ? {
                     contains: telegramId.trim(),
-                    mode: 'insensitive',
+                    mode: "insensitive",
                 }
                 : undefined,
             status: status || undefined,
@@ -65,7 +65,7 @@ let UserService = class UserService {
                             id: subscriptionTypeId,
                         },
                         expiredDate: subscriptionStatus !== undefined
-                            ? subscriptionStatus === 'EXPIRED'
+                            ? subscriptionStatus === "EXPIRED"
                                 ? { lt: new Date() }
                                 : { gt: new Date() }
                             : undefined,
@@ -78,7 +78,7 @@ let UserService = class UserService {
                 where,
                 skip: (page - 1) * limit,
                 take: limit,
-                orderBy: { createdAt: 'desc' },
+                orderBy: { createdAt: "desc" },
                 include: {
                     subscription: { include: { subscriptionType: true } },
                     messageUser: true,
@@ -104,7 +104,7 @@ let UserService = class UserService {
     async getSubscription(telegramId) {
         const subscription = await this.prisma.subscription.findFirst({
             where: {
-                user: { telegramId: telegramId.toString() },
+                user: { telegramId: telegramId.toString(), status: "SUBSCRIBE" },
                 expiredDate: {
                     gt: new Date(),
                 },
@@ -112,6 +112,20 @@ let UserService = class UserService {
             include: { subscriptionType: true, user: true, transaction: true },
         });
         return subscription;
+    }
+    async cancelSubscription(telegramId) {
+        let user = await this.prisma.user.findUnique({ where: { telegramId } });
+        if (!user)
+            throw new http_error_1.HttpError({ message: "USER_NOT_FOUND" });
+        if (user.status === "UNSUBSCRIBE")
+            throw new http_error_1.HttpError({ message: "ALREADY_UNSUBSCRIBED" });
+        if (user.status !== "SUBSCRIBE")
+            throw new http_error_1.HttpError({ message: "NOT_SUBSCRIBED" });
+        user = await this.prisma.user.update({
+            where: { id: user.id },
+            data: { status: "UNSUBSCRIBE" },
+        });
+        return user;
     }
     async findOneByTelegramID(id) {
         const user = await this.prisma.user.findFirst({
@@ -132,7 +146,7 @@ let UserService = class UserService {
             },
         });
         if (!user) {
-            throw (0, http_error_1.HttpError)({ code: 'User not found' });
+            throw (0, http_error_1.HttpError)({ code: "User not found" });
         }
         return user;
     }
@@ -141,14 +155,14 @@ let UserService = class UserService {
             where: { id },
         });
         if (!user) {
-            throw (0, http_error_1.HttpError)({ code: 'User not found' });
+            throw (0, http_error_1.HttpError)({ code: "User not found" });
         }
         if (updateUserDto.phoneNumber) {
             const phoneExists = await this.prisma.user.findUnique({
                 where: { phoneNumber: updateUserDto.phoneNumber },
             });
             if (phoneExists && phoneExists.id !== id) {
-                throw (0, http_error_1.HttpError)({ code: 'User with this phone number already exists' });
+                throw (0, http_error_1.HttpError)({ code: "User with this phone number already exists" });
             }
         }
         if (updateUserDto.email) {
@@ -156,7 +170,7 @@ let UserService = class UserService {
                 where: { email: updateUserDto.email },
             });
             if (emailExists && emailExists.id !== id) {
-                throw (0, http_error_1.HttpError)({ code: 'User with this email already exists' });
+                throw (0, http_error_1.HttpError)({ code: "User with this email already exists" });
             }
         }
         const updateData = {

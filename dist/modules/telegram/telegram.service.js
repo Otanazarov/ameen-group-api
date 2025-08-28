@@ -113,6 +113,27 @@ let TelegramService = class TelegramService {
             await ctx.reply(text, { reply_markup: this.DEFAULT_KEYBOARD });
         }
     }
+    async onCancelSubscriptionCallBack(ctx) {
+        const subscription = await this.userService.getSubscription(ctx.from.id);
+        if (!subscription) {
+            await ctx.answerCallbackQuery({
+                text: '❌ Sizda hozircha faol obuna mavjud emas',
+                show_alert: true,
+            });
+            return;
+        }
+        try {
+            const user = await this.userService.cancelSubscription(ctx.from.id.toString());
+            await ctx.api.banChatMember(config_1.env.TELEGRAM_GROUP_ID, ctx.from.id);
+            await this.userService.update(user.id, { inGroup: false });
+            await ctx.answerCallbackQuery({ text: "Obuna bekor qilindi" });
+            await this.onStartMessageCallBack(ctx);
+        }
+        catch (e) {
+            console.log(e);
+            await ctx.answerCallbackQuery({ text: "Obuna bekor qilishda muomoga chiqdi" });
+        }
+    }
     async onMySubscriptionsCallBack(ctx) {
         const subscription = await this.userService.getSubscription(ctx.from.id);
         if (!subscription) {
@@ -124,7 +145,10 @@ let TelegramService = class TelegramService {
         }
         const daysLeft = this.calculateDaysLeft(subscription.expiredDate);
         const subscriptionType = await this.subscriptionTypeService.findOne(subscription.subscriptionTypeId);
-        const keyboard = new grammy_1.InlineKeyboard().text('⬅️ Orqaga', 'start_message');
+        const keyboard = new grammy_1.InlineKeyboard()
+            .text('Bekor Qilish', 'cancel_subscription')
+            .row()
+            .text('⬅️ Orqaga', 'start_message');
         const text = `📌 Obuna turi: ${subscriptionType.title}
 ` +
             `💰 Narxi: ${subscriptionType.price} so'm

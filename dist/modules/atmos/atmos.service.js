@@ -27,41 +27,41 @@ let AtmosService = class AtmosService {
     async createLink(dto) {
         const { userId, subscriptionTypeId } = dto;
         if (!userId || !subscriptionTypeId) {
-            throw new Error("Missing userId or subscriptionTypeId");
+            throw new Error('Missing userId or subscriptionTypeId');
         }
         const user = await this.prisma.user.findUnique({
             where: { id: userId },
         });
         if (!user) {
-            throw new Error("User not found");
+            throw new Error('User not found');
         }
         const subscriptionType = await this.prisma.subscriptionType.findUnique({
             where: { id: subscriptionTypeId },
         });
         if (!subscriptionType) {
-            throw new Error("Subscription type not found");
+            throw new Error('Subscription type not found');
         }
         try {
-            var res = await axios_1.atmosApi.post("merchant/pay/create", {
+            var res = await axios_1.atmosApi.post('merchant/pay/create', {
                 store_id: config_1.env.ATMOS_STORE_ID,
                 account: user.id,
                 amount: (subscriptionType.price * 100).toString(),
                 details: subscriptionType.id.toString(),
-                lang: "en",
+                lang: 'en',
             });
         }
         catch (e) {
-            throw new Error("Error creating transaction");
+            throw new Error('Error creating transaction');
         }
         if (!res.data?.transaction_id)
-            throw new Error("Transaction ID not found");
+            throw new Error('Transaction ID not found');
         const transactionId = res.data.transaction_id;
         const transaction = await this.transactionService.create({
             userId: user.id,
             subscriptionTypeId,
             price: subscriptionType.price,
-            paymentType: "ATMOS",
-            status: "Created",
+            paymentType: 'ATMOS',
+            status: 'Created',
             transactionId: transactionId.toString(),
         });
         return transaction;
@@ -73,8 +73,8 @@ let AtmosService = class AtmosService {
             expiry: dto.expiry,
             store_id: config_1.env.ATMOS_STORE_ID,
         };
-        const result = await axios_1.atmosApi.post("/merchant/pay/pre-apply", preApplyData);
-        if (result.data.result.code !== "OK") {
+        const result = await axios_1.atmosApi.post('/merchant/pay/pre-apply', preApplyData);
+        if (result.data.result.code !== 'OK') {
             throw new http_error_1.HttpError({ message: result.data.result.description });
         }
         return result.data;
@@ -85,8 +85,8 @@ let AtmosService = class AtmosService {
             otp: dto.otp,
             store_id: config_1.env.ATMOS_STORE_ID,
         };
-        const result = await axios_1.atmosApi.post("/merchant/pay/apply", applyData);
-        if (result.data.result.code === "OK") {
+        const result = await axios_1.atmosApi.post('/merchant/pay/apply', applyData);
+        if (result.data.result.code === 'OK') {
             const subscription = await this.transactionService.findOneByTransactionId(result.data.store_transaction.trans_id.toString());
             await this.transactionService.update(subscription.id, {
                 status: client_1.TransactionStatus.Paid,
@@ -103,7 +103,7 @@ let AtmosService = class AtmosService {
         return this.prisma.transaction.findMany({
             where: {
                 status: client_1.TransactionStatus.Created,
-                paymentType: "ATMOS",
+                paymentType: 'ATMOS',
                 createdAt: {
                     gt: new Date(Date.now() - 1000 * 60 * 30),
                 },
@@ -111,23 +111,23 @@ let AtmosService = class AtmosService {
         });
     }
     async checkTransactionStatus(transactionId) {
-        const { data } = await axios_1.atmosApi.post("/merchant/pay/get", {
+        const { data } = await axios_1.atmosApi.post('/merchant/pay/get', {
             store_id: +config_1.env.ATMOS_STORE_ID,
             transaction_id: +transactionId,
         });
         const transaction = await this.transactionService.findOneByTransactionId(transactionId);
         if (!transaction) {
-            throw new Error("Transaction not found");
+            throw new Error('Transaction not found');
         }
         const isSuccess = data.store_transaction?.confirmed === true &&
-            data.store_transaction?.status_message === "Success";
+            data.store_transaction?.status_message === 'Success';
         if (isSuccess) {
-            await this.transactionService.update(transaction.id, { status: "Paid" });
+            await this.transactionService.update(transaction.id, { status: 'Paid' });
         }
-        else if (data.store_transaction?.status_message === "Canceled" ||
-            data.result?.code === "STPIMS-ERR-092") {
+        else if (data.store_transaction?.status_message === 'Canceled' ||
+            data.result?.code === 'STPIMS-ERR-092') {
             await this.transactionService.update(transaction.id, {
-                status: "Canceled",
+                status: 'Canceled',
             });
         }
         return data;
