@@ -70,6 +70,9 @@ let TelegramUpdate = class TelegramUpdate {
     async onCancelSubscriptionCallbackQuery(ctx) {
         this.telegramService.onCancelSubscriptionCallBack(ctx);
     }
+    async onUncancelSubscriptionCallbackQuery(ctx) {
+        this.telegramService.onUncancelSubscriptionCallBack(ctx);
+    }
     async onMySubscriptionsCallbackQuery(ctx) {
         this.telegramService.onMySubscriptionsCallBack(ctx);
     }
@@ -167,6 +170,13 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], TelegramUpdate.prototype, "onCancelSubscriptionCallbackQuery", null);
+__decorate([
+    (0, nestjs_1.CallbackQuery)('uncancel_subscription'),
+    __param(0, (0, nestjs_1.Ctx)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], TelegramUpdate.prototype, "onUncancelSubscriptionCallbackQuery", null);
 __decorate([
     (0, nestjs_1.CallbackQuery)('my_subscriptions'),
     __param(0, (0, nestjs_1.Ctx)()),

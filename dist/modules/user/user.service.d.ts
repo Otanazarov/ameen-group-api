@@ -86,7 +86,7 @@ export declare class UserService implements OnModuleInit {
             inGroup: boolean;
         })[];
     }>;
-    getSubscription(telegramId: number): Promise<{
+    getSubscription(telegramId: number, checkStatus?: boolean): Promise<{
         user: {
             id: number;
             createdAt: Date;
@@ -137,6 +137,21 @@ export declare class UserService implements OnModuleInit {
         alertCount: number;
     }>;
     cancelSubscription(telegramId: string): Promise<{
+        id: number;
+        createdAt: Date;
+        updatedAt: Date;
+        role: import(".prisma/client").$Enums.UserRole;
+        status: import(".prisma/client").$Enums.UserStatus;
+        username: string | null;
+        telegramId: string;
+        firstName: string;
+        lastName: string;
+        lastActiveAt: Date | null;
+        email: string | null;
+        phoneNumber: string;
+        inGroup: boolean;
+    }>;
+    uncancelSubscription(telegramId: string): Promise<{
         id: number;
         createdAt: Date;
         updatedAt: Date;

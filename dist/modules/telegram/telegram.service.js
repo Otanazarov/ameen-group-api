@@ -124,31 +124,67 @@ let TelegramService = class TelegramService {
         }
         try {
             const user = await this.userService.cancelSubscription(ctx.from.id.toString());
-            await ctx.api.banChatMember(config_1.env.TELEGRAM_GROUP_ID, ctx.from.id);
+            try {
+                await ctx.api.banChatMember(config_1.env.TELEGRAM_GROUP_ID, ctx.from.id);
+            }
+            catch { }
             await this.userService.update(user.id, { inGroup: false });
-            await ctx.answerCallbackQuery({ text: "Obuna bekor qilindi" });
+            await ctx.answerCallbackQuery({ text: 'Obuna bekor qilindi' });
             await this.onStartMessageCallBack(ctx);
         }
         catch (e) {
             console.log(e);
-            await ctx.answerCallbackQuery({ text: "Obuna bekor qilishda muomoga chiqdi" });
+            await ctx.answerCallbackQuery({
+                text: 'Obuna bekor qilishda muomoga chiqdi',
+            });
         }
     }
-    async onMySubscriptionsCallBack(ctx) {
-        const subscription = await this.userService.getSubscription(ctx.from.id);
+    async onUncancelSubscriptionCallBack(ctx) {
+        const subscription = await this.userService.getSubscription(ctx.from.id, false);
         if (!subscription) {
             await ctx.answerCallbackQuery({
-                text: '❌ Sizda hozircha faol obuna mavjud emas',
+                text: '❌ Sizda obuna mavjud emas',
                 show_alert: true,
             });
             return;
         }
+        try {
+            await this.userService.uncancelSubscription(ctx.from.id.toString());
+            await ctx.answerCallbackQuery({ text: 'Obuna tiklandi' });
+            const link = await ctx.api.createChatInviteLink(config_1.env.TELEGRAM_GROUP_ID, {
+                name: ctx.from.first_name,
+                creates_join_request: true,
+            });
+            await ctx.reply("🎉 Guruhga qo'shilish uchun havola: " + link.invite_link);
+            await this.onStartMessageCallBack(ctx);
+        }
+        catch (e) {
+            console.log(e);
+            await ctx.answerCallbackQuery({
+                text: 'Obuna tiklashda muomoga chiqdi',
+            });
+        }
+    }
+    async onMySubscriptionsCallBack(ctx) {
+        const subscription = await this.userService.getSubscription(ctx.from.id);
+        const keyboard = new grammy_1.InlineKeyboard();
+        if (!subscription) {
+            const canceledSubscription = await this.userService.getSubscription(ctx.from.id, false);
+            if (canceledSubscription) {
+                keyboard.text('Obunani Tiklash', 'uncancel_subscription');
+                keyboard.row();
+            }
+            keyboard.text('⬅️ Orqaga', 'start_message');
+            await ctx.editMessageText('❌ Sizda hozircha faol obuna mavjud emas', {
+                reply_markup: keyboard,
+            });
+            return;
+        }
+        keyboard.text('Bekor Qilish', 'cancel_subscription');
+        keyboard.row();
+        keyboard.text('⬅️ Orqaga', 'start_message');
         const daysLeft = this.calculateDaysLeft(subscription.expiredDate);
         const subscriptionType = await this.subscriptionTypeService.findOne(subscription.subscriptionTypeId);
-        const keyboard = new grammy_1.InlineKeyboard()
-            .text('Bekor Qilish', 'cancel_subscription')
-            .row()
-            .text('⬅️ Orqaga', 'start_message');
         const text = `📌 Obuna turi: ${subscriptionType.title}
 ` +
             `💰 Narxi: ${subscriptionType.price} so'm

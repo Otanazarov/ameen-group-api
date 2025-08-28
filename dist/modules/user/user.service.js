@@ -101,10 +101,13 @@ let UserService = class UserService {
             data,
         };
     }
-    async getSubscription(telegramId) {
+    async getSubscription(telegramId, checkStatus = true) {
         const subscription = await this.prisma.subscription.findFirst({
             where: {
-                user: { telegramId: telegramId.toString(), status: "SUBSCRIBE" },
+                user: {
+                    telegramId: telegramId.toString(),
+                    status: checkStatus ? "SUBSCRIBE" : undefined,
+                },
                 expiredDate: {
                     gt: new Date(),
                 },
@@ -126,6 +129,14 @@ let UserService = class UserService {
             data: { status: "UNSUBSCRIBE" },
         });
         return user;
+    }
+    async uncancelSubscription(telegramId) {
+        const canceledSubscription = await this.getSubscription(+telegramId, false);
+        if (!canceledSubscription)
+            throw new http_error_1.HttpError({ message: "NOT_CANCELED_SUBSCRIPTION" });
+        return await this.update(canceledSubscription.user.id, {
+            status: "SUBSCRIBE",
+        });
     }
     async findOneByTelegramID(id) {
         const user = await this.prisma.user.findFirst({

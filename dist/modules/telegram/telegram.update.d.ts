@@ -17,6 +17,7 @@ export declare class TelegramUpdate {
     onStartMessageCallbackQuery(ctx: Context): Promise<void>;
     onSubscriptionMenuCallbackQuery(ctx: Context): Promise<void>;
     onCancelSubscriptionCallbackQuery(ctx: Context): Promise<void>;
+    onUncancelSubscriptionCallbackQuery(ctx: Context): Promise<void>;
     onMySubscriptionsCallbackQuery(ctx: Context): Promise<void>;
     onAboutUsCallbackQuery(ctx: Context): Promise<void>;
     onAboutTeacherCallbackQuery(ctx: Context): Promise<void>;

@@ -34,6 +34,7 @@ export declare class TelegramService implements OnModuleInit {
     onSubscriptionMenuCallBack(ctx: Context): Promise<void>;
     onStartMessageCallBack(ctx: Context): Promise<void>;
     onCancelSubscriptionCallBack(ctx: Context): Promise<void>;
+    onUncancelSubscriptionCallBack(ctx: Context): Promise<void>;
     onMySubscriptionsCallBack(ctx: Context): Promise<void>;
     onAboutUsCallBack(ctx: Context): Promise<void>;
     onAboutTeacherCallBack(ctx: Context): Promise<void>;
