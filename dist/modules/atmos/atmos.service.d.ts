@@ -13,16 +13,16 @@ export declare class AtmosService {
         otp: string;
     }): Promise<any>;
     getPendingInvoices(): Promise<{
-        id: number;
-        price: number;
-        transactionId: string | null;
-        status: import(".prisma/client").$Enums.TransactionStatus;
-        paymentType: import(".prisma/client").$Enums.PaymentType;
-        userId: number;
-        subscriptionTypeId: number;
         type: import(".prisma/client").$Enums.TransactionType;
+        id: number;
         createdAt: Date;
         updatedAt: Date;
+        userId: number;
+        subscriptionTypeId: number;
+        price: number;
+        paymentType: import(".prisma/client").$Enums.PaymentType;
+        status: import(".prisma/client").$Enums.TransactionStatus;
+        transactionId: string | null;
     }[]>;
     checkTransactionStatus(transactionId: string): Promise<any>;
 }
