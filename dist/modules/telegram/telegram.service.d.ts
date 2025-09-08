@@ -98,7 +98,6 @@ export declare class TelegramService implements OnModuleInit {
     private handleStartCommand;
     private handleUserRegistration;
     private handlePhoneNumber;
-    private handleEmail;
     private sendSubscriptionMenu;
     sendMessages(): Promise<void>;
     private sendSettingsMessage;

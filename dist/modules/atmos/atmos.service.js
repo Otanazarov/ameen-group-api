@@ -53,6 +53,15 @@ let AtmosService = class AtmosService {
         catch (e) {
             throw new Error('Error creating transaction');
         }
+        console.log(res.config.url);
+        console.log({
+            store_id: config_1.env.ATMOS_STORE_ID,
+            account: user.id,
+            amount: (subscriptionType.price * 100).toString(),
+            details: subscriptionType.id.toString(),
+            lang: 'en',
+        });
+        console.log(res.data);
         if (!res.data?.transaction_id)
             throw new Error('Transaction ID not found');
         const transactionId = res.data.transaction_id;

@@ -513,40 +513,23 @@ export class TelegramService implements OnModuleInit {
         return true;
       }
       ctx.session.phone = ctx.message.contact.phone_number;
-      const user = (
+      let user: any = (
         await this.userService.findAll({ phoneNumber: ctx.session.phone })
       ).data[0];
       if (user) {
-        ctx.session.id = user.id;
         ctx.session.email = user.email || 'skipped';
-        this.sendStartMessage(ctx);
-        return true;
-      }
-      this.sendEmailRequest(ctx);
-      return true;
-    }
-    return false;
-  }
-  private async handleEmail(ctx: Context) {
-    if (!ctx.session.email) {
-      if (ctx.message.text == "⏭ O'tkazish") {
-        ctx.session.email = 'skipped';
       } else {
-        if (!isEmail(ctx.message.text)) {
-          this.sendEmailRequest(ctx, 2);
-          return true;
-        }
-        ctx.session.email = ctx.message.text;
+        user = await this.userService.create({
+          firstName: ctx.session.first_name,
+          lastName: ctx.session.last_name,
+          phoneNumber: ctx.session.phone,
+          username: ctx.from.username,
+          email: ctx.session.email === 'skipped' ? null : ctx.session.email,
+          telegramId: ctx.from.id.toString(),
+        });
       }
-      const user = await this.userService.create({
-        firstName: ctx.session.first_name,
-        lastName: ctx.session.last_name,
-        phoneNumber: ctx.session.phone,
-        username: ctx.from.username,
-        email: ctx.session.email === 'skipped' ? null : ctx.session.email,
-        telegramId: ctx.from.id.toString(),
-      });
       ctx.session.id = user.id;
+
       this.sendStartMessage(ctx);
       return true;
     }
@@ -649,7 +632,6 @@ export class TelegramService implements OnModuleInit {
     if (await this.handleEdit(ctx)) return;
     if (await this.handleUserRegistration(ctx)) return;
     if (await this.handlePhoneNumber(ctx)) return;
-    if (await this.handleEmail(ctx)) return;
   }
   async handleEdit(ctx: Context) {
     if (ctx.session.edit) {
