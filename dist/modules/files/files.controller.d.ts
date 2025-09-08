@@ -7,8 +7,8 @@ export declare class FilesController {
         createdAt: Date;
         updatedAt: Date;
         url: string;
-        size: number;
         mimetype: string;
+        size: number;
         hash: string;
     }>;
 }

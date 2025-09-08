@@ -11,6 +11,7 @@ const common_1 = require("@nestjs/common");
 const atmos_service_1 = require("./atmos.service");
 const atmos_controller_1 = require("./atmos.controller");
 const transaction_module_1 = require("../trasnaction/transaction.module");
+const telegram_module_1 = require("../telegram/telegram.module");
 let AtmosModule = class AtmosModule {
 };
 exports.AtmosModule = AtmosModule;
@@ -18,7 +19,8 @@ exports.AtmosModule = AtmosModule = __decorate([
     (0, common_1.Module)({
         controllers: [atmos_controller_1.AtmosController],
         providers: [atmos_service_1.AtmosService],
-        imports: [transaction_module_1.TransactionModule],
+        imports: [transaction_module_1.TransactionModule, telegram_module_1.TelegramModule],
+        exports: [atmos_service_1.AtmosService],
     })
 ], AtmosModule);
 //# sourceMappingURL=atmos.module.js.map

@@ -27,6 +27,7 @@ import { Context } from './Context.type';
 import { join } from 'path';
 import { OctoBankService } from '../octobank/octobank.service';
 import { ButtonsService } from '../buttons/buttons.service';
+import { AtmosService } from '../atmos/atmos.service';
 
 @Injectable()
 export class TelegramService implements OnModuleInit {
@@ -43,6 +44,8 @@ export class TelegramService implements OnModuleInit {
     private readonly buttonsService: ButtonsService,
     @Inject(forwardRef(() => OctoBankService))
     private readonly octobankService: OctoBankService,
+    @Inject(forwardRef(() => AtmosService))
+    private readonly atmosService: AtmosService,
     @Inject(forwardRef(() => MessageService))
     private readonly messageService: MessageService,
   ) {}
@@ -83,8 +86,7 @@ export class TelegramService implements OnModuleInit {
       subscriptionTypeId,
     );
     if (!result) return;
-    const { subscriptionType, octobank } = result;
-    await this.sendSubscriptionPaymentInfo(ctx, subscriptionType, { octobank });
+    await this.sendSubscriptionPaymentInfo(ctx, result as any);
   }
 
   async onEditCallBack(ctx: Context) {
@@ -126,7 +128,7 @@ export class TelegramService implements OnModuleInit {
     }
   }
 
-  async onMySubscriptionsCallBack(ctx: Context) {
+  async onCancelSubscriptionCallBack(ctx: Context) {
     const subscription = await this.userService.getSubscription(ctx.from.id);
     if (!subscription) {
       await ctx.answerCallbackQuery({
@@ -135,11 +137,80 @@ export class TelegramService implements OnModuleInit {
       });
       return;
     }
+    try {
+      const user = await this.userService.cancelSubscription(
+        ctx.from.id.toString(),
+      );
+      try {
+        await ctx.api.banChatMember(env.TELEGRAM_GROUP_ID, ctx.from.id);
+      } catch {}
+      await this.userService.update(user.id, { inGroup: false });
+      await ctx.answerCallbackQuery({ text: 'Obuna bekor qilindi' });
+      await this.onStartMessageCallBack(ctx);
+    } catch (e) {
+      console.log(e);
+      await ctx.answerCallbackQuery({
+        text: 'Obuna bekor qilishda muomoga chiqdi',
+      });
+    }
+  }
+
+  async onUncancelSubscriptionCallBack(ctx: Context) {
+    const subscription = await this.userService.getSubscription(
+      ctx.from.id,
+      false,
+    );
+    if (!subscription) {
+      await ctx.answerCallbackQuery({
+        text: '❌ Sizda obuna mavjud emas',
+        show_alert: true,
+      });
+      return;
+    }
+    try {
+      await this.userService.uncancelSubscription(ctx.from.id.toString());
+      await ctx.answerCallbackQuery({ text: 'Obuna tiklandi' });
+      const link = await ctx.api.createChatInviteLink(env.TELEGRAM_GROUP_ID, {
+        name: ctx.from.first_name,
+        creates_join_request: true,
+      });
+      await ctx.reply(
+        "🎉 Guruhga qo'shilish uchun havola: " + link.invite_link,
+      );
+      await this.onStartMessageCallBack(ctx);
+    } catch (e) {
+      console.log(e);
+      await ctx.answerCallbackQuery({
+        text: 'Obuna tiklashda muomoga chiqdi',
+      });
+    }
+  }
+
+  async onMySubscriptionsCallBack(ctx: Context) {
+    const subscription = await this.userService.getSubscription(ctx.from.id);
+    const keyboard = new InlineKeyboard();
+    if (!subscription) {
+      const canceledSubscription = await this.userService.getSubscription(
+        ctx.from.id,
+        false,
+      );
+      if (canceledSubscription) {
+        keyboard.text('Obunani Tiklash', 'uncancel_subscription');
+        keyboard.row();
+      }
+      keyboard.text('⬅️ Orqaga', 'start_message');
+      await ctx.editMessageText('❌ Sizda hozircha faol obuna mavjud emas', {
+        reply_markup: keyboard,
+      });
+      return;
+    }
+    keyboard.text('Bekor Qilish', 'cancel_subscription');
+    keyboard.row();
+    keyboard.text('⬅️ Orqaga', 'start_message');
     const daysLeft = this.calculateDaysLeft(subscription.expiredDate);
     const subscriptionType = await this.subscriptionTypeService.findOne(
       subscription.subscriptionTypeId,
     );
-    const keyboard = new InlineKeyboard().text('⬅️ Orqaga', 'start_message');
     const text =
       `📌 Obuna turi: ${subscriptionType.title}
 ` +
@@ -154,43 +225,57 @@ export class TelegramService implements OnModuleInit {
   async onAboutUsCallBack(ctx: Context) {
     const settings = await this.settingsService.findOne();
     const keyboard = new InlineKeyboard().text('⬅️ Orqaga', 'start_message');
-    const filePath = join(
-      __dirname,
-      '..',
-      '..',
-      '..',
-      'public',
-      settings.aboutAminGroupImage.url,
-    );
-    await ctx.editMessageMedia(
-      InputMediaBuilder.photo(new InputFile(filePath)),
-    );
-    await ctx.editMessageCaption({
-      caption: settings.aboutAminGroup,
-      parse_mode: 'Markdown',
-      reply_markup: keyboard,
-    });
+    if (settings.aboutAminGroupImage) {
+      const filePath = join(
+        __dirname,
+        '..',
+        '..',
+        '..',
+        'public',
+        settings.aboutAminGroupImage.url,
+      );
+      await ctx.editMessageMedia(
+        InputMediaBuilder.photo(new InputFile(filePath)),
+      );
+      await ctx.editMessageCaption({
+        caption: settings.aboutAminGroup,
+        parse_mode: 'Markdown',
+        reply_markup: keyboard,
+      });
+    } else {
+      await ctx.editMessageText(settings.aboutAminGroup, {
+        parse_mode: 'Markdown',
+        reply_markup: keyboard,
+      });
+    }
   }
 
   async onAboutTeacherCallBack(ctx: Context) {
     const settings = await this.settingsService.findOne();
     const keyboard = new InlineKeyboard().text('⬅️ Orqaga', 'start_message');
-    const filePath = join(
-      __dirname,
-      '..',
-      '..',
-      '..',
-      'public',
-      settings.aboutKozimxonTorayevImage.url,
-    );
-    await ctx.editMessageMedia(
-      InputMediaBuilder.photo(new InputFile(filePath)),
-    );
-    await ctx.editMessageCaption({
-      caption: settings.aboutKozimxonTorayev,
-      parse_mode: 'Markdown',
-      reply_markup: keyboard,
-    });
+    if (settings.aboutKozimxonTorayevImage) {
+      const filePath = join(
+        __dirname,
+        '..',
+        '..',
+        '..',
+        'public',
+        settings.aboutKozimxonTorayevImage.url,
+      );
+      await ctx.editMessageMedia(
+        InputMediaBuilder.photo(new InputFile(filePath)),
+      );
+      await ctx.editMessageCaption({
+        caption: settings.aboutKozimxonTorayev,
+        parse_mode: 'Markdown',
+        reply_markup: keyboard,
+      });
+    } else {
+      await ctx.editMessageText(settings.aboutKozimxonTorayev, {
+        parse_mode: 'Markdown',
+        reply_markup: keyboard,
+      });
+    }
   }
 
   public async sendMessage(
@@ -324,10 +409,7 @@ export class TelegramService implements OnModuleInit {
     ctx.session.email = user.email || 'skipped';
   }
 
-  private async handleSubscriptionPayment(
-    ctx: Context,
-    subscriptionTypeId: number,
-  ) {
+  async handleSubscriptionPayment(ctx: Context, subscriptionTypeId: number) {
     const subscriptionType =
       await this.subscriptionTypeService.findOne(subscriptionTypeId);
     if (!subscriptionType) {
@@ -354,12 +436,17 @@ export class TelegramService implements OnModuleInit {
       ctx.from.id.toString(),
     );
 
+    const atmos = await this.atmosService.createLink({
+      subscriptionTypeId: subscriptionType.id,
+      userId: user.id,
+    });
+
     const octobank = await this.octobankService.createCheckoutSession({
       subscriptionTypeId,
       userId: user.id,
     });
 
-    return { subscriptionType, octobank };
+    return { subscriptionType, octobank, atmos };
   }
   @Interval(10000)
   async onCron() {
@@ -426,40 +513,23 @@ export class TelegramService implements OnModuleInit {
         return true;
       }
       ctx.session.phone = ctx.message.contact.phone_number;
-      const user = (
+      let user: any = (
         await this.userService.findAll({ phoneNumber: ctx.session.phone })
       ).data[0];
       if (user) {
-        ctx.session.id = user.id;
         ctx.session.email = user.email || 'skipped';
-        this.sendStartMessage(ctx);
-        return true;
-      }
-      this.sendEmailRequest(ctx);
-      return true;
-    }
-    return false;
-  }
-  private async handleEmail(ctx: Context) {
-    if (!ctx.session.email) {
-      if (ctx.message.text == "⏭ O'tkazish") {
-        ctx.session.email = 'skipped';
       } else {
-        if (!isEmail(ctx.message.text)) {
-          this.sendEmailRequest(ctx, 2);
-          return true;
-        }
-        ctx.session.email = ctx.message.text;
+        user = await this.userService.create({
+          firstName: ctx.session.first_name,
+          lastName: ctx.session.last_name,
+          phoneNumber: ctx.session.phone,
+          username: ctx.from.username,
+          email: ctx.session.email === 'skipped' ? null : ctx.session.email,
+          telegramId: ctx.from.id.toString(),
+        });
       }
-      const user = await this.userService.create({
-        firstName: ctx.session.first_name,
-        lastName: ctx.session.last_name,
-        phoneNumber: ctx.session.phone,
-        username: ctx.from.username,
-        email: ctx.session.email === 'skipped' ? null : ctx.session.email,
-        telegramId: ctx.from.id.toString(),
-      });
       ctx.session.id = user.id;
+
       this.sendStartMessage(ctx);
       return true;
     }
@@ -562,7 +632,6 @@ export class TelegramService implements OnModuleInit {
     if (await this.handleEdit(ctx)) return;
     if (await this.handleUserRegistration(ctx)) return;
     if (await this.handlePhoneNumber(ctx)) return;
-    if (await this.handleEmail(ctx)) return;
   }
   async handleEdit(ctx: Context) {
     if (ctx.session.edit) {
@@ -593,14 +662,17 @@ export class TelegramService implements OnModuleInit {
   }
   private async sendSubscriptionPaymentInfo(
     ctx: Context,
-    subscriptionType: any,
-    sessions: Record<
-      string,
-      Awaited<ReturnType<OctoBankService['createCheckoutSession']>>
-    >,
+    sessions: Awaited<ReturnType<this['handleSubscriptionPayment']>>,
   ) {
+    const { subscriptionType } = sessions;
     const keyboard = new InlineKeyboard()
       .url('💳 Visa/Mastercard', sessions.octobank.octo_pay_url)
+      .row()
+      .url(
+        '💳 ATMOS',
+        `${env.FRONTEND_URL}atmos/card?transaction_id=` +
+          sessions.atmos.transactionId,
+      )
       .row()
       .text('⬅️ Orqaga', 'subscribe_menu');
     await ctx.deleteMessage();

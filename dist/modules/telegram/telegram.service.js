@@ -27,8 +27,9 @@ const user_service_1 = require("../user/user.service");
 const path_1 = require("path");
 const octobank_service_1 = require("../octobank/octobank.service");
 const buttons_service_1 = require("../buttons/buttons.service");
+const atmos_service_1 = require("../atmos/atmos.service");
 let TelegramService = class TelegramService {
-    constructor(bot, userService, prismaService, subscriptionTypeService, settingsService, buttonsService, octobankService, messageService) {
+    constructor(bot, userService, prismaService, subscriptionTypeService, settingsService, buttonsService, octobankService, atmosService, messageService) {
         this.bot = bot;
         this.userService = userService;
         this.prismaService = prismaService;
@@ -36,6 +37,7 @@ let TelegramService = class TelegramService {
         this.settingsService = settingsService;
         this.buttonsService = buttonsService;
         this.octobankService = octobankService;
+        this.atmosService = atmosService;
         this.messageService = messageService;
         this.cronRunning = false;
         this.MS_PER_DAY = 1000 * 60 * 60 * 24;
@@ -70,8 +72,7 @@ let TelegramService = class TelegramService {
         const result = await this.handleSubscriptionPayment(ctx, subscriptionTypeId);
         if (!result)
             return;
-        const { subscriptionType, octobank } = result;
-        await this.sendSubscriptionPaymentInfo(ctx, subscriptionType, { octobank });
+        await this.sendSubscriptionPaymentInfo(ctx, result);
     }
     async onEditCallBack(ctx) {
         const editName = ctx.match[1];
@@ -112,7 +113,7 @@ let TelegramService = class TelegramService {
             await ctx.reply(text, { reply_markup: this.DEFAULT_KEYBOARD });
         }
     }
-    async onMySubscriptionsCallBack(ctx) {
+    async onCancelSubscriptionCallBack(ctx) {
         const subscription = await this.userService.getSubscription(ctx.from.id);
         if (!subscription) {
             await ctx.answerCallbackQuery({
@@ -121,9 +122,69 @@ let TelegramService = class TelegramService {
             });
             return;
         }
+        try {
+            const user = await this.userService.cancelSubscription(ctx.from.id.toString());
+            try {
+                await ctx.api.banChatMember(config_1.env.TELEGRAM_GROUP_ID, ctx.from.id);
+            }
+            catch { }
+            await this.userService.update(user.id, { inGroup: false });
+            await ctx.answerCallbackQuery({ text: 'Obuna bekor qilindi' });
+            await this.onStartMessageCallBack(ctx);
+        }
+        catch (e) {
+            console.log(e);
+            await ctx.answerCallbackQuery({
+                text: 'Obuna bekor qilishda muomoga chiqdi',
+            });
+        }
+    }
+    async onUncancelSubscriptionCallBack(ctx) {
+        const subscription = await this.userService.getSubscription(ctx.from.id, false);
+        if (!subscription) {
+            await ctx.answerCallbackQuery({
+                text: '❌ Sizda obuna mavjud emas',
+                show_alert: true,
+            });
+            return;
+        }
+        try {
+            await this.userService.uncancelSubscription(ctx.from.id.toString());
+            await ctx.answerCallbackQuery({ text: 'Obuna tiklandi' });
+            const link = await ctx.api.createChatInviteLink(config_1.env.TELEGRAM_GROUP_ID, {
+                name: ctx.from.first_name,
+                creates_join_request: true,
+            });
+            await ctx.reply("🎉 Guruhga qo'shilish uchun havola: " + link.invite_link);
+            await this.onStartMessageCallBack(ctx);
+        }
+        catch (e) {
+            console.log(e);
+            await ctx.answerCallbackQuery({
+                text: 'Obuna tiklashda muomoga chiqdi',
+            });
+        }
+    }
+    async onMySubscriptionsCallBack(ctx) {
+        const subscription = await this.userService.getSubscription(ctx.from.id);
+        const keyboard = new grammy_1.InlineKeyboard();
+        if (!subscription) {
+            const canceledSubscription = await this.userService.getSubscription(ctx.from.id, false);
+            if (canceledSubscription) {
+                keyboard.text('Obunani Tiklash', 'uncancel_subscription');
+                keyboard.row();
+            }
+            keyboard.text('⬅️ Orqaga', 'start_message');
+            await ctx.editMessageText('❌ Sizda hozircha faol obuna mavjud emas', {
+                reply_markup: keyboard,
+            });
+            return;
+        }
+        keyboard.text('Bekor Qilish', 'cancel_subscription');
+        keyboard.row();
+        keyboard.text('⬅️ Orqaga', 'start_message');
         const daysLeft = this.calculateDaysLeft(subscription.expiredDate);
         const subscriptionType = await this.subscriptionTypeService.findOne(subscription.subscriptionTypeId);
-        const keyboard = new grammy_1.InlineKeyboard().text('⬅️ Orqaga', 'start_message');
         const text = `📌 Obuna turi: ${subscriptionType.title}
 ` +
             `💰 Narxi: ${subscriptionType.price} so'm
@@ -136,24 +197,40 @@ let TelegramService = class TelegramService {
     async onAboutUsCallBack(ctx) {
         const settings = await this.settingsService.findOne();
         const keyboard = new grammy_1.InlineKeyboard().text('⬅️ Orqaga', 'start_message');
-        const filePath = (0, path_1.join)(__dirname, '..', '..', '..', 'public', settings.aboutAminGroupImage.url);
-        await ctx.editMessageMedia(grammy_1.InputMediaBuilder.photo(new grammy_1.InputFile(filePath)));
-        await ctx.editMessageCaption({
-            caption: settings.aboutAminGroup,
-            parse_mode: 'Markdown',
-            reply_markup: keyboard,
-        });
+        if (settings.aboutAminGroupImage) {
+            const filePath = (0, path_1.join)(__dirname, '..', '..', '..', 'public', settings.aboutAminGroupImage.url);
+            await ctx.editMessageMedia(grammy_1.InputMediaBuilder.photo(new grammy_1.InputFile(filePath)));
+            await ctx.editMessageCaption({
+                caption: settings.aboutAminGroup,
+                parse_mode: 'Markdown',
+                reply_markup: keyboard,
+            });
+        }
+        else {
+            await ctx.editMessageText(settings.aboutAminGroup, {
+                parse_mode: 'Markdown',
+                reply_markup: keyboard,
+            });
+        }
     }
     async onAboutTeacherCallBack(ctx) {
         const settings = await this.settingsService.findOne();
         const keyboard = new grammy_1.InlineKeyboard().text('⬅️ Orqaga', 'start_message');
-        const filePath = (0, path_1.join)(__dirname, '..', '..', '..', 'public', settings.aboutKozimxonTorayevImage.url);
-        await ctx.editMessageMedia(grammy_1.InputMediaBuilder.photo(new grammy_1.InputFile(filePath)));
-        await ctx.editMessageCaption({
-            caption: settings.aboutKozimxonTorayev,
-            parse_mode: 'Markdown',
-            reply_markup: keyboard,
-        });
+        if (settings.aboutKozimxonTorayevImage) {
+            const filePath = (0, path_1.join)(__dirname, '..', '..', '..', 'public', settings.aboutKozimxonTorayevImage.url);
+            await ctx.editMessageMedia(grammy_1.InputMediaBuilder.photo(new grammy_1.InputFile(filePath)));
+            await ctx.editMessageCaption({
+                caption: settings.aboutKozimxonTorayev,
+                parse_mode: 'Markdown',
+                reply_markup: keyboard,
+            });
+        }
+        else {
+            await ctx.editMessageText(settings.aboutKozimxonTorayev, {
+                parse_mode: 'Markdown',
+                reply_markup: keyboard,
+            });
+        }
     }
     async sendMessage(message) {
         try {
@@ -276,11 +353,15 @@ let TelegramService = class TelegramService {
             return;
         }
         const user = await this.userService.findOneByTelegramID(ctx.from.id.toString());
+        const atmos = await this.atmosService.createLink({
+            subscriptionTypeId: subscriptionType.id,
+            userId: user.id,
+        });
         const octobank = await this.octobankService.createCheckoutSession({
             subscriptionTypeId,
             userId: user.id,
         });
-        return { subscriptionType, octobank };
+        return { subscriptionType, octobank, atmos };
     }
     async onCron() {
         if (this.cronRunning)
@@ -340,38 +421,20 @@ let TelegramService = class TelegramService {
                 return true;
             }
             ctx.session.phone = ctx.message.contact.phone_number;
-            const user = (await this.userService.findAll({ phoneNumber: ctx.session.phone })).data[0];
+            let user = (await this.userService.findAll({ phoneNumber: ctx.session.phone })).data[0];
             if (user) {
-                ctx.session.id = user.id;
                 ctx.session.email = user.email || 'skipped';
-                this.sendStartMessage(ctx);
-                return true;
-            }
-            this.sendEmailRequest(ctx);
-            return true;
-        }
-        return false;
-    }
-    async handleEmail(ctx) {
-        if (!ctx.session.email) {
-            if (ctx.message.text == "⏭ O'tkazish") {
-                ctx.session.email = 'skipped';
             }
             else {
-                if (!(0, class_validator_1.isEmail)(ctx.message.text)) {
-                    this.sendEmailRequest(ctx, 2);
-                    return true;
-                }
-                ctx.session.email = ctx.message.text;
+                user = await this.userService.create({
+                    firstName: ctx.session.first_name,
+                    lastName: ctx.session.last_name,
+                    phoneNumber: ctx.session.phone,
+                    username: ctx.from.username,
+                    email: ctx.session.email === 'skipped' ? null : ctx.session.email,
+                    telegramId: ctx.from.id.toString(),
+                });
             }
-            const user = await this.userService.create({
-                firstName: ctx.session.first_name,
-                lastName: ctx.session.last_name,
-                phoneNumber: ctx.session.phone,
-                username: ctx.from.username,
-                email: ctx.session.email === 'skipped' ? null : ctx.session.email,
-                telegramId: ctx.from.id.toString(),
-            });
             ctx.session.id = user.id;
             this.sendStartMessage(ctx);
             return true;
@@ -470,8 +533,6 @@ let TelegramService = class TelegramService {
             return;
         if (await this.handlePhoneNumber(ctx))
             return;
-        if (await this.handleEmail(ctx))
-            return;
     }
     async handleEdit(ctx) {
         if (ctx.session.edit) {
@@ -503,9 +564,13 @@ let TelegramService = class TelegramService {
         }
         return false;
     }
-    async sendSubscriptionPaymentInfo(ctx, subscriptionType, sessions) {
+    async sendSubscriptionPaymentInfo(ctx, sessions) {
+        const { subscriptionType } = sessions;
         const keyboard = new grammy_1.InlineKeyboard()
             .url('💳 Visa/Mastercard', sessions.octobank.octo_pay_url)
+            .row()
+            .url('💳 ATMOS', `${config_1.env.FRONTEND_URL}atmos/card?transaction_id=` +
+            sessions.atmos.transactionId)
             .row()
             .text('⬅️ Orqaga', 'subscribe_menu');
         await ctx.deleteMessage();
@@ -613,7 +678,8 @@ exports.TelegramService = TelegramService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, nestjs_1.InjectBot)()),
     __param(6, (0, common_1.Inject)((0, common_1.forwardRef)(() => octobank_service_1.OctoBankService))),
-    __param(7, (0, common_1.Inject)((0, common_1.forwardRef)(() => message_service_1.MessageService))),
+    __param(7, (0, common_1.Inject)((0, common_1.forwardRef)(() => atmos_service_1.AtmosService))),
+    __param(8, (0, common_1.Inject)((0, common_1.forwardRef)(() => message_service_1.MessageService))),
     __metadata("design:paramtypes", [grammy_1.Bot,
         user_service_1.UserService,
         prisma_service_1.PrismaService,
@@ -621,6 +687,7 @@ exports.TelegramService = TelegramService = __decorate([
         settings_service_1.SettingsService,
         buttons_service_1.ButtonsService,
         octobank_service_1.OctoBankService,
+        atmos_service_1.AtmosService,
         message_service_1.MessageService])
 ], TelegramService);
 //# sourceMappingURL=telegram.service.js.map

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable, Redirect } from '@nestjs/common';
 import { CreateAtmosDto } from './dto/create.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { env } from 'src/common/config';
@@ -6,12 +6,15 @@ import { atmosApi } from 'src/common/utils/axios';
 import { TransactionService } from '../trasnaction/transaction.service';
 import { TransactionStatus } from '@prisma/client';
 import { PreApplyAtmosDto } from './dto/preapply.dto';
+import { HttpError } from 'src/common/exception/http.error';
+import { TelegramService } from '../telegram/telegram.service';
 
 @Injectable()
 export class AtmosService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly transactionService: TransactionService,
+    private readonly telegramService: TelegramService,
   ) {}
 
   async createLink(dto: CreateAtmosDto) {
@@ -31,16 +34,31 @@ export class AtmosService {
     if (!subscriptionType) {
       throw new Error('Subscription type not found');
     }
-    const res = await atmosApi.post('merchant/pay/create', {
-      store_id: env.ATMOS_STORE_ID, // your store ID
-      account: userId, // your telegram ID or internal user ID
-      amount: subscriptionType.price, // in tiyins (i.e., cents)
+    try {
+      var res = await atmosApi.post('merchant/pay/create', {
+        store_id: env.ATMOS_STORE_ID,
+        account: user.id,
+        amount: (subscriptionType.price * 100).toString(),
+        details: subscriptionType.id.toString(),
+        lang: 'en',
+      });
+    } catch (e) {
+      throw new Error('Error creating transaction');
+    }
+    console.log(res.config.url);
+    console.log({
+      store_id: env.ATMOS_STORE_ID,
+      account: user.id,
+      amount: (subscriptionType.price * 100).toString(),
       details: subscriptionType.id.toString(),
+      lang: 'en',
     });
+    console.log(res.data);
+    if (!res.data?.transaction_id) throw new Error('Transaction ID not found');
     const transactionId = res.data.transaction_id;
 
-    await this.transactionService.create({
-      userId,
+    const transaction = await this.transactionService.create({
+      userId: user.id,
       subscriptionTypeId,
       price: subscriptionType.price,
       paymentType: 'ATMOS',
@@ -48,7 +66,7 @@ export class AtmosService {
       transactionId: transactionId.toString(),
     });
 
-    return res.data;
+    return transaction;
   }
   async preApplyTransaction(dto: PreApplyAtmosDto): Promise<any> {
     const preApplyData = {
@@ -59,6 +77,9 @@ export class AtmosService {
     };
 
     const result = await atmosApi.post('/merchant/pay/pre-apply', preApplyData);
+    if (result.data.result.code !== 'OK') {
+      throw new HttpError({ message: result.data.result.description });
+    }
 
     return result.data;
   }
@@ -67,23 +88,26 @@ export class AtmosService {
     otp: string;
   }): Promise<any> {
     const applyData = {
-      transaction_id: dto.transaction_id,
+      transaction_id: dto.transaction_id.toString(),
       otp: dto.otp,
       store_id: env.ATMOS_STORE_ID,
     };
 
-    const result = await atmosApi.post('/merchant/pay/confirm', applyData);
-    if (!result.data.store_transaction) return result.data;
-    if (result.data.store_transaction.status_message == 'Success') {
+    const result = await atmosApi.post('/merchant/pay/apply', applyData);
+    if (result.data.result.code === 'OK') {
       const subscription = await this.transactionService.findOneByTransactionId(
         result.data.store_transaction.trans_id.toString(),
       );
       await this.transactionService.update(subscription.id, {
         status: TransactionStatus.Paid,
       });
-    }
 
-    return result.data;
+      return {
+        redirect: `https://t.me/${this.telegramService.bot.botInfo.username}?start=success`,
+      };
+    } else {
+      throw new HttpError({ message: result.data.result.description });
+    }
   }
 
   async getPendingInvoices() {

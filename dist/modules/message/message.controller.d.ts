@@ -110,10 +110,10 @@ export declare class MessageController {
             };
         } & {
             id: string;
-            messageId: number;
             buttonId: number;
             row: number;
             column: number;
+            messageId: number;
         })[];
     } & {
         id: number;

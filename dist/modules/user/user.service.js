@@ -101,10 +101,13 @@ let UserService = class UserService {
             data,
         };
     }
-    async getSubscription(telegramId) {
+    async getSubscription(telegramId, checkStatus = true) {
         const subscription = await this.prisma.subscription.findFirst({
             where: {
-                user: { telegramId: telegramId.toString() },
+                user: {
+                    telegramId: telegramId.toString(),
+                    status: checkStatus ? 'SUBSCRIBE' : undefined,
+                },
                 expiredDate: {
                     gt: new Date(),
                 },
@@ -112,6 +115,28 @@ let UserService = class UserService {
             include: { subscriptionType: true, user: true, transaction: true },
         });
         return subscription;
+    }
+    async cancelSubscription(telegramId) {
+        let user = await this.prisma.user.findUnique({ where: { telegramId } });
+        if (!user)
+            throw new http_error_1.HttpError({ message: 'USER_NOT_FOUND' });
+        if (user.status === 'UNSUBSCRIBE')
+            throw new http_error_1.HttpError({ message: 'ALREADY_UNSUBSCRIBED' });
+        if (user.status !== 'SUBSCRIBE')
+            throw new http_error_1.HttpError({ message: 'NOT_SUBSCRIBED' });
+        user = await this.prisma.user.update({
+            where: { id: user.id },
+            data: { status: 'UNSUBSCRIBE' },
+        });
+        return user;
+    }
+    async uncancelSubscription(telegramId) {
+        const canceledSubscription = await this.getSubscription(+telegramId, false);
+        if (!canceledSubscription)
+            throw new http_error_1.HttpError({ message: 'NOT_CANCELED_SUBSCRIPTION' });
+        return await this.update(canceledSubscription.user.id, {
+            status: 'SUBSCRIBE',
+        });
     }
     async findOneByTelegramID(id) {
         const user = await this.prisma.user.findFirst({

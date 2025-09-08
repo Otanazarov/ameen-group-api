@@ -8,6 +8,9 @@ import { HttpExceptionFilter } from './common/filter/httpException.filter';
 import { ApiSwaggerOptions } from './common/swagger/config.swagger';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
+import { sign } from 'jsonwebtoken';
+import { Role } from './common/auth/roles/role.enum';
+import { apiReference } from '@scalar/nestjs-api-reference';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -41,6 +44,36 @@ async function bootstrap() {
     SwaggerModule.setup('docs', app, ApiDocs, {
       customCssUrl: './public/swagger.css',
     });
+    app.use(
+      '/ui',
+      apiReference({
+        content: ApiDocs,
+        theme: 'bluePlanet',
+        layout: 'modern',
+        defaultHttpClient: {
+          targetKey: 'node',
+          clientKey: 'ofetch',
+        },
+        persistAuth: true,
+        authentication: {
+          preferredSecurityScheme: 'token',
+          securitySchemes: {
+            token: {
+              token: sign(
+                {
+                  id: 1,
+                  role: Role.Admin,
+                  ignoreVersion: true,
+                  tokenVersion: 0,
+                },
+                env.ACCESS_TOKEN_SECRET,
+                {},
+              ),
+            },
+          },
+        },
+      }),
+    );
   }
   await app.listen(env.PORT || 3000);
 }

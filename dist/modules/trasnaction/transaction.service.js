@@ -15,6 +15,7 @@ const prisma_service_1 = require("../prisma/prisma.service");
 const client_1 = require("@prisma/client");
 const subscription_service_1 = require("../subscription/subscription.service");
 const subscription_type_service_1 = require("../subscription-type/subscription-type.service");
+const http_error_1 = require("../../common/exception/http.error");
 let TransactionService = class TransactionService {
     constructor(prisma, subscriptionService, subscriptionTypeService) {
         this.prisma = prisma;
@@ -26,13 +27,13 @@ let TransactionService = class TransactionService {
             where: { id: createTransactionDto.userId },
         });
         if (!user) {
-            throw new Error('User not found');
+            throw new http_error_1.HttpError({ message: 'User not found' });
         }
         const subscriptionType = await this.prisma.subscriptionType.findFirst({
             where: { id: createTransactionDto.subscriptionTypeId },
         });
         if (!subscriptionType) {
-            throw new Error('Subscription type not found');
+            throw new http_error_1.HttpError({ message: 'Subscription type not found' });
         }
         if (subscriptionType.oneTime) {
             const existingSubscription = await this.prisma.subscription.findFirst({
@@ -44,7 +45,9 @@ let TransactionService = class TransactionService {
                 include: { subscriptionType: true },
             });
             if (existingSubscription) {
-                throw new Error('You already have an this subscription');
+                throw new http_error_1.HttpError({
+                    message: 'You already have an this subscription',
+                });
             }
         }
         const transaction = await this.prisma.transaction.create({
@@ -149,7 +152,7 @@ let TransactionService = class TransactionService {
             },
         });
         if (!transaction) {
-            throw new Error('Transaction not found');
+            throw new http_error_1.HttpError({ message: 'Transaction not found' });
         }
         return transaction;
     }
@@ -162,7 +165,7 @@ let TransactionService = class TransactionService {
             },
         });
         if (!transaction) {
-            throw new Error('Transaction not found');
+            throw new http_error_1.HttpError({ message: 'Transaction not found' });
         }
         return transaction;
     }
@@ -171,7 +174,7 @@ let TransactionService = class TransactionService {
             where: { id },
         });
         if (!transaction) {
-            throw new Error('Transaction not found');
+            throw new http_error_1.HttpError({ message: 'Transaction not found' });
         }
         transaction = await this.prisma.transaction.update({
             where: { id },
@@ -200,7 +203,7 @@ let TransactionService = class TransactionService {
             where: { id },
         });
         if (!transaction) {
-            throw new Error('Transaction not found');
+            throw new http_error_1.HttpError({ message: 'Transaction not found' });
         }
         return await this.prisma.transaction.delete({
             where: { id },

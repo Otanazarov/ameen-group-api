@@ -7,6 +7,7 @@ import { SettingsModule } from '../settings/settings.module';
 import { MessageModule } from '../message/message.module';
 import { OctoBankModule } from '../octobank/octobank.module';
 import { ButtonsModule } from '../buttons/buttons.module';
+import { AtmosModule } from '../atmos/atmos.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { ButtonsModule } from '../buttons/buttons.module';
     SettingsModule,
     ButtonsModule,
     forwardRef(() => OctoBankModule),
+    forwardRef(() => AtmosModule),
     forwardRef(() => MessageModule),
   ],
   providers: [TelegramService, TelegramUpdate],

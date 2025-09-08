@@ -7,8 +7,8 @@ export declare class FilesService {
         createdAt: Date;
         updatedAt: Date;
         url: string;
-        size: number;
         mimetype: string;
+        size: number;
         hash: string;
     }>;
 }

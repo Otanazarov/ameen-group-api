@@ -16,10 +16,13 @@ const config_1 = require("../../common/config");
 const axios_1 = require("../../common/utils/axios");
 const transaction_service_1 = require("../trasnaction/transaction.service");
 const client_1 = require("@prisma/client");
+const http_error_1 = require("../../common/exception/http.error");
+const telegram_service_1 = require("../telegram/telegram.service");
 let AtmosService = class AtmosService {
-    constructor(prisma, transactionService) {
+    constructor(prisma, transactionService, telegramService) {
         this.prisma = prisma;
         this.transactionService = transactionService;
+        this.telegramService = telegramService;
     }
     async createLink(dto) {
         const { userId, subscriptionTypeId } = dto;
@@ -38,22 +41,39 @@ let AtmosService = class AtmosService {
         if (!subscriptionType) {
             throw new Error('Subscription type not found');
         }
-        const res = await axios_1.atmosApi.post('merchant/pay/create', {
+        try {
+            var res = await axios_1.atmosApi.post('merchant/pay/create', {
+                store_id: config_1.env.ATMOS_STORE_ID,
+                account: user.id,
+                amount: (subscriptionType.price * 100).toString(),
+                details: subscriptionType.id.toString(),
+                lang: 'en',
+            });
+        }
+        catch (e) {
+            throw new Error('Error creating transaction');
+        }
+        console.log(res.config.url);
+        console.log({
             store_id: config_1.env.ATMOS_STORE_ID,
-            account: userId,
-            amount: subscriptionType.price,
+            account: user.id,
+            amount: (subscriptionType.price * 100).toString(),
             details: subscriptionType.id.toString(),
+            lang: 'en',
         });
+        console.log(res.data);
+        if (!res.data?.transaction_id)
+            throw new Error('Transaction ID not found');
         const transactionId = res.data.transaction_id;
-        await this.transactionService.create({
-            userId,
+        const transaction = await this.transactionService.create({
+            userId: user.id,
             subscriptionTypeId,
             price: subscriptionType.price,
             paymentType: 'ATMOS',
             status: 'Created',
             transactionId: transactionId.toString(),
         });
-        return res.data;
+        return transaction;
     }
     async preApplyTransaction(dto) {
         const preApplyData = {
@@ -63,24 +83,30 @@ let AtmosService = class AtmosService {
             store_id: config_1.env.ATMOS_STORE_ID,
         };
         const result = await axios_1.atmosApi.post('/merchant/pay/pre-apply', preApplyData);
+        if (result.data.result.code !== 'OK') {
+            throw new http_error_1.HttpError({ message: result.data.result.description });
+        }
         return result.data;
     }
     async applyTransaction(dto) {
         const applyData = {
-            transaction_id: dto.transaction_id,
+            transaction_id: dto.transaction_id.toString(),
             otp: dto.otp,
             store_id: config_1.env.ATMOS_STORE_ID,
         };
-        const result = await axios_1.atmosApi.post('/merchant/pay/confirm', applyData);
-        if (!result.data.store_transaction)
-            return result.data;
-        if (result.data.store_transaction.status_message == 'Success') {
+        const result = await axios_1.atmosApi.post('/merchant/pay/apply', applyData);
+        if (result.data.result.code === 'OK') {
             const subscription = await this.transactionService.findOneByTransactionId(result.data.store_transaction.trans_id.toString());
             await this.transactionService.update(subscription.id, {
                 status: client_1.TransactionStatus.Paid,
             });
+            return {
+                redirect: `https://t.me/${this.telegramService.bot.botInfo.username}?start=success`,
+            };
         }
-        return result.data;
+        else {
+            throw new http_error_1.HttpError({ message: result.data.result.description });
+        }
     }
     async getPendingInvoices() {
         return this.prisma.transaction.findMany({
@@ -120,6 +146,7 @@ exports.AtmosService = AtmosService;
 exports.AtmosService = AtmosService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
-        transaction_service_1.TransactionService])
+        transaction_service_1.TransactionService,
+        telegram_service_1.TelegramService])
 ], AtmosService);
 //# sourceMappingURL=atmos.service.js.map

@@ -6,6 +6,7 @@ export const env = cleanEnv(process.env, {
   PORT: num(),
   ENV: str(),
   BACKEND_URL: str(),
+  FRONTEND_URL: str(),
 
   ACCESS_TOKEN_SECRET: str(),
   REFRESH_TOKEN_SECRET: str(),

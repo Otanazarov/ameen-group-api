@@ -8,6 +8,7 @@ exports.env = (0, envalid_1.cleanEnv)(process.env, {
     PORT: (0, envalid_1.num)(),
     ENV: (0, envalid_1.str)(),
     BACKEND_URL: (0, envalid_1.str)(),
+    FRONTEND_URL: (0, envalid_1.str)(),
     ACCESS_TOKEN_SECRET: (0, envalid_1.str)(),
     REFRESH_TOKEN_SECRET: (0, envalid_1.str)(),
     PASSPHRASE: (0, envalid_1.str)(),

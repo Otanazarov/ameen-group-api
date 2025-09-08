@@ -86,6 +86,18 @@ export class TelegramUpdate {
     this.telegramService.onSubscriptionMenuCallBack(ctx);
   }
 
+  @CallbackQuery('cancel_subscription')
+  async onCancelSubscriptionCallbackQuery(@Ctx() ctx: Context): Promise<void> {
+    this.telegramService.onCancelSubscriptionCallBack(ctx);
+  }
+
+  @CallbackQuery('uncancel_subscription')
+  async onUncancelSubscriptionCallbackQuery(
+    @Ctx() ctx: Context,
+  ): Promise<void> {
+    this.telegramService.onUncancelSubscriptionCallBack(ctx);
+  }
+
   @CallbackQuery('my_subscriptions')
   async onMySubscriptionsCallbackQuery(@Ctx() ctx: Context): Promise<void> {
     this.telegramService.onMySubscriptionsCallBack(ctx);

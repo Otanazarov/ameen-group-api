@@ -7,6 +7,7 @@ import { Prisma, Transaction, TransactionStatus } from '@prisma/client';
 import { SubscriptionService } from '../subscription/subscription.service';
 import { SubscriptionTypeService } from '../subscription-type/subscription-type.service';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
+import { HttpError } from 'src/common/exception/http.error';
 
 @Injectable()
 export class TransactionService {
@@ -21,14 +22,14 @@ export class TransactionService {
       where: { id: createTransactionDto.userId },
     });
     if (!user) {
-      throw new Error('User not found');
+      throw new HttpError({ message: 'User not found' });
     }
 
     const subscriptionType = await this.prisma.subscriptionType.findFirst({
       where: { id: createTransactionDto.subscriptionTypeId },
     });
     if (!subscriptionType) {
-      throw new Error('Subscription type not found');
+      throw new HttpError({ message: 'Subscription type not found' });
     }
     if (subscriptionType.oneTime) {
       const existingSubscription = await this.prisma.subscription.findFirst({
@@ -41,7 +42,9 @@ export class TransactionService {
       });
 
       if (existingSubscription) {
-        throw new Error('You already have an this subscription');
+        throw new HttpError({
+          message: 'You already have an this subscription',
+        });
       }
     }
     const transaction = await this.prisma.transaction.create({
@@ -89,7 +92,6 @@ export class TransactionService {
       if (minPrice) where.price.gte = minPrice;
       if (maxPrice) where.price.lte = maxPrice;
     }
-    
 
     if (oneTime !== undefined) {
       where.subscriptionType = { oneTime };
@@ -98,15 +100,14 @@ export class TransactionService {
     if (phone || username) {
       where.user = {};
     }
-    
+
     if (phone) {
       where.user.phoneNumber = { contains: phone };
     }
-    
+
     if (username) {
       where.user.username = { contains: username };
     }
-
 
     if (subscriptionTypeId) {
       where.subscriptionTypeId = subscriptionTypeId;
@@ -178,7 +179,7 @@ export class TransactionService {
       },
     });
     if (!transaction) {
-      throw new Error('Transaction not found');
+      throw new HttpError({ message: 'Transaction not found' });
     }
     return transaction;
   }
@@ -192,7 +193,7 @@ export class TransactionService {
       },
     });
     if (!transaction) {
-      throw new Error('Transaction not found');
+      throw new HttpError({ message: 'Transaction not found' });
     }
     return transaction;
   }
@@ -202,7 +203,7 @@ export class TransactionService {
       where: { id },
     });
     if (!transaction) {
-      throw new Error('Transaction not found');
+      throw new HttpError({ message: 'Transaction not found' });
     }
 
     transaction = await this.prisma.transaction.update({
@@ -239,7 +240,7 @@ export class TransactionService {
       where: { id },
     });
     if (!transaction) {
-      throw new Error('Transaction not found');
+      throw new HttpError({ message: 'Transaction not found' });
     }
     return await this.prisma.transaction.delete({
       where: { id },
