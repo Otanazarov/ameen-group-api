@@ -34,6 +34,13 @@ __decorate([
     __metadata("design:type", String)
 ], UpdateSubscriptionTypeDto.prototype, "description", void 0);
 __decorate([
+    (0, swagger_1.ApiPropertyOptional)({ example: 30 }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsNotEmpty)(),
+    (0, class_validator_1.IsNumber)(),
+    __metadata("design:type", Number)
+], UpdateSubscriptionTypeDto.prototype, "expireDays", void 0);
+__decorate([
     (0, swagger_1.ApiPropertyOptional)({ example: [101001, 101002] }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsArray)(),

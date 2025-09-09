@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, IsNumber, IsArray } from 'class-validator';
+import { IsOptional, IsString, IsNumber, IsArray, IsNotEmpty } from 'class-validator';
 
 export class UpdateSubscriptionTypeDto {
   @ApiPropertyOptional({ example: 25000 })
@@ -16,6 +16,13 @@ export class UpdateSubscriptionTypeDto {
   @IsOptional()
   @IsString()
   description?: string;
+
+  @ApiPropertyOptional({ example: 30 })
+  @IsOptional()
+  @IsNotEmpty()
+  @IsNumber()
+  expireDays?: number;
+
 
   @ApiPropertyOptional({ example: [101001, 101002] })
   @IsOptional()
