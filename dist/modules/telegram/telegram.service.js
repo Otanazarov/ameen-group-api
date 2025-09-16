@@ -26,16 +26,14 @@ const subscription_type_service_1 = require("../subscription-type/subscription-t
 const user_service_1 = require("../user/user.service");
 const path_1 = require("path");
 const octobank_service_1 = require("../octobank/octobank.service");
-const buttons_service_1 = require("../buttons/buttons.service");
 const atmos_service_1 = require("../atmos/atmos.service");
 let TelegramService = class TelegramService {
-    constructor(bot, userService, prismaService, subscriptionTypeService, settingsService, buttonsService, octobankService, atmosService, messageService) {
+    constructor(bot, userService, prismaService, subscriptionTypeService, settingsService, octobankService, atmosService, messageService) {
         this.bot = bot;
         this.userService = userService;
         this.prismaService = prismaService;
         this.subscriptionTypeService = subscriptionTypeService;
         this.settingsService = settingsService;
-        this.buttonsService = buttonsService;
         this.octobankService = octobankService;
         this.atmosService = atmosService;
         this.messageService = messageService;
@@ -103,7 +101,7 @@ let TelegramService = class TelegramService {
         await this.sendSubscriptionMenu(ctx);
     }
     async onStartMessageCallBack(ctx) {
-        const text = `👋 Salom! Botga xush kelibsiz!`;
+        const text = (await this.settingsService.findOne()).startMessage;
         await this.setDefaultKeyboard();
         try {
             await ctx.editMessageText(text, { reply_markup: this.DEFAULT_KEYBOARD });
@@ -627,11 +625,9 @@ ${subscriptionType.description}`, { parse_mode: 'Markdown', reply_markup: keyboa
             this.bot.api.unbanChatMember(config_1.env.TELEGRAM_GROUP_ID, +user.telegramId);
         }
     }
-    async sendStartMessage(ctx, type = 1) {
+    async sendStartMessage(ctx) {
         await this.setDefaultKeyboard();
-        const text = type === 1
-            ? `👋 Salom! Botga xush kelibsiz!`
-            : `👋 ${ctx.session.last_name} ${ctx.session.first_name} sizni yana ko'rganimdan xursandman!`;
+        const text = (await this.settingsService.findOne()).startMessage;
         ctx.reply(text, {
             reply_markup: { ...this.DEFAULT_KEYBOARD, remove_keyboard: true },
         });
@@ -677,15 +673,14 @@ __decorate([
 exports.TelegramService = TelegramService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, nestjs_1.InjectBot)()),
-    __param(6, (0, common_1.Inject)((0, common_1.forwardRef)(() => octobank_service_1.OctoBankService))),
-    __param(7, (0, common_1.Inject)((0, common_1.forwardRef)(() => atmos_service_1.AtmosService))),
-    __param(8, (0, common_1.Inject)((0, common_1.forwardRef)(() => message_service_1.MessageService))),
+    __param(5, (0, common_1.Inject)((0, common_1.forwardRef)(() => octobank_service_1.OctoBankService))),
+    __param(6, (0, common_1.Inject)((0, common_1.forwardRef)(() => atmos_service_1.AtmosService))),
+    __param(7, (0, common_1.Inject)((0, common_1.forwardRef)(() => message_service_1.MessageService))),
     __metadata("design:paramtypes", [grammy_1.Bot,
         user_service_1.UserService,
         prisma_service_1.PrismaService,
         subscription_type_service_1.SubscriptionTypeService,
         settings_service_1.SettingsService,
-        buttons_service_1.ButtonsService,
         octobank_service_1.OctoBankService,
         atmos_service_1.AtmosService,
         message_service_1.MessageService])

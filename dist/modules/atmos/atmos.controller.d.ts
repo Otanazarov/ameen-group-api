@@ -6,16 +6,16 @@ export declare class AtmosController {
     private readonly atmosService;
     constructor(atmosService: AtmosService);
     createLink(dto: CreateAtmosDto): Promise<{
-        type: import(".prisma/client").$Enums.TransactionType;
         id: number;
+        price: number;
         createdAt: Date;
         updatedAt: Date;
+        transactionId: string | null;
+        status: import(".prisma/client").$Enums.TransactionStatus;
+        paymentType: import(".prisma/client").$Enums.PaymentType;
         userId: number;
         subscriptionTypeId: number;
-        price: number;
-        paymentType: import(".prisma/client").$Enums.PaymentType;
-        status: import(".prisma/client").$Enums.TransactionStatus;
-        transactionId: string | null;
+        type: import(".prisma/client").$Enums.TransactionType;
     }>;
     preapply(dto: PreApplyAtmosDto): Promise<any>;
     apply(dto: ApplyAtmosDto): Promise<any>;

@@ -8,7 +8,6 @@ import { SubscriptionTypeService } from '../subscription-type/subscription-type.
 import { UserService } from '../user/user.service';
 import { Context } from './Context.type';
 import { OctoBankService } from '../octobank/octobank.service';
-import { ButtonsService } from '../buttons/buttons.service';
 import { AtmosService } from '../atmos/atmos.service';
 export declare class TelegramService implements OnModuleInit {
     readonly bot: Bot<Context>;
@@ -16,14 +15,13 @@ export declare class TelegramService implements OnModuleInit {
     private readonly prismaService;
     private readonly subscriptionTypeService;
     private readonly settingsService;
-    private readonly buttonsService;
     private readonly octobankService;
     private readonly atmosService;
     private readonly messageService;
     private cronRunning;
     private readonly MS_PER_DAY;
     private DEFAULT_KEYBOARD;
-    constructor(bot: Bot<Context>, userService: UserService, prismaService: PrismaService, subscriptionTypeService: SubscriptionTypeService, settingsService: SettingsService, buttonsService: ButtonsService, octobankService: OctoBankService, atmosService: AtmosService, messageService: MessageService);
+    constructor(bot: Bot<Context>, userService: UserService, prismaService: PrismaService, subscriptionTypeService: SubscriptionTypeService, settingsService: SettingsService, octobankService: OctoBankService, atmosService: AtmosService, messageService: MessageService);
     onModuleInit(): Promise<void>;
     private setDefaultKeyboard;
     private calculateDaysLeft;
@@ -53,14 +51,14 @@ export declare class TelegramService implements OnModuleInit {
     handleSubscriptionPayment(ctx: Context, subscriptionTypeId: number): Promise<{
         subscriptionType: {
             price: string;
-            description: string;
-            title: string;
             id: number;
-            createdAt: Date;
-            updatedAt: Date;
-            oneTime: boolean;
+            title: string;
+            description: string;
             expireDays: number;
             isDeleted: boolean;
+            oneTime: boolean;
+            createdAt: Date;
+            updatedAt: Date;
         };
         octobank: {
             error: number;
@@ -81,16 +79,16 @@ export declare class TelegramService implements OnModuleInit {
             total_sum: number;
         };
         atmos: {
-            type: import(".prisma/client").$Enums.TransactionType;
             id: number;
+            price: number;
             createdAt: Date;
             updatedAt: Date;
+            transactionId: string | null;
+            status: import(".prisma/client").$Enums.TransactionStatus;
+            paymentType: import(".prisma/client").$Enums.PaymentType;
             userId: number;
             subscriptionTypeId: number;
-            price: number;
-            paymentType: import(".prisma/client").$Enums.PaymentType;
-            status: import(".prisma/client").$Enums.TransactionStatus;
-            transactionId: string | null;
+            type: import(".prisma/client").$Enums.TransactionType;
         };
     }>;
     onCron(): Promise<void>;
@@ -106,7 +104,7 @@ export declare class TelegramService implements OnModuleInit {
     private sendSubscriptionPaymentInfo;
     sendAlertMessage(): Promise<void>;
     kickExpired(): Promise<void>;
-    sendStartMessage(ctx: Context, type?: number): Promise<void>;
+    sendStartMessage(ctx: Context): Promise<void>;
     sendNameRequest(ctx: Context, step: number): void;
     sendPhoneRequest(ctx: Context): void;
     sendEmailRequest(ctx: Context, type?: number): void;

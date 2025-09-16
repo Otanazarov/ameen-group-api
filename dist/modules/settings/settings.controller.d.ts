@@ -29,6 +29,7 @@ export declare class SettingsController {
         alertMessage: string;
         aboutAminGroupImageId: number | null;
         aboutKozimxonTorayevImageId: number | null;
+        startMessage: string;
     }>;
     update(updateSettingDto: UpdateSettingDto): Promise<{
         id: number;
@@ -37,5 +38,6 @@ export declare class SettingsController {
         alertMessage: string;
         aboutAminGroupImageId: number | null;
         aboutKozimxonTorayevImageId: number | null;
+        startMessage: string;
     }>;
 }

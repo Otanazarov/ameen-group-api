@@ -13,6 +13,7 @@ export declare class SettingsService implements OnModuleInit {
         alertMessage: string;
         aboutAminGroupImageId: number | null;
         aboutKozimxonTorayevImageId: number | null;
+        startMessage: string;
     }>;
     findOne(): Promise<{
         aboutAminGroupImage: {
@@ -40,6 +41,7 @@ export declare class SettingsService implements OnModuleInit {
         alertMessage: string;
         aboutAminGroupImageId: number | null;
         aboutKozimxonTorayevImageId: number | null;
+        startMessage: string;
     }>;
     update(updateSettingDto: UpdateSettingDto): Promise<{
         id: number;
@@ -48,5 +50,6 @@ export declare class SettingsService implements OnModuleInit {
         alertMessage: string;
         aboutAminGroupImageId: number | null;
         aboutKozimxonTorayevImageId: number | null;
+        startMessage: string;
     }>;
 }

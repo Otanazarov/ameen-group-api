@@ -26,7 +26,6 @@ import { UserService } from '../user/user.service';
 import { Context } from './Context.type';
 import { join } from 'path';
 import { OctoBankService } from '../octobank/octobank.service';
-import { ButtonsService } from '../buttons/buttons.service';
 import { AtmosService } from '../atmos/atmos.service';
 
 @Injectable()
@@ -41,7 +40,6 @@ export class TelegramService implements OnModuleInit {
     private readonly prismaService: PrismaService,
     private readonly subscriptionTypeService: SubscriptionTypeService,
     private readonly settingsService: SettingsService,
-    private readonly buttonsService: ButtonsService,
     @Inject(forwardRef(() => OctoBankService))
     private readonly octobankService: OctoBankService,
     @Inject(forwardRef(() => AtmosService))
@@ -60,6 +58,7 @@ export class TelegramService implements OnModuleInit {
       orderBy: { id: 'asc' },
     });
     const keyboard = new InlineKeyboard();
+  
     defaultButtons.forEach((button, index) => {
       keyboard.text(button.text, button.data);
       if (index % 2 !== 0) {
@@ -117,8 +116,9 @@ export class TelegramService implements OnModuleInit {
   async onSubscriptionMenuCallBack(ctx: Context) {
     await this.sendSubscriptionMenu(ctx);
   }
+
   async onStartMessageCallBack(ctx: Context) {
-    const text = `👋 Salom! Botga xush kelibsiz!`;
+    const text =( await this.settingsService.findOne()).startMessage;
     await this.setDefaultKeyboard();
     try {
       await ctx.editMessageText(text, { reply_markup: this.DEFAULT_KEYBOARD });
@@ -732,17 +732,15 @@ ${subscriptionType.description}`,
       this.bot.api.unbanChatMember(env.TELEGRAM_GROUP_ID, +user.telegramId);
     }
   }
-  async sendStartMessage(ctx: Context, type: number = 1) {
+  async sendStartMessage(ctx: Context) {
     await this.setDefaultKeyboard();
 
-    const text =
-      type === 1
-        ? `👋 Salom! Botga xush kelibsiz!`
-        : `👋 ${ctx.session.last_name} ${ctx.session.first_name} sizni yana ko'rganimdan xursandman!`;
+    const text =( await this.settingsService.findOne()).startMessage;
     ctx.reply(text, {
       reply_markup: { ...this.DEFAULT_KEYBOARD, remove_keyboard: true },
     });
   }
+
   sendNameRequest(ctx: Context, step: number) {
     if (step == 1) {
       ctx.reply(`👤 Iltimos, ismingizni yuboring.`);

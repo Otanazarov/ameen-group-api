@@ -83,10 +83,12 @@ model SubscriptionType {
 }
 
 model Settings {
-  id                          Int    @id @default(autoincrement())
-  aboutAminGroup              String
-  aboutKozimxonTorayev        String
-  alertMessage                String @default("⚠️ Ogohlantirish! Sizning obunangiz {{expireDate}} da tugaydi. ⏳ {{daysLeft}} kun qoldi.")
+  id                   Int    @id @default(autoincrement())
+  aboutAminGroup       String
+  aboutKozimxonTorayev String
+  alertMessage         String @default("⚠️ Ogohlantirish! Sizning obunangiz {{expireDate}} da tugaydi. ⏳ {{daysLeft}} kun qoldi.")
+  startMessage         String @default("Salom Botga Hush kelibsiz")
+
   aboutAminGroupImageId       Int?
   aboutKozimxonTorayevImageId Int?
 
