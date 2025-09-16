@@ -1,8 +1,8 @@
-import { OnModuleInit } from '@nestjs/common';
-import { CreateButtonDto } from './dto/create-buttons.dto';
-import { UpdateButtonDto } from './dto/update-buttons.dto';
-import { PrismaService } from '../prisma/prisma.service';
-import { FindAllButtonDto } from './dto/findAll-buttons.dto';
+import { OnModuleInit } from "@nestjs/common";
+import { CreateButtonDto } from "./dto/create-buttons.dto";
+import { UpdateButtonDto } from "./dto/update-buttons.dto";
+import { PrismaService } from "../prisma/prisma.service";
+import { FindAllButtonDto } from "./dto/findAll-buttons.dto";
 export declare class ButtonsService implements OnModuleInit {
     private readonly prisma;
     constructor(prisma: PrismaService);

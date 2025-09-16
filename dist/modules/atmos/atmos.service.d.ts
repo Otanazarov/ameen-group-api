@@ -9,16 +9,16 @@ export declare class AtmosService {
     private readonly telegramService;
     constructor(prisma: PrismaService, transactionService: TransactionService, telegramService: TelegramService);
     createLink(dto: CreateAtmosDto): Promise<{
+        type: import(".prisma/client").$Enums.TransactionType;
         id: number;
-        price: number;
         createdAt: Date;
         updatedAt: Date;
-        transactionId: string | null;
-        status: import(".prisma/client").$Enums.TransactionStatus;
-        paymentType: import(".prisma/client").$Enums.PaymentType;
         userId: number;
         subscriptionTypeId: number;
-        type: import(".prisma/client").$Enums.TransactionType;
+        price: number;
+        paymentType: import(".prisma/client").$Enums.PaymentType;
+        status: import(".prisma/client").$Enums.TransactionStatus;
+        transactionId: string | null;
     }>;
     preApplyTransaction(dto: PreApplyAtmosDto): Promise<any>;
     applyTransaction(dto: {
@@ -26,16 +26,16 @@ export declare class AtmosService {
         otp: string;
     }): Promise<any>;
     getPendingInvoices(): Promise<{
+        type: import(".prisma/client").$Enums.TransactionType;
         id: number;
-        price: number;
         createdAt: Date;
         updatedAt: Date;
-        transactionId: string | null;
-        status: import(".prisma/client").$Enums.TransactionStatus;
-        paymentType: import(".prisma/client").$Enums.PaymentType;
         userId: number;
         subscriptionTypeId: number;
-        type: import(".prisma/client").$Enums.TransactionType;
+        price: number;
+        paymentType: import(".prisma/client").$Enums.PaymentType;
+        status: import(".prisma/client").$Enums.TransactionStatus;
+        transactionId: string | null;
     }[]>;
     checkTransactionStatus(transactionId: string): Promise<any>;
 }

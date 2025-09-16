@@ -8,8 +8,10 @@ import {
 } from '@grammyjs/nestjs';
 import { Bot } from 'grammy';
 import { env } from 'src/common/config';
+import { SubscriptionTypeService } from '../subscription-type/subscription-type.service';
 import { UserService } from '../user/user.service';
 import { Context } from './Context.type';
+import { TelegramButtonService } from './services/telegram.button.service';
 import { TelegramService } from './telegram.service';
 
 @Update()
@@ -19,6 +21,8 @@ export class TelegramUpdate {
     private readonly bot: Bot<Context>,
     private readonly telegramService: TelegramService,
     private readonly userService: UserService,
+    private readonly subscriptionTypeService: SubscriptionTypeService,
+    private readonly buttonService: TelegramButtonService,
   ) {
     console.log(
       'telegram Bot starting',
@@ -37,7 +41,8 @@ export class TelegramUpdate {
 
   @Command('topicid')
   async onTopicId(@Ctx() ctx: Context): Promise<void> {
-    ctx.reply(`Topic id: \`\`\`${ctx.message.message_thread_id}\`\`\``, {
+    ctx.reply(`Topic id: 
+${ctx.message.message_thread_id}`, {
       message_thread_id: ctx.message.message_thread_id,
       parse_mode: 'Markdown',
     });
@@ -45,7 +50,8 @@ export class TelegramUpdate {
 
   @Command('id')
   async onId(@Ctx() ctx: Context): Promise<void> {
-    ctx.reply(`chat id: \`\`\`${ctx.chat.id}\`\`\``, {
+    ctx.reply(`chat id: 
+${ctx.chat.id}`, {
       message_thread_id: ctx.message.message_thread_id,
       parse_mode: 'Markdown',
     });
@@ -58,59 +64,59 @@ export class TelegramUpdate {
 
   @CallbackQuery(/subscribe-(.+)/)
   async onSubscribeCallbackQuery(@Ctx() ctx: Context): Promise<void> {
-    this.telegramService.onSubscribeCallBack(ctx);
+    this.telegramService.callbackService.onSubscribeCallBack(ctx);
   }
 
   @CallbackQuery(/edit_(.+)/)
   async onEditCallbackQuery(@Ctx() ctx: Context): Promise<void> {
-    this.telegramService.onEditCallBack(ctx);
+    this.telegramService.callbackService.onEditCallBack(ctx);
   }
 
   @CallbackQuery(/reaction_(.+)/)
   async onReactionCallbackQuery(@Ctx() ctx: Context): Promise<void> {
-    this.telegramService.onReactionCallBack(ctx);
+    this.telegramService.callbackService.onReactionCallBack(ctx);
   }
 
   @CallbackQuery('settings')
   async onSettingsCallbackQuery(@Ctx() ctx: Context): Promise<void> {
-    this.telegramService.onSettingsCallBack(ctx);
+    this.telegramService.callbackService.onSettingsCallBack(ctx);
   }
 
   @CallbackQuery('start_message')
   async onStartMessageCallbackQuery(@Ctx() ctx: Context): Promise<void> {
-    this.telegramService.onStartMessageCallBack(ctx);
+    this.telegramService.callbackService.onStartMessageCallBack(ctx);
   }
 
   @CallbackQuery('subscribe_menu')
   async onSubscriptionMenuCallbackQuery(@Ctx() ctx: Context): Promise<void> {
-    this.telegramService.onSubscriptionMenuCallBack(ctx);
+    this.telegramService.callbackService.onSubscriptionMenuCallBack(ctx);
   }
 
   @CallbackQuery('cancel_subscription')
   async onCancelSubscriptionCallbackQuery(@Ctx() ctx: Context): Promise<void> {
-    this.telegramService.onCancelSubscriptionCallBack(ctx);
+    this.telegramService.callbackService.onCancelSubscriptionCallBack(ctx);
   }
 
   @CallbackQuery('uncancel_subscription')
   async onUncancelSubscriptionCallbackQuery(
     @Ctx() ctx: Context,
   ): Promise<void> {
-    this.telegramService.onUncancelSubscriptionCallBack(ctx);
+    this.telegramService.callbackService.onUncancelSubscriptionCallBack(ctx);
   }
 
   @CallbackQuery('my_subscriptions')
   async onMySubscriptionsCallbackQuery(@Ctx() ctx: Context): Promise<void> {
-    this.telegramService.onMySubscriptionsCallBack(ctx);
+    this.telegramService.callbackService.onMySubscriptionsCallBack(ctx);
   }
 
   @CallbackQuery('about_us')
   async onAboutUsCallbackQuery(@Ctx() ctx: Context): Promise<void> {
-    this.telegramService.onAboutUsCallBack(ctx);
+    this.telegramService.callbackService.onAboutUsCallBack(ctx);
   }
 
-  @CallbackQuery('about_owner')
+  @CallbackQuery('contact')
   async onAboutTeacherCallbackQuery(@Ctx() ctx: Context): Promise<void> {
-    this.telegramService.onAboutTeacherCallBack(ctx);
+    this.telegramService.callbackService.onAboutContactCallBack(ctx);
   }
 
   @On('chat_join_request')
@@ -130,6 +136,39 @@ export class TelegramUpdate {
 
   @On('message')
   async onMessage(@Ctx() ctx: Context): Promise<void> {
-    this.telegramService.onMessage(ctx);
+    const text = ctx.message.text;
+    if (!text) {
+      this.telegramService.messageService.onMessage(ctx);
+      return;
+    }
+
+    const buttonData = this.buttonService.getButtonData(text);
+    if (buttonData) {
+      ctx.match = [text, buttonData];
+      const action = buttonData;
+      switch (action) {
+        case 'start':
+          this.telegramService.callbackService.onStartMessageCallBack(ctx);
+          break;
+        case 'settings':
+          this.telegramService.callbackService.onSettingsCallBack(ctx);
+          break;
+        case 'subscribe':
+          this.telegramService.callbackService.onSubscriptionMenuCallBack(ctx);
+          break;
+        case 'about':
+          this.telegramService.callbackService.onAboutUsCallBack(ctx);
+          break;
+        case 'contact':
+          this.telegramService.callbackService.onAboutContactCallBack(ctx);
+          break;
+        default:
+          this.telegramService.messageService.onMessage(ctx);
+          break;
+      }
+      return;
+    }
+
+    this.telegramService.messageService.onMessage(ctx);
   }
 }

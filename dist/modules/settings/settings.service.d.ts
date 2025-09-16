@@ -1,7 +1,7 @@
-import { OnModuleInit } from '@nestjs/common';
-import { CreateSettingDto } from './dto/create-setting.dto';
-import { UpdateSettingDto } from './dto/update-setting.dto';
-import { PrismaService } from '../prisma/prisma.service';
+import { OnModuleInit } from "@nestjs/common";
+import { CreateSettingDto } from "./dto/create-setting.dto";
+import { UpdateSettingDto } from "./dto/update-setting.dto";
+import { PrismaService } from "../prisma/prisma.service";
 export declare class SettingsService implements OnModuleInit {
     private readonly prisma;
     constructor(prisma: PrismaService);
@@ -9,11 +9,11 @@ export declare class SettingsService implements OnModuleInit {
     create(createSettingDto: CreateSettingDto): Promise<{
         id: number;
         aboutAminGroup: string;
-        aboutKozimxonTorayev: string;
         alertMessage: string;
         aboutAminGroupImageId: number | null;
-        aboutKozimxonTorayevImageId: number | null;
+        contactMessage: string;
         startMessage: string;
+        contactImageId: number | null;
     }>;
     findOne(): Promise<{
         aboutAminGroupImage: {
@@ -25,7 +25,7 @@ export declare class SettingsService implements OnModuleInit {
             size: number;
             hash: string;
         };
-        aboutKozimxonTorayevImage: {
+        contactImage: {
             id: number;
             createdAt: Date;
             updatedAt: Date;
@@ -37,19 +37,19 @@ export declare class SettingsService implements OnModuleInit {
     } & {
         id: number;
         aboutAminGroup: string;
-        aboutKozimxonTorayev: string;
         alertMessage: string;
         aboutAminGroupImageId: number | null;
-        aboutKozimxonTorayevImageId: number | null;
+        contactMessage: string;
         startMessage: string;
+        contactImageId: number | null;
     }>;
     update(updateSettingDto: UpdateSettingDto): Promise<{
         id: number;
         aboutAminGroup: string;
-        aboutKozimxonTorayev: string;
         alertMessage: string;
         aboutAminGroupImageId: number | null;
-        aboutKozimxonTorayevImageId: number | null;
+        contactMessage: string;
         startMessage: string;
+        contactImageId: number | null;
     }>;
 }

@@ -83,17 +83,17 @@ model SubscriptionType {
 }
 
 model Settings {
-  id                   Int    @id @default(autoincrement())
-  aboutAminGroup       String
-  aboutKozimxonTorayev String
-  alertMessage         String @default("⚠️ Ogohlantirish! Sizning obunangiz {{expireDate}} da tugaydi. ⏳ {{daysLeft}} kun qoldi.")
-  startMessage         String @default("Salom Botga Hush kelibsiz")
+  id             Int    @id @default(autoincrement())
+  aboutAminGroup String
+  contactMessage String @default("contact")
+  alertMessage   String @default("⚠️ Ogohlantirish! Sizning obunangiz {{expireDate}} da tugaydi. ⏳ {{daysLeft}} kun qoldi.")
+  startMessage   String @default("Salom Botga Hush kelibsiz")
 
-  aboutAminGroupImageId       Int?
-  aboutKozimxonTorayevImageId Int?
+  aboutAminGroupImageId Int?
+  contactImageId        Int?
 
-  aboutAminGroupImage       File? @relation("AboutAminGroupImage", fields: [aboutAminGroupImageId], references: [id])
-  aboutKozimxonTorayevImage File? @relation("AboutKozimxonTorayevImage", fields: [aboutKozimxonTorayevImageId], references: [id])
+  aboutAminGroupImage File? @relation("AboutAminGroupImage", fields: [aboutAminGroupImageId], references: [id])
+  contactImage        File? @relation("AboutKozimxonTorayevImage", fields: [contactImageId], references: [id])
 }
 
 model Message {

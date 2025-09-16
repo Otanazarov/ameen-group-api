@@ -13,7 +13,7 @@ export declare class SettingsController {
             size: number;
             hash: string;
         };
-        aboutKozimxonTorayevImage: {
+        contactImage: {
             id: number;
             createdAt: Date;
             updatedAt: Date;
@@ -25,19 +25,19 @@ export declare class SettingsController {
     } & {
         id: number;
         aboutAminGroup: string;
-        aboutKozimxonTorayev: string;
         alertMessage: string;
         aboutAminGroupImageId: number | null;
-        aboutKozimxonTorayevImageId: number | null;
+        contactMessage: string;
         startMessage: string;
+        contactImageId: number | null;
     }>;
     update(updateSettingDto: UpdateSettingDto): Promise<{
         id: number;
         aboutAminGroup: string;
-        aboutKozimxonTorayev: string;
         alertMessage: string;
         aboutAminGroupImageId: number | null;
-        aboutKozimxonTorayevImageId: number | null;
+        contactMessage: string;
         startMessage: string;
+        contactImageId: number | null;
     }>;
 }

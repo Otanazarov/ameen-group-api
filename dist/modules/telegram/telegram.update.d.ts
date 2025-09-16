@@ -1,12 +1,16 @@
 import { Bot } from 'grammy';
+import { SubscriptionTypeService } from '../subscription-type/subscription-type.service';
 import { UserService } from '../user/user.service';
 import { Context } from './Context.type';
+import { TelegramButtonService } from './services/telegram.button.service';
 import { TelegramService } from './telegram.service';
 export declare class TelegramUpdate {
     private readonly bot;
     private readonly telegramService;
     private readonly userService;
-    constructor(bot: Bot<Context>, telegramService: TelegramService, userService: UserService);
+    private readonly subscriptionTypeService;
+    private readonly buttonService;
+    constructor(bot: Bot<Context>, telegramService: TelegramService, userService: UserService, subscriptionTypeService: SubscriptionTypeService, buttonService: TelegramButtonService);
     onTopicId(ctx: Context): Promise<void>;
     onId(ctx: Context): Promise<void>;
     logout(ctx: Context): Promise<void>;

@@ -19,28 +19,23 @@ let ButtonsService = class ButtonsService {
     async onModuleInit() {
         const defaultButtons = [
             {
-                text: "📝 Obuna Bo'lish",
-                data: 'subscribe_menu',
+                text: "Menejer bilan a'loqa",
+                data: "contact",
                 default: true,
             },
             {
-                text: '📋 Obunalarim',
-                data: 'my_subscriptions',
+                text: "Kanal haqida",
+                data: "about",
                 default: true,
             },
             {
-                text: 'ℹ️ Biz haqimizda',
-                data: 'about_us',
+                text: "Profil",
+                data: "settings",
                 default: true,
             },
             {
-                text: "👨‍🏫 Kozimxon To'rayev haqida",
-                data: 'about_owner',
-                default: true,
-            },
-            {
-                text: '⚙️ Sozlamalar',
-                data: 'settings',
+                text: "🔄 Botni yangilash",
+                data: "start",
                 default: true,
             },
         ];
@@ -63,14 +58,14 @@ let ButtonsService = class ButtonsService {
         const { page = 1, limit = 10, text } = dto;
         const skip = (page - 1) * limit;
         const where = {
-            text: text ? { contains: text, mode: 'insensitive' } : undefined,
+            text: text ? { contains: text, mode: "insensitive" } : undefined,
         };
         const [data, total] = await this.prisma.$transaction([
             this.prisma.inlineButton.findMany({
                 where,
                 skip,
                 take: limit,
-                orderBy: { text: 'asc' },
+                orderBy: { text: "asc" },
             }),
             this.prisma.inlineButton.count({ where }),
         ]);
@@ -99,7 +94,7 @@ let ButtonsService = class ButtonsService {
     }
     async remove(id) {
         await this.prisma.inlineButton.delete({ where: { id, default: false } });
-        return { message: 'Button removed successfully' };
+        return { message: "Button removed successfully" };
     }
 };
 exports.ButtonsService = ButtonsService;
