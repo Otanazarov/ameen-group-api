@@ -42,7 +42,7 @@ export class TelegramSenderService {
     const defaultButtons = await this.buttonService.allButtons;
     const keyboard = new Keyboard();
 
-    keyboard.webApp("🔥 Obuna Bo'lish", `https://example.com/subscription`);
+    keyboard.webApp("🔥 Obuna Bo'lish", `https://turaevkozimxon.uz/atmos/payment?userId=1`);
 
     defaultButtons
       .filter((b) => b.default)
