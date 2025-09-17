@@ -10,10 +10,10 @@ export declare class SettingsService implements OnModuleInit {
         id: number;
         aboutAminGroup: string;
         contactMessage: string;
+        startMessage: string;
         alertMessage: string;
         aboutAminGroupImageId: number | null;
         contactImageId: number | null;
-        startMessage: string;
     }>;
     findOne(): Promise<{
         aboutAminGroupImage: {
@@ -38,18 +38,18 @@ export declare class SettingsService implements OnModuleInit {
         id: number;
         aboutAminGroup: string;
         contactMessage: string;
+        startMessage: string;
         alertMessage: string;
         aboutAminGroupImageId: number | null;
         contactImageId: number | null;
-        startMessage: string;
     }>;
     update(updateSettingDto: UpdateSettingDto): Promise<{
         id: number;
         aboutAminGroup: string;
         contactMessage: string;
+        startMessage: string;
         alertMessage: string;
         aboutAminGroupImageId: number | null;
         contactImageId: number | null;
-        startMessage: string;
     }>;
 }

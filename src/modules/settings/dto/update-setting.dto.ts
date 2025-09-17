@@ -22,6 +22,11 @@ export class UpdateSettingDto {
 
 	@ApiPropertyOptional()
 	@IsOptional()
+	@IsString()
+	startMessage?: string;
+
+	@ApiPropertyOptional()
+	@IsOptional()
 	@IsInt()
 	aboutAminGroupImageId?: number;
 

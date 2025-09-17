@@ -13,6 +13,11 @@ export class CreateSettingDto {
 	contactMessage: string;
 
 	@ApiProperty()
+	@IsNotEmpty()
+	@IsString()
+	startMessage: string;
+
+	@ApiProperty()
 	@IsOptional()
 	@IsNotEmpty()
 	@IsString()

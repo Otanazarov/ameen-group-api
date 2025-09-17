@@ -26,18 +26,18 @@ export declare class SettingsController {
         id: number;
         aboutAminGroup: string;
         contactMessage: string;
+        startMessage: string;
         alertMessage: string;
         aboutAminGroupImageId: number | null;
         contactImageId: number | null;
-        startMessage: string;
     }>;
     update(updateSettingDto: UpdateSettingDto): Promise<{
         id: number;
         aboutAminGroup: string;
         contactMessage: string;
+        startMessage: string;
         alertMessage: string;
         aboutAminGroupImageId: number | null;
         contactImageId: number | null;
-        startMessage: string;
     }>;
 }

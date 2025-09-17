@@ -10,7 +10,11 @@ export class SettingsService implements OnModuleInit {
 	async onModuleInit() {
 		const settings = await this.findOne();
 		if (!settings)
-			this.create({ aboutAminGroup: "info1", contactMessage: "info2" });
+			this.create({
+				aboutAminGroup: "info1",
+				contactMessage: "info2",
+				startMessage: "info3",
+			});
 	}
 
 	async create(createSettingDto: CreateSettingDto) {
