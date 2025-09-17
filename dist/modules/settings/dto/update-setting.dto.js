@@ -26,10 +26,10 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
-], UpdateSettingDto.prototype, "aboutKozimxonTorayev", void 0);
+], UpdateSettingDto.prototype, "contactMessage", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
-        example: '⚠️ Ogohlantirish! Sizning obunangiz {{expireDate}} da tugaydi. ⏳ {{daysLeft}} kun qoldi.',
+        example: "! Ogohlantirish! Sizning obunangiz {{expireDate}} da tugaydi. ⏳ {{daysLeft}} kun qoldi.",
     }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
@@ -46,5 +46,5 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsInt)(),
     __metadata("design:type", Number)
-], UpdateSettingDto.prototype, "aboutKozimxonTorayevImageId", void 0);
+], UpdateSettingDto.prototype, "contactImageId", void 0);
 //# sourceMappingURL=update-setting.dto.js.map

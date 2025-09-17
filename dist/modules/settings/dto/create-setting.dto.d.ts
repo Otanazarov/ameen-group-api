@@ -1,7 +1,7 @@
 export declare class CreateSettingDto {
     aboutAminGroup: string;
-    aboutKozimxonTorayev: string;
+    contactMessage: string;
     alertMessage?: string;
     aboutAminGroupImageId?: number;
-    aboutKozimxonTorayevImageId?: number;
+    contactImageId?: number;
 }

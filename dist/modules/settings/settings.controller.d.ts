@@ -25,19 +25,19 @@ export declare class SettingsController {
     } & {
         id: number;
         aboutAminGroup: string;
+        contactMessage: string;
         alertMessage: string;
         aboutAminGroupImageId: number | null;
-        contactMessage: string;
-        startMessage: string;
         contactImageId: number | null;
+        startMessage: string;
     }>;
     update(updateSettingDto: UpdateSettingDto): Promise<{
         id: number;
         aboutAminGroup: string;
+        contactMessage: string;
         alertMessage: string;
         aboutAminGroupImageId: number | null;
-        contactMessage: string;
-        startMessage: string;
         contactImageId: number | null;
+        startMessage: string;
     }>;
 }

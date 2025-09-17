@@ -9,11 +9,11 @@ export declare class SettingsService implements OnModuleInit {
     create(createSettingDto: CreateSettingDto): Promise<{
         id: number;
         aboutAminGroup: string;
+        contactMessage: string;
         alertMessage: string;
         aboutAminGroupImageId: number | null;
-        contactMessage: string;
-        startMessage: string;
         contactImageId: number | null;
+        startMessage: string;
     }>;
     findOne(): Promise<{
         aboutAminGroupImage: {
@@ -37,19 +37,19 @@ export declare class SettingsService implements OnModuleInit {
     } & {
         id: number;
         aboutAminGroup: string;
+        contactMessage: string;
         alertMessage: string;
         aboutAminGroupImageId: number | null;
-        contactMessage: string;
-        startMessage: string;
         contactImageId: number | null;
+        startMessage: string;
     }>;
     update(updateSettingDto: UpdateSettingDto): Promise<{
         id: number;
         aboutAminGroup: string;
+        contactMessage: string;
         alertMessage: string;
         aboutAminGroupImageId: number | null;
-        contactMessage: string;
-        startMessage: string;
         contactImageId: number | null;
+        startMessage: string;
     }>;
 }

@@ -26,7 +26,7 @@ __decorate([
     (0, class_validator_1.IsNotEmpty)(),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
-], CreateSettingDto.prototype, "aboutKozimxonTorayev", void 0);
+], CreateSettingDto.prototype, "contactMessage", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)(),
     (0, class_validator_1.IsOptional)(),
@@ -45,5 +45,5 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsInt)(),
     __metadata("design:type", Number)
-], CreateSettingDto.prototype, "aboutKozimxonTorayevImageId", void 0);
+], CreateSettingDto.prototype, "contactImageId", void 0);
 //# sourceMappingURL=create-setting.dto.js.map

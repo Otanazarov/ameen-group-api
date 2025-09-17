@@ -19,7 +19,7 @@ let SettingsService = class SettingsService {
     async onModuleInit() {
         const settings = await this.findOne();
         if (!settings)
-            this.create({ aboutAminGroup: "info1", aboutKozimxonTorayev: "info2" });
+            this.create({ aboutAminGroup: "info1", contactMessage: "info2" });
     }
     async create(createSettingDto) {
         const settings = await this.prisma.settings.create({
