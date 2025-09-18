@@ -26,6 +26,7 @@ export declare class TransactionController {
                 email: string | null;
                 phoneNumber: string;
                 inGroup: boolean;
+                trialUsed: boolean;
             };
             subscriptionType: {
                 description: string;
@@ -85,6 +86,7 @@ export declare class TransactionController {
             email: string | null;
             phoneNumber: string;
             inGroup: boolean;
+            trialUsed: boolean;
         };
         subscriptionType: {
             description: string;
@@ -138,6 +140,7 @@ export declare class TransactionController {
             email: string | null;
             phoneNumber: string;
             inGroup: boolean;
+            trialUsed: boolean;
         };
         subscriptionType: {
             description: string;

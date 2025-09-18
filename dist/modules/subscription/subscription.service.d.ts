@@ -7,7 +7,7 @@ import { PaginationDto } from 'src/common/dtos/pagination.dto';
 export declare class SubscriptionService {
     private readonly prisma;
     constructor(prisma: PrismaService);
-    create(createSubscriptionDto: CreateSubscriptionDto): Promise<{
+    activateFreeTrial(userId: number): Promise<{
         user: {
             id: number;
             createdAt: Date;
@@ -24,6 +24,7 @@ export declare class SubscriptionService {
             email: string | null;
             phoneNumber: string;
             inGroup: boolean;
+            trialUsed: boolean;
         };
         subscriptionType: {
             description: string;
@@ -41,8 +42,49 @@ export declare class SubscriptionService {
         createdAt: Date;
         updatedAt: Date;
         userId: number;
-        subscriptionTypeId: number;
-        transactionId: number;
+        subscriptionTypeId: number | null;
+        transactionId: number | null;
+        startDate: Date;
+        expiredDate: Date;
+        alertCount: number;
+    }>;
+    create(createSubscriptionDto: CreateSubscriptionDto): Promise<{
+        user: {
+            id: number;
+            createdAt: Date;
+            updatedAt: Date;
+            role: import(".prisma/client").$Enums.UserRole;
+            status: import(".prisma/client").$Enums.UserStatus;
+            username: string | null;
+            telegramId: string;
+            firstName: string;
+            lastName: string;
+            lastActiveAt: Date | null;
+            cards: Prisma.JsonValue;
+            schedulerId: string | null;
+            email: string | null;
+            phoneNumber: string;
+            inGroup: boolean;
+            trialUsed: boolean;
+        };
+        subscriptionType: {
+            description: string;
+            title: string;
+            id: number;
+            createdAt: Date;
+            updatedAt: Date;
+            price: number;
+            oneTime: boolean;
+            expireDays: number;
+            isDeleted: boolean;
+        };
+    } & {
+        id: number;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: number;
+        subscriptionTypeId: number | null;
+        transactionId: number | null;
         startDate: Date;
         expiredDate: Date;
         alertCount: number;
@@ -68,6 +110,7 @@ export declare class SubscriptionService {
                 email: string | null;
                 phoneNumber: string;
                 inGroup: boolean;
+                trialUsed: boolean;
             };
             subscriptionType: {
                 description: string;
@@ -85,8 +128,8 @@ export declare class SubscriptionService {
             createdAt: Date;
             updatedAt: Date;
             userId: number;
-            subscriptionTypeId: number;
-            transactionId: number;
+            subscriptionTypeId: number | null;
+            transactionId: number | null;
             startDate: Date;
             expiredDate: Date;
             alertCount: number;
@@ -113,8 +156,8 @@ export declare class SubscriptionService {
             createdAt: Date;
             updatedAt: Date;
             userId: number;
-            subscriptionTypeId: number;
-            transactionId: number;
+            subscriptionTypeId: number | null;
+            transactionId: number | null;
             startDate: Date;
             expiredDate: Date;
             alertCount: number;
@@ -137,6 +180,7 @@ export declare class SubscriptionService {
             email: string | null;
             phoneNumber: string;
             inGroup: boolean;
+            trialUsed: boolean;
         };
         subscriptionType: {
             description: string;
@@ -154,8 +198,8 @@ export declare class SubscriptionService {
         createdAt: Date;
         updatedAt: Date;
         userId: number;
-        subscriptionTypeId: number;
-        transactionId: number;
+        subscriptionTypeId: number | null;
+        transactionId: number | null;
         startDate: Date;
         expiredDate: Date;
         alertCount: number;
@@ -165,8 +209,8 @@ export declare class SubscriptionService {
         createdAt: Date;
         updatedAt: Date;
         userId: number;
-        subscriptionTypeId: number;
-        transactionId: number;
+        subscriptionTypeId: number | null;
+        transactionId: number | null;
         startDate: Date;
         expiredDate: Date;
         alertCount: number;
@@ -189,6 +233,7 @@ export declare class SubscriptionService {
             email: string | null;
             phoneNumber: string;
             inGroup: boolean;
+            trialUsed: boolean;
         };
         subscriptionType: {
             description: string;
@@ -206,8 +251,8 @@ export declare class SubscriptionService {
         createdAt: Date;
         updatedAt: Date;
         userId: number;
-        subscriptionTypeId: number;
-        transactionId: number;
+        subscriptionTypeId: number | null;
+        transactionId: number | null;
         startDate: Date;
         expiredDate: Date;
         alertCount: number;

@@ -25,7 +25,7 @@ export declare class AtmosService {
     deleteScheduler(scheduler_id: string): Promise<any>;
     getScheduler(scheduler_id: string): Promise<any>;
     getSchedulers(login: string): Promise<any>;
-    private _createScheduler;
+    createSubscriptionScheduler(userId: number, subscriptionTypeId: number): Promise<any>;
     createLink(dto: CreateAtmosDto): Promise<any>;
     preApplyTransaction(dto: PreApplyAtmosDto): Promise<any>;
     applyTransaction(dto: {

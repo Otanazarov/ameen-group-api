@@ -30,6 +30,7 @@ model User {
   inGroup      Boolean        @default(false)
   status       UserStatus     @default(REGISTERED)
   role         UserRole       @default(USER)
+  trialUsed    Boolean        @default(false)
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
   subscription Subscription[]
@@ -38,19 +39,18 @@ model User {
 }
 
 model Subscription {
-  id                 Int      @id @default(autoincrement())
+  id                 Int               @id @default(autoincrement())
   userId             Int
-  transactionId      Int      @unique
+  transactionId      Int?              @unique
   expiredDate        DateTime
   startDate          DateTime
-  alertCount         Int      @default(0)
-  subscriptionTypeId Int
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-
-  user             User             @relation(fields: [userId], references: [id])
-  subscriptionType SubscriptionType @relation(fields: [subscriptionTypeId], references: [id])
-  transaction      Transaction      @relation(fields: [transactionId], references: [id])
+  alertCount         Int               @default(0)
+  subscriptionTypeId Int?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  user               User              @relation(fields: [userId], references: [id])
+  subscriptionType   SubscriptionType? @relation(fields: [subscriptionTypeId], references: [id])
+  transaction        Transaction?      @relation(fields: [transactionId], references: [id])
 }
 
 model Transaction {
@@ -162,6 +162,7 @@ enum UserStatus {
   EXPIRED
   INACTIVE
   UNSUBSCRIBE
+  TRIAL
 }
 
 enum MessageStatus {

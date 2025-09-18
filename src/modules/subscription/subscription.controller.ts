@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Body,
+  Post,
   Patch,
   Param,
   Delete,
@@ -20,6 +21,12 @@ import { Role } from 'src/common/auth/roles/role.enum';
 @ApiTags('Subscription')
 export class SubscriptionController {
   constructor(private readonly subscriptionService: SubscriptionService) {}
+
+  @Post('trial/:id')
+  @DecoratorWrapper('Activate Free Trial for User', true, [Role.Admin])
+  activateFreeTrial(@Param('id', ParseIntPipe) id: string) {
+    return this.subscriptionService.activateFreeTrial(+id);
+  }
 
   @Get()
   @DecoratorWrapper('Find Subscriptions', true, [Role.Admin])

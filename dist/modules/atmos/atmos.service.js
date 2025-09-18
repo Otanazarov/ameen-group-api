@@ -67,7 +67,7 @@ let AtmosService = class AtmosService {
         });
         return data;
     }
-    async _createScheduler(userId, subscriptionTypeId) {
+    async createSubscriptionScheduler(userId, subscriptionTypeId) {
         const user = await this.prisma.user.findUnique({
             where: { id: userId },
         });
@@ -124,7 +124,7 @@ let AtmosService = class AtmosService {
         if (!userId || !subscriptionTypeId) {
             throw new common_1.HttpException("Missing userId or subscriptionTypeId", 400);
         }
-        return this._createScheduler(userId, subscriptionTypeId);
+        return this.createSubscriptionScheduler(userId, subscriptionTypeId);
     }
     async preApplyTransaction(dto) {
         const preApplyData = {
@@ -218,7 +218,7 @@ let AtmosService = class AtmosService {
                 },
             });
             if (dto.subscriptionTypeId) {
-                schedulerData = await this._createScheduler(dto.userId, dto.subscriptionTypeId);
+                schedulerData = await this.createSubscriptionScheduler(dto.userId, dto.subscriptionTypeId);
             }
         }
         return { cardConfirmData: data, schedulerData };

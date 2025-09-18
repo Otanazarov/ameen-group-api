@@ -26,8 +26,8 @@ export declare class UserController {
                 createdAt: Date;
                 updatedAt: Date;
                 userId: number;
-                subscriptionTypeId: number;
-                transactionId: number;
+                subscriptionTypeId: number | null;
+                transactionId: number | null;
                 startDate: Date;
                 expiredDate: Date;
                 alertCount: number;
@@ -68,6 +68,7 @@ export declare class UserController {
             email: string | null;
             phoneNumber: string;
             inGroup: boolean;
+            trialUsed: boolean;
         })[];
     }>;
     findOne(id: string): Promise<{
@@ -88,8 +89,8 @@ export declare class UserController {
             createdAt: Date;
             updatedAt: Date;
             userId: number;
-            subscriptionTypeId: number;
-            transactionId: number;
+            subscriptionTypeId: number | null;
+            transactionId: number | null;
             startDate: Date;
             expiredDate: Date;
             alertCount: number;
@@ -137,6 +138,7 @@ export declare class UserController {
         email: string | null;
         phoneNumber: string;
         inGroup: boolean;
+        trialUsed: boolean;
     }>;
     update(id: string, updateUserDto: UpdateUserDto): Promise<{
         id: number;
@@ -154,5 +156,6 @@ export declare class UserController {
         email: string | null;
         phoneNumber: string;
         inGroup: boolean;
+        trialUsed: boolean;
     }>;
 }

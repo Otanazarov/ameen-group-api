@@ -13,6 +13,53 @@ import { PaginationDto } from 'src/common/dtos/pagination.dto';
 export class SubscriptionService {
   constructor(private readonly prisma: PrismaService) {}
 
+  async activateFreeTrial(userId: number) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+    if (!user) {
+      throw new Error('User not found');
+    }
+    if (user.trialUsed) {
+      throw new Error('Free trial already used');
+    }
+    if (!user.cards || (user.cards as any[]).length === 0) {
+      throw new Error('User has no saved cards. Please add a card first.');
+    }
+
+    const existingSubscription = await this.prisma.subscription.findFirst({
+      where: { expiredDate: { gt: new Date() }, user: { id: user.id } },
+    });
+
+    if (existingSubscription) {
+      throw new Error('You already have an active subscription');
+    }
+
+    const startDate = new Date();
+    const expiredDate = new Date(
+      startDate.getTime() + 7 * 24 * 60 * 60 * 1000,
+    );
+    const subscription = await this.prisma.subscription.create({
+      data: {
+        userId: userId,
+        startDate,
+        expiredDate,
+        alertCount: 0,
+      },
+      include: {
+        user: true,
+        subscriptionType: true,
+      },
+    });
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { trialUsed: true, status: 'TRIAL' },
+    });
+
+    return subscription;
+  }
+
   async create(createSubscriptionDto: CreateSubscriptionDto) {
     const user = await this.prisma.user.findUnique({
       where: { id: createSubscriptionDto.userId },

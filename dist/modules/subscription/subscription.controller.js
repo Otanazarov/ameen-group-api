@@ -25,6 +25,9 @@ let SubscriptionController = class SubscriptionController {
     constructor(subscriptionService) {
         this.subscriptionService = subscriptionService;
     }
+    activateFreeTrial(id) {
+        return this.subscriptionService.activateFreeTrial(+id);
+    }
     findAll(dto) {
         return this.subscriptionService.findAll(dto);
     }
@@ -42,6 +45,14 @@ let SubscriptionController = class SubscriptionController {
     }
 };
 exports.SubscriptionController = SubscriptionController;
+__decorate([
+    (0, common_1.Post)('trial/:id'),
+    (0, decorator_auth_1.DecoratorWrapper)('Activate Free Trial for User', true, [role_enum_1.Role.Admin]),
+    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], SubscriptionController.prototype, "activateFreeTrial", null);
 __decorate([
     (0, common_1.Get)(),
     (0, decorator_auth_1.DecoratorWrapper)('Find Subscriptions', true, [role_enum_1.Role.Admin]),

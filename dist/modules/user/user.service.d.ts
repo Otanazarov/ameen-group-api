@@ -24,6 +24,7 @@ export declare class UserService implements OnModuleInit {
         email: string | null;
         phoneNumber: string;
         inGroup: boolean;
+        trialUsed: boolean;
     }>;
     findAll(dto: FindAllUserDto): Promise<{
         total: number;
@@ -47,8 +48,8 @@ export declare class UserService implements OnModuleInit {
                 createdAt: Date;
                 updatedAt: Date;
                 userId: number;
-                subscriptionTypeId: number;
-                transactionId: number;
+                subscriptionTypeId: number | null;
+                transactionId: number | null;
                 startDate: Date;
                 expiredDate: Date;
                 alertCount: number;
@@ -89,6 +90,7 @@ export declare class UserService implements OnModuleInit {
             email: string | null;
             phoneNumber: string;
             inGroup: boolean;
+            trialUsed: boolean;
         })[];
     }>;
     getSubscription(telegramId: number, checkStatus?: boolean): Promise<{
@@ -108,6 +110,7 @@ export declare class UserService implements OnModuleInit {
             email: string | null;
             phoneNumber: string;
             inGroup: boolean;
+            trialUsed: boolean;
         };
         transaction: {
             type: import(".prisma/client").$Enums.TransactionType;
@@ -137,8 +140,8 @@ export declare class UserService implements OnModuleInit {
         createdAt: Date;
         updatedAt: Date;
         userId: number;
-        subscriptionTypeId: number;
-        transactionId: number;
+        subscriptionTypeId: number | null;
+        transactionId: number | null;
         startDate: Date;
         expiredDate: Date;
         alertCount: number;
@@ -159,6 +162,7 @@ export declare class UserService implements OnModuleInit {
         email: string | null;
         phoneNumber: string;
         inGroup: boolean;
+        trialUsed: boolean;
     }>;
     uncancelSubscription(telegramId: string): Promise<{
         id: number;
@@ -176,6 +180,7 @@ export declare class UserService implements OnModuleInit {
         email: string | null;
         phoneNumber: string;
         inGroup: boolean;
+        trialUsed: boolean;
     }>;
     findOneByTelegramID(id: string): Promise<{
         id: number;
@@ -193,6 +198,7 @@ export declare class UserService implements OnModuleInit {
         email: string | null;
         phoneNumber: string;
         inGroup: boolean;
+        trialUsed: boolean;
     }>;
     findOne(id: number): Promise<{
         subscription: ({
@@ -212,8 +218,8 @@ export declare class UserService implements OnModuleInit {
             createdAt: Date;
             updatedAt: Date;
             userId: number;
-            subscriptionTypeId: number;
-            transactionId: number;
+            subscriptionTypeId: number | null;
+            transactionId: number | null;
             startDate: Date;
             expiredDate: Date;
             alertCount: number;
@@ -261,6 +267,7 @@ export declare class UserService implements OnModuleInit {
         email: string | null;
         phoneNumber: string;
         inGroup: boolean;
+        trialUsed: boolean;
     }>;
     update(id: number, updateUserDto: UpdateUserDto): Promise<{
         id: number;
@@ -278,5 +285,6 @@ export declare class UserService implements OnModuleInit {
         email: string | null;
         phoneNumber: string;
         inGroup: boolean;
+        trialUsed: boolean;
     }>;
 }

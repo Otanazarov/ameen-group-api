@@ -49,6 +49,7 @@ export declare class MessageController {
                 email: string | null;
                 phoneNumber: string;
                 inGroup: boolean;
+                trialUsed: boolean;
             };
             message: {
                 id: number;
