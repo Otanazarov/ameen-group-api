@@ -1,6 +1,7 @@
 import { CreateMessageDto } from './dto/create-message.dto';
 import { UpdateMessageDto } from './dto/update-message.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 import { FindAllMessageDto } from './dto/findAllMessage.dto';
 import { FindAllMessageUserDto } from './dto/findAllMessageUser.dto';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
@@ -64,6 +65,8 @@ export declare class MessageService {
                 firstName: string;
                 lastName: string;
                 lastActiveAt: Date | null;
+                cards: Prisma.JsonValue;
+                schedulerId: string | null;
                 email: string | null;
                 phoneNumber: string;
                 inGroup: boolean;

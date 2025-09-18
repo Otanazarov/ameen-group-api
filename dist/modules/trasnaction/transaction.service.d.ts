@@ -2,7 +2,7 @@ import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { FindAllTransactionDto } from './dto/findAll-transaction.dto';
-import { Transaction } from '@prisma/client';
+import { Prisma, Transaction } from '@prisma/client';
 import { SubscriptionService } from '../subscription/subscription.service';
 import { SubscriptionTypeService } from '../subscription-type/subscription-type.service';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
@@ -39,6 +39,8 @@ export declare class TransactionService {
                 firstName: string;
                 lastName: string;
                 lastActiveAt: Date | null;
+                cards: Prisma.JsonValue;
+                schedulerId: string | null;
                 email: string | null;
                 phoneNumber: string;
                 inGroup: boolean;
@@ -96,6 +98,8 @@ export declare class TransactionService {
             firstName: string;
             lastName: string;
             lastActiveAt: Date | null;
+            cards: Prisma.JsonValue;
+            schedulerId: string | null;
             email: string | null;
             phoneNumber: string;
             inGroup: boolean;
@@ -135,6 +139,8 @@ export declare class TransactionService {
             firstName: string;
             lastName: string;
             lastActiveAt: Date | null;
+            cards: Prisma.JsonValue;
+            schedulerId: string | null;
             email: string | null;
             phoneNumber: string;
             inGroup: boolean;
@@ -198,6 +204,8 @@ export declare class TransactionService {
             firstName: string;
             lastName: string;
             lastActiveAt: Date | null;
+            cards: Prisma.JsonValue;
+            schedulerId: string | null;
             email: string | null;
             phoneNumber: string;
             inGroup: boolean;

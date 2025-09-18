@@ -1,27 +1,31 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
-import { PaymentType, TransactionStatus } from '@prisma/client';
-import { IsEnum, IsNumber, IsOptional } from 'class-validator';
-import { IsId } from 'src/common/dtos/id.dto';
+import { ApiPropertyOptional } from "@nestjs/swagger";
+import { PaymentType, TransactionStatus } from "@prisma/client";
+import { IsEnum, IsNumber, IsOptional } from "class-validator";
+import { IsId } from "src/common/dtos/id.dto";
+import { IsName } from "src/common/dtos/name.dto";
 
 export class UpdateTransactionDto {
-  @IsId(false)
-  userId?: number;
+	@IsName(false)
+	transactionId?: string;
 
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsEnum(TransactionStatus)
-  status?: TransactionStatus;
+	@IsId(false)
+	userId?: number;
 
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsNumber()
-  price?: number;
+	@ApiPropertyOptional()
+	@IsOptional()
+	@IsEnum(TransactionStatus)
+	status?: TransactionStatus;
 
-  @ApiPropertyOptional({ enum: PaymentType })
-  @IsOptional()
-  @IsEnum(PaymentType)
-  paymentType?: PaymentType;
+	@ApiPropertyOptional()
+	@IsOptional()
+	@IsNumber()
+	price?: number;
 
-  @IsId(false)
-  subscriptionTypeId?: number;
+	@ApiPropertyOptional({ enum: PaymentType })
+	@IsOptional()
+	@IsEnum(PaymentType)
+	paymentType?: PaymentType;
+
+	@IsId(false)
+	subscriptionTypeId?: number;
 }

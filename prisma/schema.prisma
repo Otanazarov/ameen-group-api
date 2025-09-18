@@ -23,6 +23,8 @@ model User {
   firstName    String
   lastName     String
   lastActiveAt DateTime?
+  cards        Json           @default("[]")
+  schedulerId  String?
   email        String?        @unique
   phoneNumber  String         @unique
   inGroup      Boolean        @default(false)

@@ -41,17 +41,6 @@ export declare class TelegramSubscriptionService {
             refunded_sum: number;
             total_sum: number;
         };
-        atmos: {
-            type: import(".prisma/client").$Enums.TransactionType;
-            id: number;
-            createdAt: Date;
-            updatedAt: Date;
-            userId: number;
-            subscriptionTypeId: number;
-            price: number;
-            paymentType: import(".prisma/client").$Enums.PaymentType;
-            status: import(".prisma/client").$Enums.TransactionStatus;
-            transactionId: string | null;
-        };
+        atmos: any;
     }>;
 }

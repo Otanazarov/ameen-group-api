@@ -18,62 +18,113 @@ const transaction_service_1 = require("../trasnaction/transaction.service");
 const client_1 = require("@prisma/client");
 const http_error_1 = require("../../common/exception/http.error");
 const telegram_service_1 = require("../telegram/telegram.service");
+const dayjs_1 = require("dayjs");
 let AtmosService = class AtmosService {
     constructor(prisma, transactionService, telegramService) {
         this.prisma = prisma;
         this.transactionService = transactionService;
         this.telegramService = telegramService;
     }
-    async createLink(dto) {
-        const { userId, subscriptionTypeId } = dto;
-        if (!userId || !subscriptionTypeId) {
-            throw new Error("Missing userId or subscriptionTypeId");
-        }
+    async createScheduler(dto) {
+        const { data } = await axios_1.atmosApi.post("/pay-scheduler/create", {
+            payment: {
+                date_start: (0, dayjs_1.default)(dto.date_start).format("YYYY-MM-DD"),
+                date_finish: (0, dayjs_1.default)().add(100, "year").format("YYYY-MM-DD"),
+                login: dto.login,
+                pay_day: dto.pay_day,
+                pay_time: "08:00",
+                repeat_interval: dto.repeat_interval,
+                repeat_times: 999,
+                ext_id: dto.ext_id,
+                repeat_low_balance: true,
+                amount: dto.amount,
+                cards: `[${dto.cards.join(",")}]`,
+                store_id: config_1.env.ATMOS_STORE_ID,
+                account: dto.account,
+            },
+        });
+        return data;
+    }
+    async confirmScheduler(dto) {
+        const { data } = await axios_1.atmosApi.post("/pay-scheduler/confirm", dto);
+        return data;
+    }
+    async deleteScheduler(scheduler_id) {
+        const { data } = await axios_1.atmosApi.post("/pay-scheduler/delete", {
+            scheduler_id,
+        });
+        return data;
+    }
+    async getScheduler(scheduler_id) {
+        const { data } = await axios_1.atmosApi.post("/pay-scheduler/get", {
+            scheduler_id,
+        });
+        return data;
+    }
+    async getSchedulers(login) {
+        const { data } = await axios_1.atmosApi.post("/pay-scheduler/get-all", {
+            login,
+        });
+        return data;
+    }
+    async _createScheduler(userId, subscriptionTypeId) {
         const user = await this.prisma.user.findUnique({
             where: { id: userId },
         });
         if (!user) {
-            throw new Error("User not found");
+            throw new common_1.HttpException("User not found", 404);
         }
         const subscriptionType = await this.prisma.subscriptionType.findUnique({
             where: { id: subscriptionTypeId },
         });
         if (!subscriptionType) {
-            throw new Error("Subscription type not found");
+            throw new common_1.HttpException("Subscription type not found", 404);
         }
-        try {
-            var res = await axios_1.atmosApi.post("merchant/pay/create", {
-                store_id: config_1.env.ATMOS_STORE_ID,
-                account: user.id,
-                amount: (subscriptionType.price * 100).toString(),
-                details: subscriptionType.id.toString(),
-                lang: "en",
-            });
+        const cards = user.cards || [];
+        if (cards.length === 0) {
+            throw new common_1.HttpException("User has no saved cards. Please add a card first.", 400);
         }
-        catch (e) {
-            throw new Error("Error creating transaction");
-        }
-        console.log("url: ", res.config.url);
-        console.log("body: ", {
-            store_id: config_1.env.ATMOS_STORE_ID,
-            account: user.id,
-            amount: (subscriptionType.price * 100).toString(),
-            details: subscriptionType.id.toString(),
-            lang: "en",
-        });
-        console.log("response: ", res.data);
-        if (!res.data?.transaction_id)
-            throw new Error("Transaction ID not found");
-        const transactionId = res.data.transaction_id;
         const transaction = await this.transactionService.create({
             userId: user.id,
             subscriptionTypeId,
             price: subscriptionType.price,
             paymentType: "ATMOS",
             status: "Created",
-            transactionId: transactionId.toString(),
+            transactionId: null,
         });
-        return transaction;
+        const repeat_interval = 1;
+        const schedulerData = {
+            date_start: new Date(),
+            login: user.username,
+            pay_day: (0, dayjs_1.default)().date(),
+            ext_id: transaction.id.toString(),
+            amount: subscriptionType.price * 100,
+            cards: cards,
+            account: user.id.toString(),
+            repeat_interval: repeat_interval,
+        };
+        const scheduler = await this.createScheduler(schedulerData);
+        if (!scheduler.scheduler_id) {
+            await this.transactionService.update(transaction.id, {
+                status: "Failed",
+            });
+            throw new common_1.HttpException("Failed to create payment scheduler.", 500);
+        }
+        await this.prisma.user.update({
+            where: { id: userId },
+            data: { schedulerId: scheduler.scheduler_id.toString() },
+        });
+        await this.transactionService.update(transaction.id, {
+            transactionId: scheduler.scheduler_id.toString(),
+        });
+        return scheduler;
+    }
+    async createLink(dto) {
+        const { userId, subscriptionTypeId } = dto;
+        if (!userId || !subscriptionTypeId) {
+            throw new common_1.HttpException("Missing userId or subscriptionTypeId", 400);
+        }
+        return this._createScheduler(userId, subscriptionTypeId);
     }
     async preApplyTransaction(dto) {
         const preApplyData = {
@@ -140,6 +191,37 @@ let AtmosService = class AtmosService {
             });
         }
         return data;
+    }
+    async bindCardInit(dto) {
+        const { data } = await axios_1.atmosApi.post("/partner/bind-card/init", dto);
+        return data;
+    }
+    async bindCardConfirm(dto) {
+        const { data } = await axios_1.atmosApi.post("/partner/bind-card/confirm", {
+            transaction_id: dto.transaction_id,
+            otp: dto.otp,
+        });
+        let schedulerData = null;
+        if (data.result.code == "OK") {
+            const user = await this.prisma.user.findUnique({
+                where: { id: dto.userId },
+            });
+            let existingCards = [];
+            if (user.cards && Array.isArray(user.cards)) {
+                existingCards = user.cards;
+            }
+            const newCards = [...existingCards, data.data.card_id];
+            await this.prisma.user.update({
+                where: { id: dto.userId },
+                data: {
+                    cards: newCards,
+                },
+            });
+            if (dto.subscriptionTypeId) {
+                schedulerData = await this._createScheduler(dto.userId, dto.subscriptionTypeId);
+            }
+        }
+        return { cardConfirmData: data, schedulerData };
     }
 };
 exports.AtmosService = AtmosService;

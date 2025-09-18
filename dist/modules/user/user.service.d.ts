@@ -1,8 +1,9 @@
-import { OnModuleInit } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { FindAllUserDto } from './dto/findAll-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { OnModuleInit } from "@nestjs/common";
+import { Prisma } from "@prisma/client";
+import { PrismaService } from "../prisma/prisma.service";
+import { CreateUserDto } from "./dto/create-user.dto";
+import { FindAllUserDto } from "./dto/findAll-user.dto";
+import { UpdateUserDto } from "./dto/update-user.dto";
 export declare class UserService implements OnModuleInit {
     private readonly prisma;
     constructor(prisma: PrismaService);
@@ -18,6 +19,8 @@ export declare class UserService implements OnModuleInit {
         firstName: string;
         lastName: string;
         lastActiveAt: Date | null;
+        cards: Prisma.JsonValue;
+        schedulerId: string | null;
         email: string | null;
         phoneNumber: string;
         inGroup: boolean;
@@ -81,6 +84,8 @@ export declare class UserService implements OnModuleInit {
             firstName: string;
             lastName: string;
             lastActiveAt: Date | null;
+            cards: Prisma.JsonValue;
+            schedulerId: string | null;
             email: string | null;
             phoneNumber: string;
             inGroup: boolean;
@@ -98,6 +103,8 @@ export declare class UserService implements OnModuleInit {
             firstName: string;
             lastName: string;
             lastActiveAt: Date | null;
+            cards: Prisma.JsonValue;
+            schedulerId: string | null;
             email: string | null;
             phoneNumber: string;
             inGroup: boolean;
@@ -147,6 +154,8 @@ export declare class UserService implements OnModuleInit {
         firstName: string;
         lastName: string;
         lastActiveAt: Date | null;
+        cards: Prisma.JsonValue;
+        schedulerId: string | null;
         email: string | null;
         phoneNumber: string;
         inGroup: boolean;
@@ -162,6 +171,8 @@ export declare class UserService implements OnModuleInit {
         firstName: string;
         lastName: string;
         lastActiveAt: Date | null;
+        cards: Prisma.JsonValue;
+        schedulerId: string | null;
         email: string | null;
         phoneNumber: string;
         inGroup: boolean;
@@ -177,6 +188,8 @@ export declare class UserService implements OnModuleInit {
         firstName: string;
         lastName: string;
         lastActiveAt: Date | null;
+        cards: Prisma.JsonValue;
+        schedulerId: string | null;
         email: string | null;
         phoneNumber: string;
         inGroup: boolean;
@@ -243,6 +256,8 @@ export declare class UserService implements OnModuleInit {
         firstName: string;
         lastName: string;
         lastActiveAt: Date | null;
+        cards: Prisma.JsonValue;
+        schedulerId: string | null;
         email: string | null;
         phoneNumber: string;
         inGroup: boolean;
@@ -258,6 +273,8 @@ export declare class UserService implements OnModuleInit {
         firstName: string;
         lastName: string;
         lastActiveAt: Date | null;
+        cards: Prisma.JsonValue;
+        schedulerId: string | null;
         email: string | null;
         phoneNumber: string;
         inGroup: boolean;

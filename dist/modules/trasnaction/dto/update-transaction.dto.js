@@ -14,9 +14,14 @@ const swagger_1 = require("@nestjs/swagger");
 const client_1 = require("@prisma/client");
 const class_validator_1 = require("class-validator");
 const id_dto_1 = require("../../../common/dtos/id.dto");
+const name_dto_1 = require("../../../common/dtos/name.dto");
 class UpdateTransactionDto {
 }
 exports.UpdateTransactionDto = UpdateTransactionDto;
+__decorate([
+    (0, name_dto_1.IsName)(false),
+    __metadata("design:type", String)
+], UpdateTransactionDto.prototype, "transactionId", void 0);
 __decorate([
     (0, id_dto_1.IsId)(false),
     __metadata("design:type", Number)

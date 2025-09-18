@@ -21,6 +21,8 @@ export declare class SubscriptionController {
                 firstName: string;
                 lastName: string;
                 lastActiveAt: Date | null;
+                cards: import("@prisma/client/runtime/library").JsonValue;
+                schedulerId: string | null;
                 email: string | null;
                 phoneNumber: string;
                 inGroup: boolean;
@@ -88,6 +90,8 @@ export declare class SubscriptionController {
             firstName: string;
             lastName: string;
             lastActiveAt: Date | null;
+            cards: import("@prisma/client/runtime/library").JsonValue;
+            schedulerId: string | null;
             email: string | null;
             phoneNumber: string;
             inGroup: boolean;
@@ -137,6 +141,8 @@ export declare class SubscriptionController {
             firstName: string;
             lastName: string;
             lastActiveAt: Date | null;
+            cards: import("@prisma/client/runtime/library").JsonValue;
+            schedulerId: string | null;
             email: string | null;
             phoneNumber: string;
             inGroup: boolean;

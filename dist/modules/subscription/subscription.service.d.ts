@@ -2,6 +2,7 @@ import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 import { UpdateSubscriptionDto } from './dto/update-subscription.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { FindAllSubscriptionDto } from './dto/findAll-subscription.dto';
+import { Prisma } from '@prisma/client';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 export declare class SubscriptionService {
     private readonly prisma;
@@ -18,6 +19,8 @@ export declare class SubscriptionService {
             firstName: string;
             lastName: string;
             lastActiveAt: Date | null;
+            cards: Prisma.JsonValue;
+            schedulerId: string | null;
             email: string | null;
             phoneNumber: string;
             inGroup: boolean;
@@ -60,6 +63,8 @@ export declare class SubscriptionService {
                 firstName: string;
                 lastName: string;
                 lastActiveAt: Date | null;
+                cards: Prisma.JsonValue;
+                schedulerId: string | null;
                 email: string | null;
                 phoneNumber: string;
                 inGroup: boolean;
@@ -127,6 +132,8 @@ export declare class SubscriptionService {
             firstName: string;
             lastName: string;
             lastActiveAt: Date | null;
+            cards: Prisma.JsonValue;
+            schedulerId: string | null;
             email: string | null;
             phoneNumber: string;
             inGroup: boolean;
@@ -177,6 +184,8 @@ export declare class SubscriptionService {
             firstName: string;
             lastName: string;
             lastActiveAt: Date | null;
+            cards: Prisma.JsonValue;
+            schedulerId: string | null;
             email: string | null;
             phoneNumber: string;
             inGroup: boolean;
