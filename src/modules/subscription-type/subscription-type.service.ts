@@ -6,7 +6,7 @@ import { FindAllSubscriptionTypeDto } from './dto/findAll-subscriptionType.dto';
 
 @Injectable()
 export class SubscriptionTypeService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
   async create(createSubscriptionTypeDto: CreateSubscriptionTypeDto) {
     const subscriptionType = await this.prisma.subscriptionType.create({
       data: {
@@ -15,6 +15,7 @@ export class SubscriptionTypeService {
         description: createSubscriptionTypeDto.description,
         expireDays: createSubscriptionTypeDto.expireDays,
         oneTime: createSubscriptionTypeDto.oneTime,
+        viaTariffId: createSubscriptionTypeDto.viaTariffId,
       },
     });
 
@@ -89,6 +90,7 @@ export class SubscriptionTypeService {
       title: dto.title ?? existing.title,
       description: dto.description ?? existing.description,
       expireDays: dto.expireDays ?? existing.expireDays,
+      viaTariffId: dto.viaTariffId ?? existing.viaTariffId,
     };
 
     const updatedSubscriptionType = await this.prisma.subscriptionType.update({

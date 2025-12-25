@@ -17,25 +17,26 @@ model Admin {
 }
 
 model User {
-  id           Int            @id @default(autoincrement())
-  telegramId   String         @unique
-  username     String?
-  firstName    String
-  lastName     String
-  lastActiveAt DateTime?
-  cards        Json           @default("[]")
-  schedulerId  String?
-  email        String?        @unique
-  phoneNumber  String         @unique
-  inGroup      Boolean        @default(false)
-  status       UserStatus     @default(REGISTERED)
-  role         UserRole       @default(USER)
-  trialUsed    Boolean        @default(false)
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  subscription Subscription[]
-  messageUser  MessageUser[]
-  transaction  Transaction[]
+  id            Int            @id @default(autoincrement())
+  telegramId    String         @unique
+  username      String?
+  firstName     String
+  lastName      String
+  lastActiveAt  DateTime?
+  cards         Json           @default("[]")
+  schedulerId   String?
+  viaContractId String?
+  email         String?        @unique
+  phoneNumber   String         @unique
+  inGroup       Boolean        @default(false)
+  status        UserStatus     @default(REGISTERED)
+  role          UserRole       @default(USER)
+  trialUsed     Boolean        @default(false)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  subscription  Subscription[]
+  messageUser   MessageUser[]
+  transaction   Transaction[]
 }
 
 model Subscription {
@@ -46,6 +47,7 @@ model Subscription {
   startDate          DateTime
   alertCount         Int               @default(0)
   subscriptionTypeId Int?
+  viaContractId      String?
   createdAt          DateTime          @default(now())
   updatedAt          DateTime          @updatedAt
   user               User              @relation(fields: [userId], references: [id])
@@ -79,6 +81,7 @@ model SubscriptionType {
   subscriptions Subscription[]
   isDeleted     Boolean        @default(false)
   oneTime       Boolean        @default(false)
+  viaTariffId   String?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   Transaction   Transaction[]
@@ -182,6 +185,7 @@ enum PaymentType {
   ATMOS
   STRIPE
   OCTOBANK
+  VIA
 }
 
 enum TransactionType {

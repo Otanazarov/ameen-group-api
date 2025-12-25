@@ -19,5 +19,7 @@ exports.env = (0, envalid_1.cleanEnv)(process.env, {
     ATMOS_CONSUMER_SECRET: (0, envalid_1.str)(),
     OCTOBANK_SECRET_KEY: (0, envalid_1.str)(),
     OCTOBANK_SHOP_ID: (0, envalid_1.str)(),
+    VIA_CLIENT_ID: (0, envalid_1.str)(),
+    VIA_CLIENT_SECRET: (0, envalid_1.str)(),
 });
 //# sourceMappingURL=index.js.map

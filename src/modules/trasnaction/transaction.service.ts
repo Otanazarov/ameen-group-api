@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -13,9 +13,10 @@ import { HttpError } from 'src/common/exception/http.error';
 export class TransactionService {
   constructor(
     private readonly prisma: PrismaService,
+    @Inject(forwardRef(() => SubscriptionService))
     private readonly subscriptionService: SubscriptionService,
     private readonly subscriptionTypeService: SubscriptionTypeService,
-  ) {}
+  ) { }
 
   async create(createTransactionDto: CreateTransactionDto) {
     const user = await this.prisma.user.findUnique({

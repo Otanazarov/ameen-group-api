@@ -10,9 +10,9 @@ import { TransactionModule } from '../trasnaction/transaction.module';
   controllers: [OctoBankController],
   exports: [OctoBankService],
   imports: [
-    SubscriptionModule,
-    TransactionModule,
+    forwardRef(() => SubscriptionModule),
+    forwardRef(() => TransactionModule),
     forwardRef(() => TelegramModule),
   ],
 })
-export class OctoBankModule {}
+export class OctoBankModule { }

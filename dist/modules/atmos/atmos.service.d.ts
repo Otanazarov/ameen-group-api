@@ -33,16 +33,16 @@ export declare class AtmosService {
         otp: string;
     }): Promise<any>;
     getPendingInvoices(): Promise<{
-        type: import(".prisma/client").$Enums.TransactionType;
         id: number;
+        userId: number;
+        transactionId: string | null;
+        subscriptionTypeId: number;
         createdAt: Date;
         updatedAt: Date;
-        userId: number;
-        subscriptionTypeId: number;
+        status: import(".prisma/client").$Enums.TransactionStatus;
         price: number;
         paymentType: import(".prisma/client").$Enums.PaymentType;
-        status: import(".prisma/client").$Enums.TransactionStatus;
-        transactionId: string | null;
+        type: import(".prisma/client").$Enums.TransactionType;
     }[]>;
     checkTransactionStatus(transactionId: string): Promise<any>;
     bindCardInit(dto: BindCardInitDto): Promise<any>;

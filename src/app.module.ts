@@ -14,6 +14,7 @@ import { SubscriptionModule } from './modules/subscription/subscription.module';
 import { UserModule } from './modules/user/user.module';
 import { OctoBankModule } from './modules/octobank/octobank.module';
 import { FilesModule } from './modules/files/files.module';
+import { ViaModule } from './modules/via/via.module';
 
 @Module({
   controllers: [],
@@ -47,6 +48,7 @@ import { FilesModule } from './modules/files/files.module';
     }),
     StatisticsModule,
     FilesModule,
+    ViaModule,
   ],
 })
-export class AppModule {}
+export class AppModule { }

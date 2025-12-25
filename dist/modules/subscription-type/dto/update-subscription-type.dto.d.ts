@@ -3,5 +3,6 @@ export declare class UpdateSubscriptionTypeDto {
     title?: string;
     description?: string;
     expireDays?: number;
+    viaTariffId?: string;
     telegramTopicIds?: number[];
 }

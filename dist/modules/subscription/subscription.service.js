@@ -8,14 +8,19 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SubscriptionService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
 const findAll_subscription_dto_1 = require("./dto/findAll-subscription.dto");
+const via_service_1 = require("../via/via.service");
 let SubscriptionService = class SubscriptionService {
-    constructor(prisma) {
+    constructor(prisma, viaService) {
         this.prisma = prisma;
+        this.viaService = viaService;
     }
     async activateFreeTrial(userId) {
         const user = await this.prisma.user.findUnique({
@@ -264,10 +269,147 @@ let SubscriptionService = class SubscriptionService {
             },
         });
     }
+    async createViaSubscription(userId, subscriptionTypeId, cardToken) {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+        });
+        if (!user) {
+            throw new common_1.HttpException('User not found', 404);
+        }
+        const subscriptionType = await this.prisma.subscriptionType.findUnique({
+            where: { id: subscriptionTypeId },
+        });
+        if (!subscriptionType) {
+            throw new common_1.HttpException('Subscription type not found', 404);
+        }
+        if (!subscriptionType.viaTariffId) {
+            throw new common_1.HttpException('Via tariff ID not configured for this subscription type', 400);
+        }
+        const transaction = await this.prisma.transaction.create({
+            data: {
+                userId: user.id,
+                subscriptionTypeId,
+                price: subscriptionType.price,
+                paymentType: 'VIA',
+                status: 'Created',
+            },
+        });
+        try {
+            const contract = await this.viaService.createContract({
+                tariffId: subscriptionType.viaTariffId,
+                cardToken: cardToken,
+            });
+            if (!contract.data || !contract.data.id) {
+                throw new Error('Failed to create Via contract');
+            }
+            const activatedContract = await this.viaService.activateContract(contract.data.id);
+            const startDate = new Date(activatedContract.data.contractDate * 1000);
+            const expiredDate = new Date(activatedContract.data.nextPayDate * 1000);
+            await this.prisma.user.update({
+                where: { id: userId },
+                data: {
+                    viaContractId: activatedContract.data.id,
+                    status: 'SUBSCRIBE',
+                },
+            });
+            await this.prisma.transaction.update({
+                where: { id: transaction.id },
+                data: {
+                    status: 'Paid',
+                    transactionId: activatedContract.data.id,
+                },
+            });
+            const subscription = await this.prisma.subscription.create({
+                data: {
+                    userId: userId,
+                    subscriptionTypeId: subscriptionTypeId,
+                    transactionId: transaction.id,
+                    startDate: startDate.toString(),
+                    expiredDate: expiredDate.toString(),
+                    viaContractId: activatedContract.data.id,
+                    alertCount: 0,
+                },
+            });
+            return {
+                subscription,
+                viaData: activatedContract.data,
+            };
+        }
+        catch (error) {
+            await this.prisma.transaction.update({
+                where: { id: transaction.id },
+                data: { status: 'Failed' },
+            });
+            throw new common_1.HttpException(error.message || 'Via subscription creation failed', error.status || 500);
+        }
+    }
+    async deactivateViaSubscription(contractId) {
+        const user = await this.prisma.user.findFirst({
+            where: { viaContractId: contractId },
+        });
+        if (!user) {
+            throw new common_1.HttpException('User with this contract ID not found', 404);
+        }
+        try {
+            const response = await this.viaService.deactivateContract(contractId);
+            await this.prisma.user.update({
+                where: { id: user.id },
+                data: {
+                    status: 'UNSUBSCRIBE',
+                },
+            });
+            await this.prisma.subscription.updateMany({
+                where: {
+                    viaContractId: contractId,
+                    expiredDate: { gt: new Date() },
+                },
+                data: {
+                    expiredDate: new Date(),
+                },
+            });
+            return response.data;
+        }
+        catch (error) {
+            throw new common_1.HttpException(error.message || 'Via subscription deactivation failed', error.status || 500);
+        }
+    }
+    async deleteViaSubscription(contractId) {
+        const user = await this.prisma.user.findFirst({
+            where: { viaContractId: contractId },
+        });
+        if (!user) {
+            throw new common_1.HttpException('User with this contract ID not found', 404);
+        }
+        try {
+            const response = await this.viaService.deleteContract(contractId);
+            await this.prisma.user.update({
+                where: { id: user.id },
+                data: {
+                    status: 'UNSUBSCRIBE',
+                    viaContractId: null,
+                },
+            });
+            await this.prisma.subscription.updateMany({
+                where: {
+                    viaContractId: contractId,
+                    expiredDate: { gt: new Date() },
+                },
+                data: {
+                    expiredDate: new Date(),
+                },
+            });
+            return response;
+        }
+        catch (error) {
+            throw new common_1.HttpException(error.message || 'Via subscription deletion failed', error.status || 500);
+        }
+    }
 };
 exports.SubscriptionService = SubscriptionService;
 exports.SubscriptionService = SubscriptionService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __param(1, (0, common_1.Inject)((0, common_1.forwardRef)(() => via_service_1.ViaService))),
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        via_service_1.ViaService])
 ], SubscriptionService);
 //# sourceMappingURL=subscription.service.js.map

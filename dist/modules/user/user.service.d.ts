@@ -21,6 +21,7 @@ export declare class UserService implements OnModuleInit {
         lastActiveAt: Date | null;
         cards: Prisma.JsonValue;
         schedulerId: string | null;
+        viaContractId: string | null;
         email: string | null;
         phoneNumber: string;
         inGroup: boolean;
@@ -42,6 +43,7 @@ export declare class UserService implements OnModuleInit {
                     oneTime: boolean;
                     expireDays: number;
                     isDeleted: boolean;
+                    viaTariffId: string | null;
                 };
             } & {
                 id: number;
@@ -52,6 +54,7 @@ export declare class UserService implements OnModuleInit {
                 transactionId: number | null;
                 startDate: Date;
                 expiredDate: Date;
+                viaContractId: string | null;
                 alertCount: number;
             })[];
             transaction: {
@@ -87,6 +90,7 @@ export declare class UserService implements OnModuleInit {
             lastActiveAt: Date | null;
             cards: Prisma.JsonValue;
             schedulerId: string | null;
+            viaContractId: string | null;
             email: string | null;
             phoneNumber: string;
             inGroup: boolean;
@@ -107,6 +111,7 @@ export declare class UserService implements OnModuleInit {
             lastActiveAt: Date | null;
             cards: Prisma.JsonValue;
             schedulerId: string | null;
+            viaContractId: string | null;
             email: string | null;
             phoneNumber: string;
             inGroup: boolean;
@@ -134,6 +139,7 @@ export declare class UserService implements OnModuleInit {
             oneTime: boolean;
             expireDays: number;
             isDeleted: boolean;
+            viaTariffId: string | null;
         };
     } & {
         id: number;
@@ -144,6 +150,7 @@ export declare class UserService implements OnModuleInit {
         transactionId: number | null;
         startDate: Date;
         expiredDate: Date;
+        viaContractId: string | null;
         alertCount: number;
     }>;
     cancelSubscription(telegramId: string): Promise<{
@@ -159,6 +166,7 @@ export declare class UserService implements OnModuleInit {
         lastActiveAt: Date | null;
         cards: Prisma.JsonValue;
         schedulerId: string | null;
+        viaContractId: string | null;
         email: string | null;
         phoneNumber: string;
         inGroup: boolean;
@@ -177,6 +185,7 @@ export declare class UserService implements OnModuleInit {
         lastActiveAt: Date | null;
         cards: Prisma.JsonValue;
         schedulerId: string | null;
+        viaContractId: string | null;
         email: string | null;
         phoneNumber: string;
         inGroup: boolean;
@@ -195,6 +204,7 @@ export declare class UserService implements OnModuleInit {
         lastActiveAt: Date | null;
         cards: Prisma.JsonValue;
         schedulerId: string | null;
+        viaContractId: string | null;
         email: string | null;
         phoneNumber: string;
         inGroup: boolean;
@@ -212,6 +222,7 @@ export declare class UserService implements OnModuleInit {
                 oneTime: boolean;
                 expireDays: number;
                 isDeleted: boolean;
+                viaTariffId: string | null;
             };
         } & {
             id: number;
@@ -222,6 +233,7 @@ export declare class UserService implements OnModuleInit {
             transactionId: number | null;
             startDate: Date;
             expiredDate: Date;
+            viaContractId: string | null;
             alertCount: number;
         })[];
         transaction: {
@@ -264,6 +276,7 @@ export declare class UserService implements OnModuleInit {
         lastActiveAt: Date | null;
         cards: Prisma.JsonValue;
         schedulerId: string | null;
+        viaContractId: string | null;
         email: string | null;
         phoneNumber: string;
         inGroup: boolean;
@@ -282,6 +295,7 @@ export declare class UserService implements OnModuleInit {
         lastActiveAt: Date | null;
         cards: Prisma.JsonValue;
         schedulerId: string | null;
+        viaContractId: string | null;
         email: string | null;
         phoneNumber: string;
         inGroup: boolean;

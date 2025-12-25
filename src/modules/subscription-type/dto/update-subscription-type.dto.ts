@@ -24,6 +24,11 @@ export class UpdateSubscriptionTypeDto {
   expireDays?: number;
 
 
+  @ApiPropertyOptional({ example: 'trf_...' })
+  @IsOptional()
+  @IsString()
+  viaTariffId?: string;
+
   @ApiPropertyOptional({ example: [101001, 101002] })
   @IsOptional()
   @IsArray()

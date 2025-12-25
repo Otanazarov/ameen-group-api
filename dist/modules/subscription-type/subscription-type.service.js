@@ -24,6 +24,7 @@ let SubscriptionTypeService = class SubscriptionTypeService {
                 description: createSubscriptionTypeDto.description,
                 expireDays: createSubscriptionTypeDto.expireDays,
                 oneTime: createSubscriptionTypeDto.oneTime,
+                viaTariffId: createSubscriptionTypeDto.viaTariffId,
             },
         });
         return {
@@ -92,6 +93,7 @@ let SubscriptionTypeService = class SubscriptionTypeService {
             title: dto.title ?? existing.title,
             description: dto.description ?? existing.description,
             expireDays: dto.expireDays ?? existing.expireDays,
+            viaTariffId: dto.viaTariffId ?? existing.viaTariffId,
         };
         const updatedSubscriptionType = await this.prisma.subscriptionType.update({
             where: { id },

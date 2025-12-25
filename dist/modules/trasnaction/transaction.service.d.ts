@@ -12,16 +12,16 @@ export declare class TransactionService {
     private readonly subscriptionTypeService;
     constructor(prisma: PrismaService, subscriptionService: SubscriptionService, subscriptionTypeService: SubscriptionTypeService);
     create(createTransactionDto: CreateTransactionDto): Promise<{
-        type: import(".prisma/client").$Enums.TransactionType;
         id: number;
+        userId: number;
+        transactionId: string | null;
+        subscriptionTypeId: number;
         createdAt: Date;
         updatedAt: Date;
-        userId: number;
-        subscriptionTypeId: number;
+        status: import(".prisma/client").$Enums.TransactionStatus;
         price: number;
         paymentType: import(".prisma/client").$Enums.PaymentType;
-        status: import(".prisma/client").$Enums.TransactionStatus;
-        transactionId: string | null;
+        type: import(".prisma/client").$Enums.TransactionType;
     }>;
     findAll(dto: FindAllTransactionDto): Promise<{
         total: number;
@@ -30,12 +30,11 @@ export declare class TransactionService {
         data: ({
             user: {
                 id: number;
+                viaContractId: string | null;
                 createdAt: Date;
                 updatedAt: Date;
-                role: import(".prisma/client").$Enums.UserRole;
-                status: import(".prisma/client").$Enums.UserStatus;
-                username: string | null;
                 telegramId: string;
+                username: string | null;
                 firstName: string;
                 lastName: string;
                 lastActiveAt: Date | null;
@@ -44,30 +43,33 @@ export declare class TransactionService {
                 email: string | null;
                 phoneNumber: string;
                 inGroup: boolean;
+                status: import(".prisma/client").$Enums.UserStatus;
+                role: import(".prisma/client").$Enums.UserRole;
                 trialUsed: boolean;
             };
             subscriptionType: {
-                description: string;
-                title: string;
                 id: number;
                 createdAt: Date;
                 updatedAt: Date;
                 price: number;
-                oneTime: boolean;
+                title: string;
+                description: string;
                 expireDays: number;
                 isDeleted: boolean;
+                oneTime: boolean;
+                viaTariffId: string | null;
             };
         } & {
-            type: import(".prisma/client").$Enums.TransactionType;
             id: number;
+            userId: number;
+            transactionId: string | null;
+            subscriptionTypeId: number;
             createdAt: Date;
             updatedAt: Date;
-            userId: number;
-            subscriptionTypeId: number;
+            status: import(".prisma/client").$Enums.TransactionStatus;
             price: number;
             paymentType: import(".prisma/client").$Enums.PaymentType;
-            status: import(".prisma/client").$Enums.TransactionStatus;
-            transactionId: string | null;
+            type: import(".prisma/client").$Enums.TransactionType;
         })[];
     }>;
     findOneByUserId(userId: number, dto: PaginationDto): Promise<{
@@ -75,27 +77,26 @@ export declare class TransactionService {
         page: number;
         limit: number;
         data: {
-            type: import(".prisma/client").$Enums.TransactionType;
             id: number;
+            userId: number;
+            transactionId: string | null;
+            subscriptionTypeId: number;
             createdAt: Date;
             updatedAt: Date;
-            userId: number;
-            subscriptionTypeId: number;
+            status: import(".prisma/client").$Enums.TransactionStatus;
             price: number;
             paymentType: import(".prisma/client").$Enums.PaymentType;
-            status: import(".prisma/client").$Enums.TransactionStatus;
-            transactionId: string | null;
+            type: import(".prisma/client").$Enums.TransactionType;
         }[];
     }>;
     findOneByTransactionId(transactionId: string): Promise<{
         user: {
             id: number;
+            viaContractId: string | null;
             createdAt: Date;
             updatedAt: Date;
-            role: import(".prisma/client").$Enums.UserRole;
-            status: import(".prisma/client").$Enums.UserStatus;
-            username: string | null;
             telegramId: string;
+            username: string | null;
             firstName: string;
             lastName: string;
             lastActiveAt: Date | null;
@@ -104,40 +105,42 @@ export declare class TransactionService {
             email: string | null;
             phoneNumber: string;
             inGroup: boolean;
+            status: import(".prisma/client").$Enums.UserStatus;
+            role: import(".prisma/client").$Enums.UserRole;
             trialUsed: boolean;
         };
         subscriptionType: {
-            description: string;
-            title: string;
             id: number;
             createdAt: Date;
             updatedAt: Date;
             price: number;
-            oneTime: boolean;
+            title: string;
+            description: string;
             expireDays: number;
             isDeleted: boolean;
+            oneTime: boolean;
+            viaTariffId: string | null;
         };
     } & {
-        type: import(".prisma/client").$Enums.TransactionType;
         id: number;
+        userId: number;
+        transactionId: string | null;
+        subscriptionTypeId: number;
         createdAt: Date;
         updatedAt: Date;
-        userId: number;
-        subscriptionTypeId: number;
+        status: import(".prisma/client").$Enums.TransactionStatus;
         price: number;
         paymentType: import(".prisma/client").$Enums.PaymentType;
-        status: import(".prisma/client").$Enums.TransactionStatus;
-        transactionId: string | null;
+        type: import(".prisma/client").$Enums.TransactionType;
     }>;
     findOne(id: number): Promise<{
         user: {
             id: number;
+            viaContractId: string | null;
             createdAt: Date;
             updatedAt: Date;
-            role: import(".prisma/client").$Enums.UserRole;
-            status: import(".prisma/client").$Enums.UserStatus;
-            username: string | null;
             telegramId: string;
+            username: string | null;
             firstName: string;
             lastName: string;
             lastActiveAt: Date | null;
@@ -146,64 +149,66 @@ export declare class TransactionService {
             email: string | null;
             phoneNumber: string;
             inGroup: boolean;
+            status: import(".prisma/client").$Enums.UserStatus;
+            role: import(".prisma/client").$Enums.UserRole;
             trialUsed: boolean;
         };
         subscriptionType: {
-            description: string;
-            title: string;
             id: number;
             createdAt: Date;
             updatedAt: Date;
             price: number;
-            oneTime: boolean;
+            title: string;
+            description: string;
             expireDays: number;
             isDeleted: boolean;
+            oneTime: boolean;
+            viaTariffId: string | null;
         };
     } & {
-        type: import(".prisma/client").$Enums.TransactionType;
         id: number;
+        userId: number;
+        transactionId: string | null;
+        subscriptionTypeId: number;
         createdAt: Date;
         updatedAt: Date;
-        userId: number;
-        subscriptionTypeId: number;
+        status: import(".prisma/client").$Enums.TransactionStatus;
         price: number;
         paymentType: import(".prisma/client").$Enums.PaymentType;
-        status: import(".prisma/client").$Enums.TransactionStatus;
-        transactionId: string | null;
+        type: import(".prisma/client").$Enums.TransactionType;
     }>;
     update(id: number, updateTransactionDto: UpdateTransactionDto): Promise<{
-        type: import(".prisma/client").$Enums.TransactionType;
         id: number;
+        userId: number;
+        transactionId: string | null;
+        subscriptionTypeId: number;
         createdAt: Date;
         updatedAt: Date;
-        userId: number;
-        subscriptionTypeId: number;
+        status: import(".prisma/client").$Enums.TransactionStatus;
         price: number;
         paymentType: import(".prisma/client").$Enums.PaymentType;
-        status: import(".prisma/client").$Enums.TransactionStatus;
-        transactionId: string | null;
+        type: import(".prisma/client").$Enums.TransactionType;
     }>;
     transactionPaid(transaction: Transaction): Promise<{
-        type: import(".prisma/client").$Enums.TransactionType;
         id: number;
+        userId: number;
+        transactionId: string | null;
+        subscriptionTypeId: number;
         createdAt: Date;
         updatedAt: Date;
-        userId: number;
-        subscriptionTypeId: number;
+        status: import(".prisma/client").$Enums.TransactionStatus;
         price: number;
         paymentType: import(".prisma/client").$Enums.PaymentType;
-        status: import(".prisma/client").$Enums.TransactionStatus;
-        transactionId: string | null;
+        type: import(".prisma/client").$Enums.TransactionType;
     }>;
     remove(id: number): Promise<{
         user: {
             id: number;
+            viaContractId: string | null;
             createdAt: Date;
             updatedAt: Date;
-            role: import(".prisma/client").$Enums.UserRole;
-            status: import(".prisma/client").$Enums.UserStatus;
-            username: string | null;
             telegramId: string;
+            username: string | null;
             firstName: string;
             lastName: string;
             lastActiveAt: Date | null;
@@ -212,29 +217,32 @@ export declare class TransactionService {
             email: string | null;
             phoneNumber: string;
             inGroup: boolean;
+            status: import(".prisma/client").$Enums.UserStatus;
+            role: import(".prisma/client").$Enums.UserRole;
             trialUsed: boolean;
         };
         subscriptionType: {
-            description: string;
-            title: string;
             id: number;
             createdAt: Date;
             updatedAt: Date;
             price: number;
-            oneTime: boolean;
+            title: string;
+            description: string;
             expireDays: number;
             isDeleted: boolean;
+            oneTime: boolean;
+            viaTariffId: string | null;
         };
     } & {
-        type: import(".prisma/client").$Enums.TransactionType;
         id: number;
+        userId: number;
+        transactionId: string | null;
+        subscriptionTypeId: number;
         createdAt: Date;
         updatedAt: Date;
-        userId: number;
-        subscriptionTypeId: number;
+        status: import(".prisma/client").$Enums.TransactionStatus;
         price: number;
         paymentType: import(".prisma/client").$Enums.PaymentType;
-        status: import(".prisma/client").$Enums.TransactionStatus;
-        transactionId: string | null;
+        type: import(".prisma/client").$Enums.TransactionType;
     }>;
 }

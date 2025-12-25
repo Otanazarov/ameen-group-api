@@ -46,6 +46,7 @@ export declare class MessageController {
                 lastActiveAt: Date | null;
                 cards: import("@prisma/client/runtime/library").JsonValue;
                 schedulerId: string | null;
+                viaContractId: string | null;
                 email: string | null;
                 phoneNumber: string;
                 inGroup: boolean;

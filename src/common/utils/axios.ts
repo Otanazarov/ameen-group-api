@@ -48,3 +48,11 @@ atmosApi.interceptors.response.use(
     return Promise.reject(error);
   },
 );
+
+export const viaApi = axiosI.default.create({
+  baseURL: 'https://api.viasandbox.uz',
+  headers: {
+    'Content-Type': 'application/json',
+    'accept-language': 'ru',
+  },
+});

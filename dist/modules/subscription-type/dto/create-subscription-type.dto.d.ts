@@ -4,4 +4,5 @@ export declare class CreateSubscriptionTypeDto {
     description: string;
     oneTime: boolean;
     expireDays: number;
+    viaTariffId?: string;
 }

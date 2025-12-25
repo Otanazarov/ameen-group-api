@@ -20,6 +20,7 @@ export declare class UserController {
                     oneTime: boolean;
                     expireDays: number;
                     isDeleted: boolean;
+                    viaTariffId: string | null;
                 };
             } & {
                 id: number;
@@ -30,6 +31,7 @@ export declare class UserController {
                 transactionId: number | null;
                 startDate: Date;
                 expiredDate: Date;
+                viaContractId: string | null;
                 alertCount: number;
             })[];
             transaction: {
@@ -65,6 +67,7 @@ export declare class UserController {
             lastActiveAt: Date | null;
             cards: import("@prisma/client/runtime/library").JsonValue;
             schedulerId: string | null;
+            viaContractId: string | null;
             email: string | null;
             phoneNumber: string;
             inGroup: boolean;
@@ -83,6 +86,7 @@ export declare class UserController {
                 oneTime: boolean;
                 expireDays: number;
                 isDeleted: boolean;
+                viaTariffId: string | null;
             };
         } & {
             id: number;
@@ -93,6 +97,7 @@ export declare class UserController {
             transactionId: number | null;
             startDate: Date;
             expiredDate: Date;
+            viaContractId: string | null;
             alertCount: number;
         })[];
         transaction: {
@@ -135,6 +140,7 @@ export declare class UserController {
         lastActiveAt: Date | null;
         cards: import("@prisma/client/runtime/library").JsonValue;
         schedulerId: string | null;
+        viaContractId: string | null;
         email: string | null;
         phoneNumber: string;
         inGroup: boolean;
@@ -153,6 +159,7 @@ export declare class UserController {
         lastActiveAt: Date | null;
         cards: import("@prisma/client/runtime/library").JsonValue;
         schedulerId: string | null;
+        viaContractId: string | null;
         email: string | null;
         phoneNumber: string;
         inGroup: boolean;

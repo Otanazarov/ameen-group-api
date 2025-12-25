@@ -15,6 +15,7 @@ export declare class SubscriptionTypeService {
         oneTime: boolean;
         expireDays: number;
         isDeleted: boolean;
+        viaTariffId: string | null;
     }>;
     findAll(dto: FindAllSubscriptionTypeDto): Promise<{
         total: number;
@@ -30,6 +31,7 @@ export declare class SubscriptionTypeService {
             oneTime: boolean;
             expireDays: number;
             isDeleted: boolean;
+            viaTariffId: string | null;
         }[];
     }>;
     findOne(id: number): Promise<{
@@ -42,6 +44,7 @@ export declare class SubscriptionTypeService {
         oneTime: boolean;
         expireDays: number;
         isDeleted: boolean;
+        viaTariffId: string | null;
     }>;
     update(id: number, dto: UpdateSubscriptionTypeDto): Promise<{
         price: string;
@@ -53,6 +56,7 @@ export declare class SubscriptionTypeService {
         oneTime: boolean;
         expireDays: number;
         isDeleted: boolean;
+        viaTariffId: string | null;
     }>;
     remove(id: number): Promise<{
         message: string;

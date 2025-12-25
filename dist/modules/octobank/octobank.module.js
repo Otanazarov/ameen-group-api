@@ -22,8 +22,8 @@ exports.OctoBankModule = OctoBankModule = __decorate([
         controllers: [octobank_controller_1.OctoBankController],
         exports: [octobank_service_1.OctoBankService],
         imports: [
-            subscription_module_1.SubscriptionModule,
-            transaction_module_1.TransactionModule,
+            (0, common_1.forwardRef)(() => subscription_module_1.SubscriptionModule),
+            (0, common_1.forwardRef)(() => transaction_module_1.TransactionModule),
             (0, common_1.forwardRef)(() => telegram_module_1.TelegramModule),
         ],
     })

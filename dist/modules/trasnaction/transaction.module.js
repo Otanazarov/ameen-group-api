@@ -18,7 +18,7 @@ let TransactionModule = class TransactionModule {
 exports.TransactionModule = TransactionModule;
 exports.TransactionModule = TransactionModule = __decorate([
     (0, common_1.Module)({
-        imports: [user_module_1.UserModule, subscription_module_1.SubscriptionModule, subscription_type_module_1.SubscriptionTypeModule],
+        imports: [user_module_1.UserModule, (0, common_1.forwardRef)(() => subscription_module_1.SubscriptionModule), subscription_type_module_1.SubscriptionTypeModule],
         controllers: [transaction_controller_1.TransactionController],
         providers: [transaction_service_1.TransactionService],
         exports: [transaction_service_1.TransactionService],

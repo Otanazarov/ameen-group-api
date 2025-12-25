@@ -11,12 +11,13 @@ const common_1 = require("@nestjs/common");
 const subscription_service_1 = require("./subscription.service");
 const subscription_controller_1 = require("./subscription.controller");
 const user_module_1 = require("../user/user.module");
+const via_module_1 = require("../via/via.module");
 let SubscriptionModule = class SubscriptionModule {
 };
 exports.SubscriptionModule = SubscriptionModule;
 exports.SubscriptionModule = SubscriptionModule = __decorate([
     (0, common_1.Module)({
-        imports: [user_module_1.UserModule],
+        imports: [user_module_1.UserModule, (0, common_1.forwardRef)(() => via_module_1.ViaModule)],
         controllers: [subscription_controller_1.SubscriptionController],
         providers: [subscription_service_1.SubscriptionService],
         exports: [subscription_service_1.SubscriptionService],

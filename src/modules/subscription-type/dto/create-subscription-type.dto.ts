@@ -30,4 +30,8 @@ export class CreateSubscriptionTypeDto {
   @IsNotEmpty()
   @IsNumber()
   expireDays: number;
+
+  @ApiProperty({ example: 'trf_...', required: false })
+  @IsString()
+  viaTariffId?: string;
 }

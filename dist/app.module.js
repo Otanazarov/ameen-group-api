@@ -23,6 +23,7 @@ const subscription_module_1 = require("./modules/subscription/subscription.modul
 const user_module_1 = require("./modules/user/user.module");
 const octobank_module_1 = require("./modules/octobank/octobank.module");
 const files_module_1 = require("./modules/files/files.module");
+const via_module_1 = require("./modules/via/via.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -59,6 +60,7 @@ exports.AppModule = AppModule = __decorate([
             }),
             statistics_module_1.StatisticsModule,
             files_module_1.FilesModule,
+            via_module_1.ViaModule,
         ],
     })
 ], AppModule);

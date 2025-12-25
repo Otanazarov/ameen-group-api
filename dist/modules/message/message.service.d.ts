@@ -67,6 +67,7 @@ export declare class MessageService {
                 lastActiveAt: Date | null;
                 cards: Prisma.JsonValue;
                 schedulerId: string | null;
+                viaContractId: string | null;
                 email: string | null;
                 phoneNumber: string;
                 inGroup: boolean;

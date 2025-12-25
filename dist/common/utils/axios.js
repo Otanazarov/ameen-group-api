@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.atmosApi = void 0;
+exports.viaApi = exports.atmosApi = void 0;
 const axiosI = require("axios");
 const config_1 = require("../config");
 exports.atmosApi = axiosI.default.create({
@@ -40,5 +40,12 @@ exports.atmosApi.interceptors.response.use((response) => {
         }
     }
     return Promise.reject(error);
+});
+exports.viaApi = axiosI.default.create({
+    baseURL: 'https://api.viasandbox.uz',
+    headers: {
+        'Content-Type': 'application/json',
+        'accept-language': 'ru',
+    },
 });
 //# sourceMappingURL=axios.js.map

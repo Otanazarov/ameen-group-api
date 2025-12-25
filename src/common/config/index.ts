@@ -21,4 +21,7 @@ export const env = cleanEnv(process.env, {
 
   OCTOBANK_SECRET_KEY: str(),
   OCTOBANK_SHOP_ID: str(),
+
+  VIA_CLIENT_ID: str(),
+  VIA_CLIENT_SECRET: str(),
 });

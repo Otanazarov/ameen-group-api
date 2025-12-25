@@ -14,14 +14,15 @@ export declare class TelegramSubscriptionService {
     handleSubscriptionPayment(ctx: Context, subscriptionTypeId: number): Promise<{
         subscriptionType: {
             price: string;
-            description: string;
-            title: string;
             id: number;
             createdAt: Date;
             updatedAt: Date;
-            oneTime: boolean;
+            title: string;
+            description: string;
             expireDays: number;
             isDeleted: boolean;
+            oneTime: boolean;
+            viaTariffId: string | null;
         };
         octobank: {
             error: number;

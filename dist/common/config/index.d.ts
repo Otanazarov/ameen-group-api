@@ -13,4 +13,6 @@ export declare const env: Readonly<{
     ATMOS_CONSUMER_SECRET: string;
     OCTOBANK_SECRET_KEY: string;
     OCTOBANK_SHOP_ID: string;
+    VIA_CLIENT_ID: string;
+    VIA_CLIENT_SECRET: string;
 } & import("envalid").CleanedEnvAccessors>;

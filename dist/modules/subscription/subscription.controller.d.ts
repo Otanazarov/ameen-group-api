@@ -8,12 +8,11 @@ export declare class SubscriptionController {
     activateFreeTrial(id: string): Promise<{
         user: {
             id: number;
+            viaContractId: string | null;
             createdAt: Date;
             updatedAt: Date;
-            role: import(".prisma/client").$Enums.UserRole;
-            status: import(".prisma/client").$Enums.UserStatus;
-            username: string | null;
             telegramId: string;
+            username: string | null;
             firstName: string;
             lastName: string;
             lastActiveAt: Date | null;
@@ -22,29 +21,33 @@ export declare class SubscriptionController {
             email: string | null;
             phoneNumber: string;
             inGroup: boolean;
+            status: import(".prisma/client").$Enums.UserStatus;
+            role: import(".prisma/client").$Enums.UserRole;
             trialUsed: boolean;
         };
         subscriptionType: {
-            description: string;
-            title: string;
             id: number;
             createdAt: Date;
             updatedAt: Date;
             price: number;
-            oneTime: boolean;
+            title: string;
+            description: string;
             expireDays: number;
             isDeleted: boolean;
+            oneTime: boolean;
+            viaTariffId: string | null;
         };
     } & {
         id: number;
+        userId: number;
+        transactionId: number | null;
+        expiredDate: Date;
+        startDate: Date;
+        alertCount: number;
+        subscriptionTypeId: number | null;
+        viaContractId: string | null;
         createdAt: Date;
         updatedAt: Date;
-        userId: number;
-        subscriptionTypeId: number | null;
-        transactionId: number | null;
-        startDate: Date;
-        expiredDate: Date;
-        alertCount: number;
     }>;
     findAll(dto: FindAllSubscriptionDto): Promise<{
         total: number;
@@ -53,12 +56,11 @@ export declare class SubscriptionController {
         data: ({
             user: {
                 id: number;
+                viaContractId: string | null;
                 createdAt: Date;
                 updatedAt: Date;
-                role: import(".prisma/client").$Enums.UserRole;
-                status: import(".prisma/client").$Enums.UserStatus;
-                username: string | null;
                 telegramId: string;
+                username: string | null;
                 firstName: string;
                 lastName: string;
                 lastActiveAt: Date | null;
@@ -67,29 +69,33 @@ export declare class SubscriptionController {
                 email: string | null;
                 phoneNumber: string;
                 inGroup: boolean;
+                status: import(".prisma/client").$Enums.UserStatus;
+                role: import(".prisma/client").$Enums.UserRole;
                 trialUsed: boolean;
             };
             subscriptionType: {
-                description: string;
-                title: string;
                 id: number;
                 createdAt: Date;
                 updatedAt: Date;
                 price: number;
-                oneTime: boolean;
+                title: string;
+                description: string;
                 expireDays: number;
                 isDeleted: boolean;
+                oneTime: boolean;
+                viaTariffId: string | null;
             };
         } & {
             id: number;
+            userId: number;
+            transactionId: number | null;
+            expiredDate: Date;
+            startDate: Date;
+            alertCount: number;
+            subscriptionTypeId: number | null;
+            viaContractId: string | null;
             createdAt: Date;
             updatedAt: Date;
-            userId: number;
-            subscriptionTypeId: number | null;
-            transactionId: number | null;
-            startDate: Date;
-            expiredDate: Date;
-            alertCount: number;
         })[];
     }>;
     findOneByUser(id: string, dto: PaginationDto): Promise<{
@@ -98,37 +104,38 @@ export declare class SubscriptionController {
         limit: number;
         data: ({
             subscriptionType: {
-                description: string;
-                title: string;
                 id: number;
                 createdAt: Date;
                 updatedAt: Date;
                 price: number;
-                oneTime: boolean;
+                title: string;
+                description: string;
                 expireDays: number;
                 isDeleted: boolean;
+                oneTime: boolean;
+                viaTariffId: string | null;
             };
         } & {
             id: number;
+            userId: number;
+            transactionId: number | null;
+            expiredDate: Date;
+            startDate: Date;
+            alertCount: number;
+            subscriptionTypeId: number | null;
+            viaContractId: string | null;
             createdAt: Date;
             updatedAt: Date;
-            userId: number;
-            subscriptionTypeId: number | null;
-            transactionId: number | null;
-            startDate: Date;
-            expiredDate: Date;
-            alertCount: number;
         })[];
     }>;
     findOne(id: string): Promise<{
         user: {
             id: number;
+            viaContractId: string | null;
             createdAt: Date;
             updatedAt: Date;
-            role: import(".prisma/client").$Enums.UserRole;
-            status: import(".prisma/client").$Enums.UserStatus;
-            username: string | null;
             telegramId: string;
+            username: string | null;
             firstName: string;
             lastName: string;
             lastActiveAt: Date | null;
@@ -137,50 +144,54 @@ export declare class SubscriptionController {
             email: string | null;
             phoneNumber: string;
             inGroup: boolean;
+            status: import(".prisma/client").$Enums.UserStatus;
+            role: import(".prisma/client").$Enums.UserRole;
             trialUsed: boolean;
         };
         subscriptionType: {
-            description: string;
-            title: string;
             id: number;
             createdAt: Date;
             updatedAt: Date;
             price: number;
-            oneTime: boolean;
+            title: string;
+            description: string;
             expireDays: number;
             isDeleted: boolean;
+            oneTime: boolean;
+            viaTariffId: string | null;
         };
     } & {
         id: number;
+        userId: number;
+        transactionId: number | null;
+        expiredDate: Date;
+        startDate: Date;
+        alertCount: number;
+        subscriptionTypeId: number | null;
+        viaContractId: string | null;
         createdAt: Date;
         updatedAt: Date;
-        userId: number;
-        subscriptionTypeId: number | null;
-        transactionId: number | null;
-        startDate: Date;
-        expiredDate: Date;
-        alertCount: number;
     }>;
     update(id: string, updateSubscriptionDto: UpdateSubscriptionDto): Promise<{
         id: number;
+        userId: number;
+        transactionId: number | null;
+        expiredDate: Date;
+        startDate: Date;
+        alertCount: number;
+        subscriptionTypeId: number | null;
+        viaContractId: string | null;
         createdAt: Date;
         updatedAt: Date;
-        userId: number;
-        subscriptionTypeId: number | null;
-        transactionId: number | null;
-        startDate: Date;
-        expiredDate: Date;
-        alertCount: number;
     }>;
     remove(id: string): Promise<{
         user: {
             id: number;
+            viaContractId: string | null;
             createdAt: Date;
             updatedAt: Date;
-            role: import(".prisma/client").$Enums.UserRole;
-            status: import(".prisma/client").$Enums.UserStatus;
-            username: string | null;
             telegramId: string;
+            username: string | null;
             firstName: string;
             lastName: string;
             lastActiveAt: Date | null;
@@ -189,28 +200,32 @@ export declare class SubscriptionController {
             email: string | null;
             phoneNumber: string;
             inGroup: boolean;
+            status: import(".prisma/client").$Enums.UserStatus;
+            role: import(".prisma/client").$Enums.UserRole;
             trialUsed: boolean;
         };
         subscriptionType: {
-            description: string;
-            title: string;
             id: number;
             createdAt: Date;
             updatedAt: Date;
             price: number;
-            oneTime: boolean;
+            title: string;
+            description: string;
             expireDays: number;
             isDeleted: boolean;
+            oneTime: boolean;
+            viaTariffId: string | null;
         };
     } & {
         id: number;
+        userId: number;
+        transactionId: number | null;
+        expiredDate: Date;
+        startDate: Date;
+        alertCount: number;
+        subscriptionTypeId: number | null;
+        viaContractId: string | null;
         createdAt: Date;
         updatedAt: Date;
-        userId: number;
-        subscriptionTypeId: number | null;
-        transactionId: number | null;
-        startDate: Date;
-        expiredDate: Date;
-        alertCount: number;
     }>;
 }

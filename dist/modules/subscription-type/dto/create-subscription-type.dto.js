@@ -49,4 +49,9 @@ __decorate([
     (0, class_validator_1.IsNumber)(),
     __metadata("design:type", Number)
 ], CreateSubscriptionTypeDto.prototype, "expireDays", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 'trf_...', required: false }),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateSubscriptionTypeDto.prototype, "viaTariffId", void 0);
 //# sourceMappingURL=create-subscription-type.dto.js.map

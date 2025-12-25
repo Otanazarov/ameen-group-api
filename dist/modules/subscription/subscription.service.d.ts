@@ -1,21 +1,22 @@
+import { Prisma } from '@prisma/client';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 import { UpdateSubscriptionDto } from './dto/update-subscription.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { FindAllSubscriptionDto } from './dto/findAll-subscription.dto';
-import { Prisma } from '@prisma/client';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
+import { ViaService } from '../via/via.service';
 export declare class SubscriptionService {
     private readonly prisma;
-    constructor(prisma: PrismaService);
+    private readonly viaService;
+    constructor(prisma: PrismaService, viaService: ViaService);
     activateFreeTrial(userId: number): Promise<{
         user: {
             id: number;
+            viaContractId: string | null;
             createdAt: Date;
             updatedAt: Date;
-            role: import(".prisma/client").$Enums.UserRole;
-            status: import(".prisma/client").$Enums.UserStatus;
-            username: string | null;
             telegramId: string;
+            username: string | null;
             firstName: string;
             lastName: string;
             lastActiveAt: Date | null;
@@ -24,39 +25,42 @@ export declare class SubscriptionService {
             email: string | null;
             phoneNumber: string;
             inGroup: boolean;
+            status: import(".prisma/client").$Enums.UserStatus;
+            role: import(".prisma/client").$Enums.UserRole;
             trialUsed: boolean;
         };
         subscriptionType: {
-            description: string;
-            title: string;
             id: number;
             createdAt: Date;
             updatedAt: Date;
             price: number;
-            oneTime: boolean;
+            title: string;
+            description: string;
             expireDays: number;
             isDeleted: boolean;
+            oneTime: boolean;
+            viaTariffId: string | null;
         };
     } & {
         id: number;
+        userId: number;
+        transactionId: number | null;
+        expiredDate: Date;
+        startDate: Date;
+        alertCount: number;
+        subscriptionTypeId: number | null;
+        viaContractId: string | null;
         createdAt: Date;
         updatedAt: Date;
-        userId: number;
-        subscriptionTypeId: number | null;
-        transactionId: number | null;
-        startDate: Date;
-        expiredDate: Date;
-        alertCount: number;
     }>;
     create(createSubscriptionDto: CreateSubscriptionDto): Promise<{
         user: {
             id: number;
+            viaContractId: string | null;
             createdAt: Date;
             updatedAt: Date;
-            role: import(".prisma/client").$Enums.UserRole;
-            status: import(".prisma/client").$Enums.UserStatus;
-            username: string | null;
             telegramId: string;
+            username: string | null;
             firstName: string;
             lastName: string;
             lastActiveAt: Date | null;
@@ -65,29 +69,33 @@ export declare class SubscriptionService {
             email: string | null;
             phoneNumber: string;
             inGroup: boolean;
+            status: import(".prisma/client").$Enums.UserStatus;
+            role: import(".prisma/client").$Enums.UserRole;
             trialUsed: boolean;
         };
         subscriptionType: {
-            description: string;
-            title: string;
             id: number;
             createdAt: Date;
             updatedAt: Date;
             price: number;
-            oneTime: boolean;
+            title: string;
+            description: string;
             expireDays: number;
             isDeleted: boolean;
+            oneTime: boolean;
+            viaTariffId: string | null;
         };
     } & {
         id: number;
+        userId: number;
+        transactionId: number | null;
+        expiredDate: Date;
+        startDate: Date;
+        alertCount: number;
+        subscriptionTypeId: number | null;
+        viaContractId: string | null;
         createdAt: Date;
         updatedAt: Date;
-        userId: number;
-        subscriptionTypeId: number | null;
-        transactionId: number | null;
-        startDate: Date;
-        expiredDate: Date;
-        alertCount: number;
     }>;
     findAll(dto: FindAllSubscriptionDto): Promise<{
         total: number;
@@ -96,12 +104,11 @@ export declare class SubscriptionService {
         data: ({
             user: {
                 id: number;
+                viaContractId: string | null;
                 createdAt: Date;
                 updatedAt: Date;
-                role: import(".prisma/client").$Enums.UserRole;
-                status: import(".prisma/client").$Enums.UserStatus;
-                username: string | null;
                 telegramId: string;
+                username: string | null;
                 firstName: string;
                 lastName: string;
                 lastActiveAt: Date | null;
@@ -110,29 +117,33 @@ export declare class SubscriptionService {
                 email: string | null;
                 phoneNumber: string;
                 inGroup: boolean;
+                status: import(".prisma/client").$Enums.UserStatus;
+                role: import(".prisma/client").$Enums.UserRole;
                 trialUsed: boolean;
             };
             subscriptionType: {
-                description: string;
-                title: string;
                 id: number;
                 createdAt: Date;
                 updatedAt: Date;
                 price: number;
-                oneTime: boolean;
+                title: string;
+                description: string;
                 expireDays: number;
                 isDeleted: boolean;
+                oneTime: boolean;
+                viaTariffId: string | null;
             };
         } & {
             id: number;
+            userId: number;
+            transactionId: number | null;
+            expiredDate: Date;
+            startDate: Date;
+            alertCount: number;
+            subscriptionTypeId: number | null;
+            viaContractId: string | null;
             createdAt: Date;
             updatedAt: Date;
-            userId: number;
-            subscriptionTypeId: number | null;
-            transactionId: number | null;
-            startDate: Date;
-            expiredDate: Date;
-            alertCount: number;
         })[];
     }>;
     findOneByUserId(userId: number, dto: PaginationDto): Promise<{
@@ -141,37 +152,38 @@ export declare class SubscriptionService {
         limit: number;
         data: ({
             subscriptionType: {
-                description: string;
-                title: string;
                 id: number;
                 createdAt: Date;
                 updatedAt: Date;
                 price: number;
-                oneTime: boolean;
+                title: string;
+                description: string;
                 expireDays: number;
                 isDeleted: boolean;
+                oneTime: boolean;
+                viaTariffId: string | null;
             };
         } & {
             id: number;
+            userId: number;
+            transactionId: number | null;
+            expiredDate: Date;
+            startDate: Date;
+            alertCount: number;
+            subscriptionTypeId: number | null;
+            viaContractId: string | null;
             createdAt: Date;
             updatedAt: Date;
-            userId: number;
-            subscriptionTypeId: number | null;
-            transactionId: number | null;
-            startDate: Date;
-            expiredDate: Date;
-            alertCount: number;
         })[];
     }>;
     findOne(id: number): Promise<{
         user: {
             id: number;
+            viaContractId: string | null;
             createdAt: Date;
             updatedAt: Date;
-            role: import(".prisma/client").$Enums.UserRole;
-            status: import(".prisma/client").$Enums.UserStatus;
-            username: string | null;
             telegramId: string;
+            username: string | null;
             firstName: string;
             lastName: string;
             lastActiveAt: Date | null;
@@ -180,51 +192,55 @@ export declare class SubscriptionService {
             email: string | null;
             phoneNumber: string;
             inGroup: boolean;
+            status: import(".prisma/client").$Enums.UserStatus;
+            role: import(".prisma/client").$Enums.UserRole;
             trialUsed: boolean;
         };
         subscriptionType: {
-            description: string;
-            title: string;
             id: number;
             createdAt: Date;
             updatedAt: Date;
             price: number;
-            oneTime: boolean;
+            title: string;
+            description: string;
             expireDays: number;
             isDeleted: boolean;
+            oneTime: boolean;
+            viaTariffId: string | null;
         };
     } & {
         id: number;
+        userId: number;
+        transactionId: number | null;
+        expiredDate: Date;
+        startDate: Date;
+        alertCount: number;
+        subscriptionTypeId: number | null;
+        viaContractId: string | null;
         createdAt: Date;
         updatedAt: Date;
-        userId: number;
-        subscriptionTypeId: number | null;
-        transactionId: number | null;
-        startDate: Date;
-        expiredDate: Date;
-        alertCount: number;
     }>;
     update(id: number, updateSubscriptionDto: UpdateSubscriptionDto): Promise<{
         id: number;
+        userId: number;
+        transactionId: number | null;
+        expiredDate: Date;
+        startDate: Date;
+        alertCount: number;
+        subscriptionTypeId: number | null;
+        viaContractId: string | null;
         createdAt: Date;
         updatedAt: Date;
-        userId: number;
-        subscriptionTypeId: number | null;
-        transactionId: number | null;
-        startDate: Date;
-        expiredDate: Date;
-        alertCount: number;
     }>;
     subscriptionPaid(subscription: any): Promise<any>;
     remove(id: number): Promise<{
         user: {
             id: number;
+            viaContractId: string | null;
             createdAt: Date;
             updatedAt: Date;
-            role: import(".prisma/client").$Enums.UserRole;
-            status: import(".prisma/client").$Enums.UserStatus;
-            username: string | null;
             telegramId: string;
+            username: string | null;
             firstName: string;
             lastName: string;
             lastActiveAt: Date | null;
@@ -233,28 +249,123 @@ export declare class SubscriptionService {
             email: string | null;
             phoneNumber: string;
             inGroup: boolean;
+            status: import(".prisma/client").$Enums.UserStatus;
+            role: import(".prisma/client").$Enums.UserRole;
             trialUsed: boolean;
         };
         subscriptionType: {
-            description: string;
-            title: string;
             id: number;
             createdAt: Date;
             updatedAt: Date;
             price: number;
-            oneTime: boolean;
+            title: string;
+            description: string;
             expireDays: number;
             isDeleted: boolean;
+            oneTime: boolean;
+            viaTariffId: string | null;
         };
     } & {
         id: number;
+        userId: number;
+        transactionId: number | null;
+        expiredDate: Date;
+        startDate: Date;
+        alertCount: number;
+        subscriptionTypeId: number | null;
+        viaContractId: string | null;
         createdAt: Date;
         updatedAt: Date;
-        userId: number;
-        subscriptionTypeId: number | null;
-        transactionId: number | null;
-        startDate: Date;
-        expiredDate: Date;
-        alertCount: number;
     }>;
+    createViaSubscription(userId: number, subscriptionTypeId: number, cardToken: string): Promise<{
+        subscription: {
+            id: number;
+            userId: number;
+            transactionId: number | null;
+            expiredDate: Date;
+            startDate: Date;
+            alertCount: number;
+            subscriptionTypeId: number | null;
+            viaContractId: string | null;
+            createdAt: Date;
+            updatedAt: Date;
+        };
+        viaData: {
+            id: string;
+            contractDate: number;
+            nextPayDate: number;
+            status: string;
+            price: number;
+            deactivateDate: number | null;
+            tryPaymentCount: number;
+            createdDate: number;
+            modifiedDate: number;
+            merchant: {
+                name: {
+                    uz: string;
+                    ru: string;
+                    en: string;
+                };
+                logo: string;
+            };
+            tariff: {
+                id: string;
+                title: {
+                    uz: string;
+                    ru: string;
+                    en: string;
+                };
+                tryCount: number;
+                amount: number | string;
+                period: string;
+                trialDays: number;
+            };
+            card: {
+                id: string;
+                holder: string;
+                type: string;
+                pan: string;
+                status: string;
+            };
+        };
+    }>;
+    deactivateViaSubscription(contractId: string): Promise<{
+        id: string;
+        contractDate: number;
+        nextPayDate: number;
+        status: "PAUSE" | "ACTIVE" | string;
+        price: number;
+        deactivateDate: number;
+        tryPaymentCount: number;
+        createdDate: number;
+        modifiedDate: number;
+        merchant: {
+            name: {
+                uz: string;
+                ru: string;
+                en: string;
+            };
+            logo: string;
+        };
+        tariff: {
+            id: string;
+            title: {
+                uz: string;
+                ru: string;
+                en: string;
+            };
+            tryCount: number;
+            amount: number | string;
+            period: string;
+            trialDays: number;
+        };
+        card: {
+            id: string;
+            holder: string;
+            type: string;
+            pan: string;
+            status: string;
+        };
+    }>;
+    deleteViaSubscription(contractId: string): Promise<import("../via/via.interface").DeleteResponse>;
 }
